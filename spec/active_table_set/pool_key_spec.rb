@@ -8,7 +8,7 @@ describe ActiveTableSet::PoolKey do
     let(:timeout)  { 5 }
 
     it "takes database ip, username, password, and timeout as params" do
-      key      = ActiveTableSet::PoolKey.new(ip_address: ip, username: username, password: password, timeout: timeout)
+      key = ActiveTableSet::PoolKey.new(ip_address: ip, username: username, password: password, timeout: timeout)
 
       expect(key.ip_address).to eq(ip)
       expect(key.username).to eq(username)

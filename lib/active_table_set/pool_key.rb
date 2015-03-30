@@ -1,5 +1,9 @@
+require 'active_table_set/model_comparison'
+
 module ActiveTableSet
   class PoolKey
+    include ActiveTableSet::ModelComparison
+
     attr_accessor :ip_address, :username, :password, :timeout
 
     def initialize(ip_address: nil, username: nil, password: nil, timeout: nil)
@@ -12,10 +16,6 @@ module ActiveTableSet
       @username   = username
       @password   = password
       @timeout    = timeout
-    end
-
-    def ==(other_key)
-      @ip_address == other_key.ip_address && @username == other_key.username && @password == other_key.password && @timeout == other_key.timeout
     end
   end
 end
