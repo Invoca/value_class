@@ -22,24 +22,15 @@ describe ActiveTableSet::DatabaseServer do
       expect(db_server.server_type).to eq(:leader)
     end
 
-    it 'has a connection name' do
-      expect(db_server.connection_name).to eq("leader_connection")
-    end
-
     it 'has a database connection config' do
       expect(db_server.db_config).to eq(true)
     end
-
-    it 'has a pool manager' do
-      expect(db_server.pool_manager).to eq(true)
-    end
-  end
-
-  context "pool manager" do
-    # TODO: add PoolManager class to gem
   end
 
   context "connections" do
-    # TODO: add PoolManager class to gem
+    let(:db_server) { ActiveTableSet::DatabaseServer.new(db_config: true, server_type: :leader, pool_manager: true) }
+
+    # TODO: figure out how to stub the calls to pool
+    # connection is an AbstractAdapter (or object conforming to its interface)
   end
 end
