@@ -1,6 +1,4 @@
 require 'active_record'
-require 'active_support/version'
-require 'active_support/core_ext/class'
 
 module ActiveTableSet
   class PoolManager
@@ -10,13 +8,11 @@ module ActiveTableSet
       @pools = Hash.new
     end
 
-    def get_pool(key: nil, config: nil)
-      key or raise "Must provide a PoolKey to request a pool"
+    def get_pool(key:, config: nil)
       @pools[key] ||= create_pool(config)
     end
 
-    def destroy_pool(key: nil)
-      key or raise "Must provide a PoolKey to destroy a pool"
+    def destroy_pool(key:)
       @pools.delete(key)
     end
 

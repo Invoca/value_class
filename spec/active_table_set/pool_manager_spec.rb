@@ -9,7 +9,7 @@ describe ActiveTableSet::PoolManager do
 
     let(:mgr)    { ActiveTableSet::PoolManager.new }
     let(:key)    { ActiveTableSet::PoolKey.new(host: ip, username: username, password: password, timeout: timeout) }
-    let(:config) { ActiveTableSet::DatabaseConfig.new }
+    let(:config) { ActiveTableSet::DatabaseConfig.new(pool_manager: mgr) }
 
     it "creates a new pool if one with the requested key does not exist" do
       allow(mgr).to receive(:create_pool).and_return(true)

@@ -1,9 +1,11 @@
 require 'spec_helper'
 
 describe ActiveTableSet::DatabaseConfig do
-  context "constructor" do
+  context "config" do
+    let(:pool_mgr) { ActiveTableSet::PoolManager.new }
+
     it "provides reasonable defaults" do
-      spec = ActiveTableSet::DatabaseConfig.new.specification
+      spec = ActiveTableSet::DatabaseConfig.new(pool_manager: pool_mgr).specification
       expect(spec[:connect_timeout]).to eq(5)
       expect(spec[:read_timeout]).to eq(2)
       expect(spec[:write_timeout]).to eq(2)
@@ -19,7 +21,7 @@ describe ActiveTableSet::DatabaseConfig do
     end
 
     it "provides a pool key based on certain fields" do
-      key = ActiveTableSet::DatabaseConfig.new(host: "some.ip", username: "test_user", password: "secure_pwd", timeout: 10).pool_key
+      key = ActiveTableSet::DatabaseConfig.new(pool_manager: pool_mgr, host: "some.ip", username: "test_user", password: "secure_pwd", timeout: 10).pool_key
       expect(key.host).to eq("some.ip")
       expect(key.username).to eq("test_user")
       expect(key.password).to eq("secure_pwd")
@@ -27,7 +29,7 @@ describe ActiveTableSet::DatabaseConfig do
     end
 
     it "has a name" do
-      name = ActiveTableSet::DatabaseConfig.new(adapter: "mysql2").name
+      name = ActiveTableSet::DatabaseConfig.new(pool_manager: pool_mgr, adapter: "mysql2").name
       expect(name).to eq("mysql2_connection")
     end
   end
