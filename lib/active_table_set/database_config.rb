@@ -4,10 +4,9 @@ module ActiveTableSet
   class DatabaseConfig
     include ActiveSupport
 
-    attr_accessor :pool_manager, :host, :username, :password, :database, :timeout, :connect_timeout, :pool_size, :adapter, :collation, :encoding, :reconnect
+    attr_accessor :host, :username, :password, :database, :timeout, :connect_timeout, :pool_size, :adapter, :collation, :encoding, :reconnect
 
-    def initialize(pool_manager:, database: "", connect_timeout: 5, timeout: 2, encoding: "utf8", collation: "utf8_general_ci", adapter: "mysql2", pool_size: 5, host: "localhost", username: "", password: "", reconnect: true)
-      @pool_manager    = pool_manager
+    def initialize(database: "", connect_timeout: 5, timeout: 2, encoding: "utf8", collation: "utf8_general_ci", adapter: "mysql2", pool_size: 5, host: "localhost", username: "", password: "", reconnect: true)
       @database        = database
       @connect_timeout = connect_timeout
       @timeout         = timeout
