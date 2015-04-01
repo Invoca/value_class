@@ -1,3 +1,7 @@
+#
+# Partition represents a set of one leader and zero or more followers.
+#
+
 module ActiveTableSet
   class Partition
     attr_reader :index
@@ -9,14 +13,14 @@ module ActiveTableSet
       @index = index
     end
 
-    def connection_key(mode: :leader)
-      case mode
-      when :leader
+    def connection_key(access_mode: :write)
+      case access_mode
+      when :write, :read
         leader
       when :balanced
         chosen_follower
       else
-        raise ArgumentError, "unknown mode"
+        raise ArgumentError, "unknown access_mode"
       end
     end
 
