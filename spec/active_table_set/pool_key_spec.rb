@@ -17,19 +17,19 @@ describe ActiveTableSet::PoolKey do
     end
 
     it "raises if not passed an host" do
-      expect { ActiveTableSet::PoolKey.new(username: username, password: password, timeout: timeout) }.to raise_error(RuntimeError, "Must provide a host")
+      expect { ActiveTableSet::PoolKey.new(username: username, password: password, timeout: timeout) }.to raise_error(ArgumentError, "missing keyword: host")
     end
 
     it "raises if not passed a username" do
-      expect { ActiveTableSet::PoolKey.new(host: ip, password: password, timeout: timeout) }.to raise_error(RuntimeError, "Must provide a username")
+      expect { ActiveTableSet::PoolKey.new(host: ip, password: password, timeout: timeout) }.to raise_error(ArgumentError, "missing keyword: username")
     end
 
     it "raises if not passed a password" do
-      expect { ActiveTableSet::PoolKey.new(host: ip, username: username, timeout: timeout) }.to raise_error(RuntimeError, "Must provide a password")
+      expect { ActiveTableSet::PoolKey.new(host: ip, username: username, timeout: timeout) }.to raise_error(ArgumentError, "missing keyword: password")
     end
 
     it "raises if not passed a timeout" do
-      expect { ActiveTableSet::PoolKey.new(host: ip, username: username, password: password) }.to raise_error(RuntimeError, "Must provide a timeout")
+      expect { ActiveTableSet::PoolKey.new(host: ip, username: username, password: password) }.to raise_error(ArgumentError, "missing keyword: timeout")
     end
   end
 

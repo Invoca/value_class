@@ -6,12 +6,7 @@ module ActiveTableSet
 
     attr_accessor :host, :username, :password, :timeout
 
-    def initialize(host: nil, username: nil, password: nil, timeout: nil)
-      host     or raise "Must provide a host"
-      username or raise "Must provide a username"
-      password or raise "Must provide a password"
-      timeout  or raise "Must provide a timeout"
-
+    def initialize(host:, username:, password:, timeout:)
       @host     = host
       @username = username
       @password = password

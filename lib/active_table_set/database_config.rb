@@ -1,8 +1,13 @@
+require 'active_support/hash_with_indifferent_access'
+
 module ActiveTableSet
   class DatabaseConfig
-    attr_accessor :host, :username, :password, :database, :timeout, :connect_timeout, :pool_size, :adapter, :collation, :encoding, :reconnect
+    include ActiveSupport
 
-    def initialize(database: "", connect_timeout: 5, timeout: 2, encoding: "utf8", collation: "utf8_general_ci", adapter: "mysql2", pool_size: 5, host: "localhost", username: "", password: "", reconnect: true)
+    attr_accessor :pool_manager, :host, :username, :password, :database, :timeout, :connect_timeout, :pool_size, :adapter, :collation, :encoding, :reconnect
+
+    def initialize(pool_manager:, database: "", connect_timeout: 5, timeout: 2, encoding: "utf8", collation: "utf8_general_ci", adapter: "mysql2", pool_size: 5, host: "localhost", username: "", password: "", reconnect: true)
+      @pool_manager    = pool_manager
       @database        = database
       @connect_timeout = connect_timeout
       @timeout         = timeout
@@ -17,7 +22,8 @@ module ActiveTableSet
     end
 
     def specification
-      { "database"        => database,
+      ActiveSupport::HashWithIndifferentAccess.new(
+        "database"        => database,
         "connect_timeout" => connect_timeout,
         "read_timeout"    => timeout,
         "write_timeout"   => timeout,
@@ -28,7 +34,8 @@ module ActiveTableSet
         "reconnect"       => reconnect,
         "host"            => host,
         "username"        => username,
-        "password"        => password }.with_indifferent_access
+        "password"        => password
+      )
     end
 
     def name
