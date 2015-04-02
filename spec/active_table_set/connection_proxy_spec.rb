@@ -1,12 +1,12 @@
 require 'spec_helper'
 
 describe ActiveTableSet::ConnectionProxy do
-  let(:leader)    { { :host => "127.0.0.8",  :username => "tester",  :password => "verysecure",  :timeout => 2, :database => "main" } }
-  let(:follower1) { { :host => "127.0.0.9",  :username => "tester1", :password => "verysecure1", :timeout => 2, :database => "replication1" } }
-  let(:follower2) { { :host => "127.0.0.10", :username => "tester2", :password => "verysecure2", :timeout => 2, :database => "replication2" } }
+  let(:leader)        { { :host => "127.0.0.8",  :username => "tester",  :password => "verysecure",  :timeout => 2, :database => "main" } }
+  let(:follower1)     { { :host => "127.0.0.9",  :username => "tester1", :password => "verysecure1", :timeout => 2, :database => "replication1" } }
+  let(:follower2)     { { :host => "127.0.0.10", :username => "tester2", :password => "verysecure2", :timeout => 2, :database => "replication2" } }
   let(:partition_cfg) { { :leader => leader, :followers => [follower1, follower2] } }
   let(:table_set_cfg) { { :name => "test_ts", :partitions => [partition_cfg], :readable => ["zebras", "rhinos", "lions"], :writeable => ["tourists", "guides"] } }
-  let(:main_cfg) { { :table_sets => [table_set_cfg] } }
+  let(:main_cfg)      { { :table_sets => [table_set_cfg] } }
 
   context "construction" do
     it "raises on missing config parameter" do
@@ -54,4 +54,29 @@ describe ActiveTableSet::ConnectionProxy do
     end
   end
 
+  context "using PoolManager" do
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:mgr)   { proxy.send(:pool_manager) }
+
+    it "gets a new pool from PoolManager" do
+      allow(mgr).to receive(:create_pool).and_return("stand-in_for_actual_pool")
+
+      leader_key = proxy.connection_key(table_set: "test_ts", access_mode: :write)
+      pool = proxy.pool(key: leader_key)
+      expect(mgr.pool_count).to eq(1)
+      expect(pool).to eq("stand-in_for_actual_pool")
+    end
+
+    it "gets same pool from PoolManager for same pool key" do
+      allow(mgr).to receive(:create_pool).once.and_return("stand-in_for_actual_pool")
+
+      leader_key = proxy.connection_key(table_set: "test_ts", access_mode: :write)
+      pool = proxy.pool(key: leader_key)
+      expect(mgr.pool_count).to eq(1)
+      expect(pool).to eq("stand-in_for_actual_pool")
+
+      pool2 = proxy.pool(key: leader_key)
+      expect(pool).to eq(pool2)
+    end
+  end
 end

@@ -9,8 +9,9 @@ module ActiveTableSet
   class ConnectionProxy
 
     def initialize(config:)
-      @config = config
-      @table_sets = build_table_sets(config)
+      @config       = config
+      @table_sets   = build_table_sets(config)
+      @pool_manager = PoolManager.new
     end
 
     def table_set_names
@@ -22,7 +23,15 @@ module ActiveTableSet
       ts.connection_key(access_mode: access_mode, partition_id: partition_id)
     end
 
+    def pool(key:)
+      pool_manager.get_pool(key: key)
+    end
+
     private
+
+    def pool_manager
+      @pool_manager
+    end
 
     def table_sets
       @table_sets
