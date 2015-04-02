@@ -27,6 +27,19 @@ module ActiveTableSet
       pool_manager.get_pool(key: key)
     end
 
+    def connection(table_set:, access_mode: :write, partition_id: 0, timeout: nil)
+      key = connection_key(table_set: table_set, access_mode: access_mode, partition_id: partition_id)
+      pool_key =  if timeout.nil?
+                    # pass back the key as-is with default timeout
+                    key
+                  else
+                    # over-ride the timeout
+                    key.clone_with_new_timeout(timeout)
+                  end
+      pool = pool(key: pool_key)
+      (pool && pool.connection) or raise ActiveRecord::ConnectionNotEstablished
+    end
+
     private
 
     def pool_manager

@@ -22,7 +22,7 @@ describe ActiveTableSet::ConnectionProxy do
     end
   end
 
-  context "finds correct connection keys" do
+  context "finds correct keys" do
     let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
 
     it "for access_mode :write" do
@@ -77,6 +77,64 @@ describe ActiveTableSet::ConnectionProxy do
 
       pool2 = proxy.pool(key: leader_key)
       expect(pool).to eq(pool2)
+    end
+  end
+
+  context "retrieves connections with default timeout" do
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:mgr)   { proxy.send(:pool_manager) }
+
+    it "for access_mode :write" do
+      test_pool = double("write_pool")
+      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(mgr).to receive(:create_pool).once.and_return(test_pool)
+      connection = proxy.connection(table_set: "test_ts", access_mode: :write)
+      expect(connection).to eq("stand-in_for_actual_connection")
+    end
+
+    it "for access_mode :read" do
+      test_pool = double("read_pool")
+      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(mgr).to receive(:create_pool).once.and_return(test_pool)
+      connection = proxy.connection(table_set: "test_ts", access_mode: :write)
+      expect(connection).to eq("stand-in_for_actual_connection")
+    end
+
+    it "for access_mode :balanced" do
+      test_pool = double("balanced_pool")
+      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(mgr).to receive(:create_pool).once.and_return(test_pool)
+      connection = proxy.connection(table_set: "test_ts", access_mode: :write)
+      expect(connection).to eq("stand-in_for_actual_connection")
+    end
+  end
+
+  context "retrieves connections with timeout over-ride" do
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:mgr)   { proxy.send(:pool_manager) }
+
+    it "for access_mode :write" do
+      test_pool = double("write_pool")
+      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(mgr).to receive(:create_pool).once.and_return(test_pool)
+      connection = proxy.connection(table_set: "test_ts", access_mode: :write, timeout: 25)
+      expect(connection).to eq("stand-in_for_actual_connection")
+    end
+
+    it "for access_mode :read" do
+      test_pool = double("read_pool")
+      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(mgr).to receive(:create_pool).once.and_return(test_pool)
+      connection = proxy.connection(table_set: "test_ts", access_mode: :read, timeout: 25)
+      expect(connection).to eq("stand-in_for_actual_connection")
+    end
+
+    it "for access_mode :balanced" do
+      test_pool = double("balanced_pool")
+      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(mgr).to receive(:create_pool).once.and_return(test_pool)
+      connection = proxy.connection(table_set: "test_ts", access_mode: :balanced, timeout: 25)
+      expect(connection).to eq("stand-in_for_actual_connection")
     end
   end
 end
