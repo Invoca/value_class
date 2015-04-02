@@ -17,6 +17,11 @@ module ActiveTableSet
       table_sets.keys
     end
 
+    def connection_key(table_set:, access_mode: :write, partition_id: 0)
+      ts = table_sets[table_set] or raise ArgumentError, "pool key requested from unknown table set #{table_set}"
+      ts.connection_key(access_mode: access_mode, partition_id: partition_id)
+    end
+
     private
 
     def table_sets

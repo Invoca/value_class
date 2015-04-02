@@ -22,4 +22,36 @@ describe ActiveTableSet::ConnectionProxy do
     end
   end
 
+  context "finds correct connection keys" do
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+
+    it "for access_mode :write" do
+      key = proxy.connection_key(table_set: "test_ts", access_mode: :write)
+      expect(key.host).to eq("127.0.0.8")
+    end
+
+    it "for access_mode :read" do
+      key = proxy.connection_key(table_set: "test_ts", access_mode: :read)
+      expect(key.host).to eq("127.0.0.8")
+    end
+
+    it "for access_mode :balanced with chosen_follower of index 0" do
+      part = proxy.send(:table_sets)["test_ts"].partitions[0]
+      allow(part).to receive(:follower_index).and_return(0)
+      key = proxy.connection_key(table_set: "test_ts", access_mode: :balanced)
+      expect(key.host).to eq("127.0.0.9")
+    end
+
+    it "for access_mode :balanced with chosen_follower of index 1" do
+      part = proxy.send(:table_sets)["test_ts"].partitions[0]
+      allow(part).to receive(:follower_index).and_return(1)
+      key = proxy.connection_key(table_set: "test_ts", access_mode: :balanced)
+      expect(key.host).to eq("127.0.0.10")
+    end
+
+    it "raises if request table_set does not exist" do
+      expect { proxy.connection_key(table_set: "whatever") }.to raise_error(ArgumentError, "pool key requested from unknown table set whatever")
+    end
+  end
+
 end
