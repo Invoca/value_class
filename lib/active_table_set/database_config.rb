@@ -42,7 +42,7 @@ module ActiveTableSet
     end
 
     def pool_key
-      ActiveTableSet::PoolKey.new(host: host, username: username, password: password, timeout: timeout)
+      ActiveTableSet::PoolKey.new(host: host, username: username, password: password, timeout: timeout, config: self)
     end
   end
 end

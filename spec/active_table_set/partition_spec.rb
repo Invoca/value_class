@@ -1,9 +1,11 @@
 require 'spec_helper'
 
 describe ActiveTableSet::Partition do
-  let(:mgr)  { ActiveTableSet::PoolManager.new }
-  let(:key)  { ActiveTableSet::PoolKey.new(host: "localhost", username: "tester", password: "verysecure", timeout: 5) }
-  let(:part) { ActiveTableSet::Partition.new(leader_key: key) }
+  let(:mgr)       { ActiveTableSet::PoolManager.new }
+  let(:config)    { ActiveTableSet::DatabaseConfig.new }
+  let(:key)       { ActiveTableSet::PoolKey.new(host: "localhost", username: "tester", password: "verysecure", timeout: 5, config: config) }
+  let(:part)      { ActiveTableSet::Partition.new(leader_key: key) }
+  let(:db_config) { ActiveTableSet::DatabaseConfig.new(username: "tester", password: "verysecure", host: "localhost", timeout: 5)  }
 
   context "construction" do
     it "raises if not passed a leader" do
@@ -17,8 +19,8 @@ describe ActiveTableSet::Partition do
   end
 
   context "connections" do
-    let(:f1_key) { ActiveTableSet::PoolKey.new(host: "127.0.0.8", username: "tester", password: "verysecure", timeout: 5) }
-    let(:f2_key) { ActiveTableSet::PoolKey.new(host: "127.0.0.8", username: "tester", password: "verysecure", timeout: 5) }
+    let(:f1_key) { ActiveTableSet::PoolKey.new(host: "127.0.0.8", username: "tester", password: "verysecure", timeout: 5, config: db_config) }
+    let(:f2_key) { ActiveTableSet::PoolKey.new(host: "127.0.0.8", username: "tester", password: "verysecure", timeout: 5, config: db_config) }
 
     it "provides a leader connection key for write access" do
       connection_key = part.connection_key(access_mode: :write)

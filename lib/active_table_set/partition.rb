@@ -6,8 +6,7 @@ module ActiveTableSet
   class Partition
     attr_reader :index
 
-    # must have 1 leader
-    # can have 0..x followers
+    # must have 1 leader and can have 0..x followers
     def initialize(leader_key:, follower_keys: [], index: 0)
       @keys  = [leader_key].concat(follower_keys)
       @index = index

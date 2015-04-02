@@ -8,8 +8,8 @@ module ActiveTableSet
       @pools = Hash.new
     end
 
-    def get_pool(key:, config: nil)
-      @pools[key] ||= create_pool(config)
+    def get_pool(key:)
+      @pools[key] ||= create_pool(key.config)
     end
 
     def destroy_pool(key:)
