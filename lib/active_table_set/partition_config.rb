@@ -4,9 +4,9 @@ module ActiveTableSet
   class PartitionConfig
     include ActiveSupport
 
-    def initialize(partition_hash:)
-      @leader    = build_database_config(partition_hash[:leader])
-      @followers = partition_hash[:followers].map { |h| build_database_config(h) }
+    def initialize(config:)
+      @leader    = build_database_config(config[:leader])
+      @followers = config[:followers].map { |h| build_database_config(h) }
     end
 
     def leader_key
