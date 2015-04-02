@@ -1,10 +1,11 @@
-require 'active_table_set/model_comparison'
+require 'attr_comparable'
 
 module ActiveTableSet
   class PoolKey
-    include ActiveTableSet::ModelComparison
+    include AttrComparable
 
-    attr_accessor :host, :username, :password, :timeout
+    attr_compare :host, :username, :password, :timeout
+    attr_reader  :host, :username, :password, :timeout
 
     def initialize(host:, username:, password:, timeout:)
       @host     = host
