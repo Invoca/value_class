@@ -15,26 +15,28 @@ module ActiveTableSet
       @pool_manager = PoolManager.new
     end
 
+    def using(table_set:, access_mode: :write, partition_id: 0, timeout: nil, &blk)
+      old_connection_key = thread_connection_key
+      begin
+        set_connection(table_set, access_mode, partition_id, timeout, old_connection_key)
+        yield
+      ensure
+        release_connection
+        self.thread_connection_key = old_connection_key
+      end
+    end
+
     def table_set_names
       table_sets.keys
     end
 
-    def connection_key(table_set:, access_mode: :write, partition_id: 0)
-      ts = table_sets[table_set] or raise ArgumentError, "pool key requested from unknown table set #{table_set}"
-      ts.connection_key(access_mode: access_mode, partition_id: partition_id)
-    end
-
-    def pool(key:)
-      pool_manager.get_pool(key: key)
-    end
-
-    def connection(table_set:, access_mode: :write, partition_id: 0, timeout: nil)
-      key = timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
-      pool = pool(key: key)
-      (pool && pool.connection) or raise ActiveRecord::ConnectionNotEstablished
+    def connection
+      connection_from_pool_key(thread_connection_key)
     end
 
     private
+
+    ## THREAD SAFE KEYS ##
 
     def thread_connection_key
       Thread.current.thread_variable_get(THREAD_DB_CONNECTION_KEY)
@@ -42,6 +44,34 @@ module ActiveTableSet
 
     def thread_connection_key=(key)
       Thread.current.thread_variable_set(THREAD_DB_CONNECTION_KEY, key)
+    end
+
+    ## CONNECTIONS ##
+
+    def set_connection(table_set, access_mode, partition_id, timeout, old_thread_key)
+      self.thread_connection_key = timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
+      connection_from_pool_key(thread_connection_key)
+    rescue StandardError
+      release_connection
+      self.thread_connection_key = old_thread_key
+    end
+
+    def release_connection
+      if active_pool = pool(key: thread_connection_key)
+        active_pool.release_connection
+      end
+    end
+
+    def connection_from_pool_key(key)
+      pool = pool(key: key)
+      (pool && pool.connection) or raise ActiveRecord::ConnectionNotEstablished
+    end
+
+    ## KEY MANAGEMENT ##
+
+    def connection_key(table_set:, access_mode: :write, partition_id: 0)
+      ts = table_sets[table_set] or raise ArgumentError, "pool key requested from unknown table set #{table_set}"
+      ts.connection_key(access_mode: access_mode, partition_id: partition_id)
     end
 
     def timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
@@ -55,9 +85,17 @@ module ActiveTableSet
       end
     end
 
+    ## POOL MANAGER ##
+
     def pool_manager
       @pool_manager
     end
+
+    def pool(key:)
+      pool_manager.get_pool(key: key)
+    end
+
+    ## TABLE SETS ##
 
     def table_sets
       @table_sets

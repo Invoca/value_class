@@ -26,31 +26,31 @@ describe ActiveTableSet::ConnectionProxy do
     let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
 
     it "for access_mode :write" do
-      key = proxy.connection_key(table_set: "test_ts", access_mode: :write)
+      key = proxy.send(:connection_key, table_set: "test_ts", access_mode: :write)
       expect(key.host).to eq("127.0.0.8")
     end
 
     it "for access_mode :read" do
-      key = proxy.connection_key(table_set: "test_ts", access_mode: :read)
+      key = proxy.send(:connection_key, table_set: "test_ts", access_mode: :read)
       expect(key.host).to eq("127.0.0.8")
     end
 
     it "for access_mode :balanced with chosen_follower of index 0" do
       part = proxy.send(:table_sets)["test_ts"].partitions[0]
       allow(part).to receive(:follower_index).and_return(0)
-      key = proxy.connection_key(table_set: "test_ts", access_mode: :balanced)
+      key = proxy.send(:connection_key, table_set: "test_ts", access_mode: :balanced)
       expect(key.host).to eq("127.0.0.9")
     end
 
     it "for access_mode :balanced with chosen_follower of index 1" do
       part = proxy.send(:table_sets)["test_ts"].partitions[0]
       allow(part).to receive(:follower_index).and_return(1)
-      key = proxy.connection_key(table_set: "test_ts", access_mode: :balanced)
+      key = proxy.send(:connection_key, table_set: "test_ts", access_mode: :balanced)
       expect(key.host).to eq("127.0.0.10")
     end
 
     it "raises if request table_set does not exist" do
-      expect { proxy.connection_key(table_set: "whatever") }.to raise_error(ArgumentError, "pool key requested from unknown table set whatever")
+      expect { proxy.send(:connection_key, table_set: "whatever") }.to raise_error(ArgumentError, "pool key requested from unknown table set whatever")
     end
   end
 
@@ -61,8 +61,8 @@ describe ActiveTableSet::ConnectionProxy do
     it "gets a new pool from PoolManager" do
       allow(mgr).to receive(:create_pool).and_return("stand-in_for_actual_pool")
 
-      leader_key = proxy.connection_key(table_set: "test_ts", access_mode: :write)
-      pool = proxy.pool(key: leader_key)
+      leader_key = proxy.send(:connection_key, table_set: "test_ts", access_mode: :write)
+      pool = proxy.send(:pool, key: leader_key)
       expect(mgr.pool_count).to eq(1)
       expect(pool).to eq("stand-in_for_actual_pool")
     end
@@ -70,42 +70,104 @@ describe ActiveTableSet::ConnectionProxy do
     it "gets same pool from PoolManager for same pool key" do
       allow(mgr).to receive(:create_pool).once.and_return("stand-in_for_actual_pool")
 
-      leader_key = proxy.connection_key(table_set: "test_ts", access_mode: :write)
-      pool = proxy.pool(key: leader_key)
+      leader_key = proxy.send(:connection_key, table_set: "test_ts", access_mode: :write)
+      pool = proxy.send(:pool, key: leader_key)
       expect(mgr.pool_count).to eq(1)
       expect(pool).to eq("stand-in_for_actual_pool")
 
-      pool2 = proxy.pool(key: leader_key)
+      pool2 = proxy.send(:pool, key: leader_key)
       expect(pool).to eq(pool2)
+    end
+
+    it "keeps connections with different timeouts distinct" do
+      leader_pool_2 = double("leader_timeout_2_pool")
+      expect(leader_pool_2).to receive(:connection).exactly(4).times {"leader_timeout_2_connection" }
+      expect(leader_pool_2).to receive(:release_connection).twice { true }
+
+      follower_pool_2 = double("follower_timeout_2_pool")
+      expect(follower_pool_2).to receive(:connection).exactly(2).times {"follower_timeout_2_connection" }
+      expect(follower_pool_2).to receive(:release_connection) { true }
+
+      leader_pool_5 = double("leader_timeout_5_pool")
+      expect(leader_pool_5).to receive(:connection).exactly(4).times {"leader_timeout_5_connection" }
+      expect(leader_pool_5).to receive(:release_connection).twice { true }
+
+      follower_pool_5 = double("follower_timeout_5_pool")
+      expect(follower_pool_5).to receive(:connection).exactly(2).times {"follower_timeout_5_connection" }
+      expect(follower_pool_5).to receive(:release_connection) { true }
+
+      expect(mgr).to receive(:create_pool).exactly(4).times.and_return(leader_pool_2, follower_pool_2, leader_pool_5, follower_pool_5)
+
+      proxy.using(table_set: "test_ts", access_mode: :write) do
+        connection = proxy.connection
+        expect(connection).to eq("leader_timeout_2_connection")
+      end
+
+      proxy.using(table_set: "test_ts", access_mode: :read) do
+        connection = proxy.connection
+        expect(connection).to eq("leader_timeout_2_connection")
+      end
+
+      proxy.using(table_set: "test_ts", access_mode: :balanced) do
+        connection = proxy.connection
+        expect(connection).to eq("follower_timeout_2_connection")
+      end
+
+      proxy.using(table_set: "test_ts", access_mode: :write, timeout: 5) do
+        connection = proxy.connection
+        expect(connection).to eq("leader_timeout_5_connection")
+      end
+
+      proxy.using(table_set: "test_ts", access_mode: :balanced, timeout: 5) do
+        connection = proxy.connection
+        expect(connection).to eq("follower_timeout_5_connection")
+      end
+
+      proxy.using(table_set: "test_ts", access_mode: :read, timeout: 5) do
+        connection = proxy.connection
+        expect(connection).to eq("leader_timeout_5_connection")
+      end
     end
   end
 
   context "retrieves connections with default timeout" do
-    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
-    let(:mgr)   { proxy.send(:pool_manager) }
+    let(:proxy)  { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:mgr)    { proxy.send(:pool_manager) }
 
     it "for access_mode :write" do
       test_pool = double("write_pool")
-      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:connection).exactly(2).times { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
-      connection = proxy.connection(table_set: "test_ts", access_mode: :write)
-      expect(connection).to eq("stand-in_for_actual_connection")
+
+      proxy.using(table_set: "test_ts", access_mode: :write) do
+        connection = proxy.connection
+        expect(connection).to eq("stand-in_for_actual_connection")
+      end
     end
 
     it "for access_mode :read" do
       test_pool = double("read_pool")
-      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:connection).exactly(2).times { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
-      connection = proxy.connection(table_set: "test_ts", access_mode: :write)
-      expect(connection).to eq("stand-in_for_actual_connection")
+
+      proxy.using(table_set: "test_ts", access_mode: :read) do
+        connection = proxy.connection
+        expect(connection).to eq("stand-in_for_actual_connection")
+      end
     end
 
     it "for access_mode :balanced" do
       test_pool = double("balanced_pool")
-      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:connection).exactly(2).times { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
-      connection = proxy.connection(table_set: "test_ts", access_mode: :write)
-      expect(connection).to eq("stand-in_for_actual_connection")
+
+      proxy.using(table_set: "test_ts", access_mode: :balanced) do
+        connection = proxy.connection
+        expect(connection).to eq("stand-in_for_actual_connection")
+      end
     end
   end
 
@@ -115,26 +177,38 @@ describe ActiveTableSet::ConnectionProxy do
 
     it "for access_mode :write" do
       test_pool = double("write_pool")
-      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:connection).exactly(2).times { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
-      connection = proxy.connection(table_set: "test_ts", access_mode: :write, timeout: 25)
-      expect(connection).to eq("stand-in_for_actual_connection")
+
+      proxy.using(table_set: "test_ts", access_mode: :write, timeout: 25) do
+        connection = proxy.connection
+        expect(connection).to eq("stand-in_for_actual_connection")
+      end
     end
 
     it "for access_mode :read" do
       test_pool = double("read_pool")
-      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:connection).exactly(2).times { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
-      connection = proxy.connection(table_set: "test_ts", access_mode: :read, timeout: 25)
-      expect(connection).to eq("stand-in_for_actual_connection")
+
+      proxy.using(table_set: "test_ts", access_mode: :read, timeout: 25) do
+        connection = proxy.connection
+        expect(connection).to eq("stand-in_for_actual_connection")
+      end
     end
 
     it "for access_mode :balanced" do
       test_pool = double("balanced_pool")
-      expect(test_pool).to receive(:connection) { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:connection).exactly(2).times { "stand-in_for_actual_connection" }
+      expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
-      connection = proxy.connection(table_set: "test_ts", access_mode: :balanced, timeout: 25)
-      expect(connection).to eq("stand-in_for_actual_connection")
+
+      proxy.using(table_set: "test_ts", access_mode: :balanced, timeout: 25) do
+        connection = proxy.connection
+        expect(connection).to eq("stand-in_for_actual_connection")
+      end
     end
   end
 
@@ -164,5 +238,4 @@ describe ActiveTableSet::ConnectionProxy do
       end
     end
   end
-
 end
