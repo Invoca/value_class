@@ -28,19 +28,23 @@ module ActiveTableSet
     end
 
     def connection(table_set:, access_mode: :write, partition_id: 0, timeout: nil)
-      key = connection_key(table_set: table_set, access_mode: access_mode, partition_id: partition_id)
-      pool_key =  if timeout.nil?
-                    # pass back the key as-is with default timeout
-                    key
-                  else
-                    # over-ride the timeout
-                    key.clone_with_new_timeout(timeout)
-                  end
-      pool = pool(key: pool_key)
+      key = timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
+      pool = pool(key: key)
       (pool && pool.connection) or raise ActiveRecord::ConnectionNotEstablished
     end
 
     private
+
+    def timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
+      key = connection_key(table_set: table_set, access_mode: access_mode, partition_id: partition_id)
+      if timeout.nil?
+        # pass back the key as-is with default timeout
+        key
+      else
+        # over-ride the timeout
+        key.clone_with_new_timeout(timeout)
+      end
+    end
 
     def pool_manager
       @pool_manager
