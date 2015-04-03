@@ -66,6 +66,23 @@ describe ActiveTableSet::PoolKey do
     end
   end
 
+  context "as hash key" do
+    it "finds matching hash entry on equivalent keys" do
+      key1 = ActiveTableSet::PoolKey.new(host: ip, username: username, password: password, timeout: timeout, config: config)
+      key2 = ActiveTableSet::PoolKey.new(host: ip, username: username, password: password, timeout: 6, config: config)
+
+      test_hash = { key1 => "value1", key2 => "value2" }
+
+      key3 = ActiveTableSet::PoolKey.new(host: ip, username: username, password: password, timeout: timeout, config: config)
+      key4 = ActiveTableSet::PoolKey.new(host: ip, username: username, password: password, timeout: 6, config: config)
+
+      expect(test_hash[key3]).to eq("value1")
+      expect(test_hash[key1]).to eq("value1")
+      expect(test_hash[key4]).to eq("value2")
+      expect(test_hash[key2]).to eq("value2")
+    end
+  end
+
   context "clone and reset timeout" do
     it "cleanly clones itself and its associated config" do
       key1 = ActiveTableSet::PoolKey.new(host: ip, username: username, password: password, timeout: timeout, config: config)

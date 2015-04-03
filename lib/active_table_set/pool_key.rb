@@ -27,5 +27,13 @@ module ActiveTableSet
       @timeout = timeout
       @config.timeout = timeout
     end
+
+    def eql?(other_key)
+      self.==(other_key)
+    end
+
+    def hash
+      [host, username, password, timeout].hash
+    end
   end
 end
