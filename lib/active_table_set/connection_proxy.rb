@@ -7,6 +7,7 @@
 
 module ActiveTableSet
   class ConnectionProxy
+    THREAD_DB_CONNECTION_KEY = :active_table_set_per_thread_connection_key
 
     def initialize(config:)
       @config       = config
@@ -34,6 +35,14 @@ module ActiveTableSet
     end
 
     private
+
+    def thread_connection_key
+      Thread.current.thread_variable_get(THREAD_DB_CONNECTION_KEY)
+    end
+
+    def thread_connection_key=(key)
+      Thread.current.thread_variable_set(THREAD_DB_CONNECTION_KEY, key)
+    end
 
     def timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
       key = connection_key(table_set: table_set, access_mode: access_mode, partition_id: partition_id)

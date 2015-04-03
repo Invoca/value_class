@@ -137,4 +137,32 @@ describe ActiveTableSet::ConnectionProxy do
       expect(connection).to eq("stand-in_for_actual_connection")
     end
   end
+
+  context "per-thread keys" do
+    it "saves and retrieves per-thread key values" do
+      num_threads = 3
+      begin
+        px = ActiveTableSet::ConnectionProxy.new(config: main_cfg)
+        threads = num_threads.times.map.with_index do |_,index|
+          Thread.new do
+            sleep 1
+            px.send(:thread_connection_key=, "key_#{index}")
+          end
+        end
+
+        threads[0].join do
+          expect(px.send(:thread_connection_key)).to eq("key_0")
+        end
+        threads[1].join do
+          expect(px.send(:thread_connection_key)).to eq("key_0")
+        end
+        threads[2].join do
+          expect(px.send(:thread_connection_key)).to eq("key_0")
+        end
+      ensure
+        threads && threads.each(&:kill)
+      end
+    end
+  end
+
 end
