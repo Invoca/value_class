@@ -26,12 +26,8 @@ module ActiveTableSet
       end
     end
 
-    def table_set_names
-      table_sets.keys
-    end
-
     def connection
-      connection_from_pool_key(thread_connection_key)
+      obtain_connection(thread_connection_key)
     end
 
     private
@@ -56,15 +52,18 @@ module ActiveTableSet
       self.thread_connection_key = old_thread_key
     end
 
-    def release_connection
-      if active_pool = pool(key: thread_connection_key)
-        active_pool.release_connection
+    def release_connection(key)
+      if (pool = pool(key))
+        pool.release_connection
       end
     end
 
-    def connection_from_pool_key(key)
-      pool = pool(key: key)
-      (pool && pool.connection) or raise ActiveRecord::ConnectionNotEstablished
+    def obtain_connection(key)
+      if (pool = pool(key))
+        pool.connection
+      else
+        raise ActiveRecord::ConnectionNotEstablished
+      end
     end
 
     ## KEY MANAGEMENT ##
@@ -76,29 +75,23 @@ module ActiveTableSet
 
     def timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
       key = connection_key(table_set: table_set, access_mode: access_mode, partition_id: partition_id)
-      if timeout.nil?
-        # pass back the key as-is with default timeout
-        key
-      else
-        # over-ride the timeout
-        key.clone_with_new_timeout(timeout)
-      end
+      timeout.nil? ? key : key.clone_with_new_timeout(timeout)
     end
 
     ## POOL MANAGER ##
 
-    def pool_manager
-      @pool_manager
-    end
+    attr_reader :pool_manager
 
-    def pool(key:)
+    def pool(key)
       pool_manager.get_pool(key: key)
     end
 
     ## TABLE SETS ##
 
-    def table_sets
-      @table_sets
+    attr_reader :table_sets
+
+    def table_set_names
+      table_sets.keys
     end
 
     def build_table_sets(config)
