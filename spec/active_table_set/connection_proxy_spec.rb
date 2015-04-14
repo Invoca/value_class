@@ -17,8 +17,8 @@ describe ActiveTableSet::ConnectionProxy do
   context "table set construction" do
     it "constructs a hash of table sets based on configuration hash" do
       proxy = ActiveTableSet::ConnectionProxy.new(config: main_cfg)
-      expect(proxy.table_set_names.length).to eq(1)
-      expect(proxy.table_set_names[0]).to eq("test_ts")
+      expect(proxy.send(:table_set_names).length).to eq(1)
+      expect(proxy.send(:table_set_names)[0]).to eq("test_ts")
     end
   end
 
@@ -59,27 +59,27 @@ describe ActiveTableSet::ConnectionProxy do
     let(:mgr)   { proxy.send(:pool_manager) }
 
     it "gets a new pool from PoolManager" do
-      allow(mgr).to receive(:create_pool).and_return("stand-in_for_actual_pool")
+      expect(mgr).to receive(:create_pool).and_return("stand-in_for_actual_pool")
 
       leader_key = proxy.send(:connection_key, table_set: "test_ts", access_mode: :write)
-      pool = proxy.send(:pool, key: leader_key)
+      pool = proxy.send(:pool, leader_key)
       expect(mgr.pool_count).to eq(1)
       expect(pool).to eq("stand-in_for_actual_pool")
     end
 
     it "gets same pool from PoolManager for same pool key" do
-      allow(mgr).to receive(:create_pool).once.and_return("stand-in_for_actual_pool")
+      expect(mgr).to receive(:create_pool).once.and_return("stand-in_for_actual_pool")
 
       leader_key = proxy.send(:connection_key, table_set: "test_ts", access_mode: :write)
-      pool = proxy.send(:pool, key: leader_key)
+      pool = proxy.send(:pool, leader_key)
       expect(mgr.pool_count).to eq(1)
       expect(pool).to eq("stand-in_for_actual_pool")
 
-      pool2 = proxy.send(:pool, key: leader_key)
+      pool2 = proxy.send(:pool, leader_key)
       expect(pool).to eq(pool2)
     end
 
-    it "keeps connections with different timeouts distinct" do
+    it "uses different pools for connections with different timeouts" do
       leader_pool_2 = double("leader_timeout_2_pool")
       expect(leader_pool_2).to receive(:connection).exactly(4).times {"leader_timeout_2_connection" }
       expect(leader_pool_2).to receive(:release_connection).twice { true }
