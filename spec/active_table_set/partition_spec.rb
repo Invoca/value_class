@@ -20,7 +20,7 @@ describe ActiveTableSet::Partition do
 
   context "connections" do
     let(:f1_key) { ActiveTableSet::PoolKey.new(host: "127.0.0.8", username: "tester", password: "verysecure", timeout: 5, config: db_config) }
-    let(:f2_key) { ActiveTableSet::PoolKey.new(host: "127.0.0.8", username: "tester", password: "verysecure", timeout: 5, config: db_config) }
+    let(:f2_key) { ActiveTableSet::PoolKey.new(host: "127.0.0.9", username: "tester", password: "verysecure", timeout: 5, config: db_config) }
 
     it "provides a leader connection key for write access" do
       connection_key = part.connection_key(access_mode: :write)
@@ -34,7 +34,7 @@ describe ActiveTableSet::Partition do
 
     it "provides a chosen follower connection key for balanced read access" do
       part2 = ActiveTableSet::Partition.new(leader_key: key, follower_keys: [f1_key, f2_key])
-      allow(part).to receive(:follower_index).and_return(0)
+      expect(part2).to receive(:follower_index).and_return(0)
       connection_key = part2.connection_key(access_mode: :balanced)
       expect(connection_key).to eq(f1_key)
     end
