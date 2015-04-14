@@ -16,13 +16,11 @@ module ActiveTableSet
     end
 
     def using(table_set:, access_mode: :write, partition_id: 0, timeout: nil, &blk)
-      old_connection_key = thread_connection_key
-      begin
-        set_connection(table_set, access_mode, partition_id, timeout, old_connection_key)
+      new_key = timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
+      if new_key == thread_connection_key
         yield
-      ensure
-        release_connection
-        self.thread_connection_key = old_connection_key
+      else
+        yield_with_new_connection(new_key, &blk)
       end
     end
 
@@ -31,6 +29,16 @@ module ActiveTableSet
     end
 
     private
+
+    def yield_with_new_connection(new_key)
+      old_key = thread_connection_key
+      self.thread_connection_key = new_key
+      obtain_connection(new_key)
+      yield
+    ensure
+      release_connection(new_key)
+      self.thread_connection_key = old_key
+    end
 
     ## THREAD SAFE KEYS ##
 
@@ -43,14 +51,6 @@ module ActiveTableSet
     end
 
     ## CONNECTIONS ##
-
-    def set_connection(table_set, access_mode, partition_id, timeout, old_thread_key)
-      self.thread_connection_key = timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
-      connection_from_pool_key(thread_connection_key)
-    rescue StandardError
-      release_connection
-      self.thread_connection_key = old_thread_key
-    end
 
     def release_connection(key)
       if (pool = pool(key))

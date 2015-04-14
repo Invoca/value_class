@@ -130,6 +130,50 @@ describe ActiveTableSet::ConnectionProxy do
     end
   end
 
+  context "handles nested blocks using thread-safe keys" do
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:mgr)   { proxy.send(:pool_manager) }
+
+    it "uses existing pool if new key matches current key" do
+      pool_dbl_1 = double("pool_dbl_1")
+      expect(pool_dbl_1).to receive(:connection).and_return( "connection1" )
+      expect(pool_dbl_1).to receive(:release_connection) { true }
+
+      expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
+
+      proxy.using(table_set: "test_ts", access_mode: :read) do
+        pool1 = proxy.send(:pool, proxy.send(:thread_connection_key))
+        proxy.using(table_set: "test_ts", access_mode: :read) do
+          pool2 = proxy.send(:pool, proxy.send(:thread_connection_key))
+          expect(pool2).to eq(pool1)
+        end
+      end
+    end
+
+    it "uses new pool if new key does not match current key" do
+      pool_dbl_1 = double("pool_dbl_1")
+      expect(pool_dbl_1).to receive(:connection).and_return( "connection1" )
+      expect(pool_dbl_1).to receive(:release_connection) { true }
+
+      pool_dbl_2 = double("pool_dbl_2")
+      expect(pool_dbl_2).to receive(:connection).and_return( "connection2" )
+      expect(pool_dbl_2).to receive(:release_connection) { true }
+
+      expect(mgr).to receive(:create_pool).twice.and_return(pool_dbl_1, pool_dbl_2)
+
+      proxy.using(table_set: "test_ts", access_mode: :read, timeout: 5) do
+        pool1 = proxy.send(:pool, proxy.send(:thread_connection_key))
+        proxy.using(table_set: "test_ts", access_mode: :read, timeout: 10) do
+          pool2 = proxy.send(:pool, proxy.send(:thread_connection_key))
+          expect(pool1).to_not eq(pool2)
+        end
+      end
+    end
+
+    # TODO: additional tests to match expectations around releasing connections in nested situations
+    # (both exceptional and normal code paths) - waiting for Bob's feedback
+  end
+
   context "retrieves connections with default timeout" do
     let(:proxy)  { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
     let(:mgr)    { proxy.send(:pool_manager) }
