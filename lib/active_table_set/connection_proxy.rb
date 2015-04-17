@@ -8,6 +8,9 @@
 module ActiveTableSet
   class ConnectionProxy
     THREAD_DB_CONNECTION_KEY = :active_table_set_per_thread_connection_key
+    DEFAULT_ACCESS_MODE  = :write
+    DEFAULT_PARTITION_ID = 0
+    DEFAULT_TIMEOUT_SECS = 2
 
     def initialize(config:)
       @config       = config
@@ -26,6 +29,14 @@ module ActiveTableSet
 
     def connection
       obtain_connection(thread_connection_key)
+    end
+
+    def set_default_table_set(table_set_name:)
+      thread_connection_key.nil? or raise "Can not use set_default_table_set while in the scope of an existing table set - startup only bro"
+      if thread_connection_key
+        release_connection(thread_connection_key)
+      end
+      self.thread_connection_key = timeout_adjusted_connection_key(table_set_name, DEFAULT_ACCESS_MODE, DEFAULT_PARTITION_ID, DEFAULT_TIMEOUT_SECS)
     end
 
     private

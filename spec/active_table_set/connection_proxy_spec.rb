@@ -174,6 +174,40 @@ describe ActiveTableSet::ConnectionProxy do
     # (both exceptional and normal code paths) - waiting for Bob's feedback
   end
 
+  context "setting default context without a block" do
+    let(:proxy)  { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:mgr)    { proxy.send(:pool_manager) }
+
+    it "sets a default connection key" do
+      pool_dbl_1 = double("pool_dbl_1")
+      expect(pool_dbl_1).to receive(:connection).and_return( "connection1" )
+
+      expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
+      proxy.send(:thread_connection_key=, nil)
+      proxy.set_default_table_set(table_set_name: :test_ts)
+      connection = proxy.connection
+
+      expect(connection).to eq("connection1")
+      proxy.send(:thread_connection_key=, nil)
+    end
+
+    it "raises if trying to set default connection key within an existing key block" do
+      pool_dbl_1 = double("pool_dbl_1")
+      expect(pool_dbl_1).to receive(:connection).and_return( "connection1" )
+      expect(pool_dbl_1).to receive(:release_connection) { true }
+
+      expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
+
+      proxy.send(:thread_connection_key=, nil)
+      expect {
+        proxy.using(table_set: :test_ts, access_mode: :read) do
+          proxy.set_default_table_set(table_set_name: :whatever)
+        end
+      }.to raise_error(RuntimeError, "Can not use set_default_table_set while in the scope of an existing table set - startup only bro")
+      proxy.send(:thread_connection_key=, nil)
+    end
+  end
+
   context "retrieves connections with default timeout" do
     let(:proxy)  { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
     let(:mgr)    { proxy.send(:pool_manager) }
