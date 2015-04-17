@@ -43,8 +43,8 @@ passes back a connection from that ConnectionPool.
 
 A TableSet defines a set of one or more partitions. Partitions are explained in the next paragraph. For simple cases, such as our
 :common table set definition, there is only one partition. For sharding situations, however, there may be many partitions for a
-given table set. TableSets also define a set of writeable tables and readable tables. Attempts to perform queries on a TableSet connection
-that do not conform to the writeable/readable lists will result in an error. For instance, if a TableSet is configured for read-access of
+given table set. TableSets also define a set of writable tables and readable tables. Attempts to perform queries on a TableSet connection
+that do not conform to the writable/readable lists will result in an error. For instance, if a TableSet is configured for read-access of
 data warehouse tables, a connection from it will inspect and reject queries attempting to write to warehouse tables.
 
 A Partition defines a set of servers, which must contain exactly one leader, as well as zero or more followers. When the partition is asked

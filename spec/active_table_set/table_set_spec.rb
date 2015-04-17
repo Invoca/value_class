@@ -5,7 +5,7 @@ describe ActiveTableSet::TableSet do
   let(:follower1) { { :host => "127.0.0.9",  :username => "tester1", :password => "verysecure1", :timeout => 2, :database => "replication1" } }
   let(:follower2) { { :host => "127.0.0.10", :username => "tester2", :password => "verysecure2", :timeout => 2, :database => "replication2" } }
   let(:partition_cfg) { { :leader => leader, :followers => [follower1, follower2] } }
-  let(:table_set_cfg) { { :name => "test_ts", :partitions => [partition_cfg], :readable => ["zebras", "rhinos", "lions"], :writeable => ["tourists", "guides"] } }
+  let(:table_set_cfg) { { :name => "test_ts", :partitions => [partition_cfg], :readable => ["zebras", "rhinos", "lions"], :writable => ["tourists", "guides"] } }
   let(:ts_config) { ActiveTableSet::TableSetConfig.new(config: table_set_cfg) }
 
   context "construction" do
@@ -21,7 +21,7 @@ describe ActiveTableSet::TableSet do
     end
   end
 
-  context "readable and writeable table sets" do
+  context "readable and writable table sets" do
     it "keeps an array of readable tables" do
       table_set = ActiveTableSet::TableSet.new(config: ts_config)
       tabs = table_set.readable_tables
@@ -30,9 +30,9 @@ describe ActiveTableSet::TableSet do
       expect(tabs[2]).to eq("lions")
     end
 
-    it "keeps an array of writeable tables" do
+    it "keeps an array of writable tables" do
       table_set = ActiveTableSet::TableSet.new(config: ts_config)
-      tabs = table_set.writeable_tables
+      tabs = table_set.writable_tables
       expect(tabs[0]).to eq("tourists")
       expect(tabs[1]).to eq("guides")
     end

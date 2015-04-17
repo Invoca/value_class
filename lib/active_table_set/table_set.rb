@@ -9,7 +9,7 @@ module ActiveTableSet
         Partition.new(leader_key: part.leader_key, follower_keys: part.follower_keys, index: index)
       }
 
-      @writable_tables = config.writeable_tables
+      @writable_tables = config.writable_tables
       @readable_tables = config.readable_tables
     end
 
@@ -18,7 +18,7 @@ module ActiveTableSet
       partitions[partition_id].connection_key(access_mode: access_mode)
     end
 
-    def writeable_tables
+    def writable_tables
       @writable_tables
     end
 
