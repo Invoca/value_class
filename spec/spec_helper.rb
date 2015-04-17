@@ -9,4 +9,5 @@ require 'active_table_set/table_set_config'
 require 'active_table_set/database_config'
 require 'active_table_set/pool_manager'
 require 'active_table_set/connection_proxy'
+require 'active_table_set/default_config_loader'
 
