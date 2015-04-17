@@ -95,12 +95,12 @@ module ActiveTableSet
     end
 
     def build_table_sets(config)
-      ts = config[:table_sets].map { |table_set| build_table_set(table_set) }
+      ts = config[:table_sets].keys.map { |ts_key| build_table_set(ts_key, config[:table_sets][ts_key]) }
       Hash[*ts.flatten]
     end
 
-    def build_table_set(config)
-      [config[:name], ActiveTableSet::TableSet.new(config: ActiveTableSet::TableSetConfig.new(config: config))]
+    def build_table_set(name, config)
+      [name, ActiveTableSet::TableSet.new(config: ActiveTableSet::TableSetConfig.new(config: config))]
     end
   end
 end
