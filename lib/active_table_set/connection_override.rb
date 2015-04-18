@@ -1,5 +1,6 @@
 require 'active_record'
 require 'active_table_set/default_config_loader'
+require 'active_table_set/connection_proxy'
 
 # Overrides ActiveRecord::Base
 # include ConnectionOverride in your ApplicationModel class
