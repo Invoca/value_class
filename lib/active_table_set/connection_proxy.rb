@@ -3,7 +3,6 @@
 # 1. Maintains the tree of TableSets => Partitions => PoolKeys which it uses to retrieve the appropriate pool key.
 # 2. Has a PoolManager. It passes pool keys to the pool manager and gets connections back.
 # 3. Maintains variables to track which thread is active so that connections are not shared between threads.
-#
 
 module ActiveTableSet
   class ConnectionProxy
@@ -15,7 +14,7 @@ module ActiveTableSet
     def initialize(config:)
       @config       = config
       @table_sets   = build_table_sets(config)
-      @pool_manager = PoolManager.new
+      @pool_manager = ActiveTableSet::PoolManager.new
     end
 
     def using(table_set:, access_mode: :write, partition_id: 0, timeout: nil, &blk)

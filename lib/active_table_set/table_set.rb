@@ -6,7 +6,7 @@ module ActiveTableSet
       config.partition_count > 0 or raise ArgumentError, "must provide config information for one or more partitions"
 
       @partitions = config.partitions.map.with_index { |part, index|
-        Partition.new(leader_key: part.leader_key, follower_keys: part.follower_keys, index: index)
+        ActiveTableSet::Partition.new(leader_key: part.leader_key, follower_keys: part.follower_keys, index: index)
       }
 
       @writable_tables = config.writable_tables
