@@ -1,4 +1,3 @@
-#
 # The ConnectionProxy does 3 different things:
 # 1. Maintains the tree of TableSets => Partitions => PoolKeys which it uses to retrieve the appropriate pool key.
 # 2. Has a PoolManager. It passes pool keys to the pool manager and gets connections back.

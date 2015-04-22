@@ -1,3 +1,5 @@
+require 'active_record'
+
 require "active_table_set/version"
 require 'active_table_set/table_set_config'
 require 'active_table_set/database_config'

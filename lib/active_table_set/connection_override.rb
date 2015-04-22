@@ -1,9 +1,4 @@
-require 'active_record'
-require 'active_table_set/default_config_loader'
-require 'active_table_set/connection_proxy'
-
-# Overrides ActiveRecord::Base
-# include ConnectionOverride in your ApplicationModel class
+# Overrides ActiveRecord::Base.connection and adds in several additional methods
 module ActiveTableSet
   module ConnectionOverride
     extend ActiveSupport::Concern

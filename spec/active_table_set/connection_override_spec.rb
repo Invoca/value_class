@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'active_record'
 
 describe ActiveTableSet::ConnectionOverride do
   context "AREL injection" do
