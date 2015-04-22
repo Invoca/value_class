@@ -14,6 +14,25 @@ describe ActiveTableSet::ConnectionProxy do
     end
   end
 
+  context "delegation to connection" do
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:mgr)   { proxy.send(:pool_manager) }
+
+    it "delegates all AbstractAdapter methods to the current connection" do
+
+      connection = double("connection")
+      pool = double("pool")
+      expect(mgr).to receive(:create_pool).and_return(pool)
+      expect(pool).to receive(:connection).exactly(2).times { connection }
+
+      expect(connection).to receive(:clear_cache!).and_return("cleared!")
+      expect(proxy.clear_cache!).to eq("cleared!")
+
+      expect(connection).to receive(:schema_cache).and_return("schema")
+      expect(proxy.schema_cache).to eq("schema")
+    end
+  end
+
   context "table set construction" do
     it "constructs a hash of table sets based on configuration hash" do
       proxy = ActiveTableSet::ConnectionProxy.new(config: main_cfg)

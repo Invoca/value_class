@@ -6,6 +6,8 @@
 
 module ActiveTableSet
   class ConnectionProxy
+    delegate *(ActiveRecord::ConnectionAdapters::AbstractAdapter.instance_methods - ActiveTableSet::ConnectionProxy.instance_methods), :to => :connection
+
     THREAD_DB_CONNECTION_KEY = :active_table_set_per_thread_connection_key
     DEFAULT_ACCESS_MODE  = :write
     DEFAULT_PARTITION_ID = 0
