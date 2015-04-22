@@ -3,9 +3,7 @@ require 'spec_helper'
 describe ActiveTableSet::ConnectionOverride do
   context "AREL injection" do
 
-    class TestDummy
-      include ActiveRecord
-      include ActiveTableSet::ConnectionOverride
+    class TestDummy < ActiveRecord::Base
     end
 
     it "overloads ActiveRecord::Base.connection to return a ConnectionProxy" do

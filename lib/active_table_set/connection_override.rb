@@ -18,7 +18,18 @@ module ActiveTableSet
         proxy
       end
     end
+
+    def self.prepended(base)
+      class << base
+        prepend ClassMethods
+      end
+    end
   end
 end
 
-ActiveRecord::Base.send :include, ActiveTableSet::ConnectionOverride
+# this will place ActiveTableSet::ConnectionOverride at the front of the ancestor chain
+module ActiveRecord
+  class Base
+    prepend ActiveTableSet::ConnectionOverride
+  end
+end
