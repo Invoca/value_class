@@ -20,11 +20,50 @@ Or install it yourself as:
 
 ## Usage
 
-To use ActiveTableSet, include the module in your model.
+To use ActiveTableSet:
+ - include the Gemfile in your Rails project and run "bundle install"
+ - in your application.rb file add the line "require 'active_table_set/connection_override'"
+ - in your config/initializers directory add a file "default_config_loader.rb". 
+ 
+ You will then want to over-ride one of the methods in DefaultConfigLoader. For example, if your situation is straightforward enough to just load 
+ from a YAML file, simply override the ats_config_file method to return the appropriate path:
 
 ```ruby
-include ActiveTableSet
+module ActiveTableSet
+  class DefaultConfigLoader
+    def ats_config_file
+      "#{File.dirname(__FILE__)}/../custom_active_table_set.yml"
+    end
+  end
+end
 ```
+
+If your situation is more complex, you may wish to do something more like the following:
+
+```ruby
+module ActiveTableSet
+  class DefaultConfigLoader
+    def configuration(filename: nil)
+      # perform custom logic
+      # return hash with structure similar to structure seen in activate_table_set.yml - for instance..
+      { table_sets: [common: { partitions: [leader: {...}, followers: [{...},{...}]],
+                               readable: [:table_name1, :table_name2],
+                               writable: [:table_name3, :table_name4, :table_name5] },
+                     realtime: { partitions: [leader: {...}, followers: [{...},{...}]],
+                                                              readable: [:table_name1, :table_name2, :table_name7, :table_name8],
+                                                              writable: [:table_name10] }
+      }
+      # each leader and follower has the following format:
+      #            host: dns_name or ip_address
+      #            database: database_name
+      #            username: database_username
+      #            password: database_password
+      #            timeout: the default timeout for this connection (can be overriden when asking for connection)
+    end
+  end
+end
+```
+
 
 ## Concepts
 
@@ -43,8 +82,8 @@ passes back a connection from that ConnectionPool.
 
 A TableSet defines a set of one or more partitions. Partitions are explained in the next paragraph. For simple cases, such as our
 :common table set definition, there is only one partition. For sharding situations, however, there may be many partitions for a
-given table set. TableSets also define a set of writeable tables and readable tables. Attempts to perform queries on a TableSet connection
-that do not conform to the writeable/readable lists will result in an error. For instance, if a TableSet is configured for read-access of
+given table set. TableSets also define a set of writable tables and readable tables. Attempts to perform queries on a TableSet connection
+that do not conform to the writable/readable lists will result in an error. For instance, if a TableSet is configured for read-access of
 data warehouse tables, a connection from it will inspect and reject queries attempting to write to warehouse tables.
 
 A Partition defines a set of servers, which must contain exactly one leader, as well as zero or more followers. When the partition is asked

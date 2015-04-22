@@ -6,7 +6,7 @@ describe ActiveTableSet::TableSetConfig do
     let(:follower1)     { { :host => "127.0.0.9",  :username => "tester1", :password => "verysecure1", :timeout => 2, :database => "replication1" } }
     let(:follower2)     { { :host => "127.0.0.10", :username => "tester2", :password => "verysecure2", :timeout => 2, :database => "replication2" } }
     let(:partition_cfg) { { :leader => leader, :followers => [follower1, follower2] } }
-    let(:table_set_cfg) { { :name => "test_ts", :partitions => [partition_cfg], :readable => ["zebras", "rhinos", "lions"], :writeable => ["tourists", "guides"] } }
+    let(:table_set_cfg) { { :name => "test_ts", :partitions => [partition_cfg], :readable => ["zebras", "rhinos", "lions"], :writable => ["tourists", "guides"] } }
     let(:config)        { ActiveTableSet::TableSetConfig.new(config: table_set_cfg) }
 
     it "provides an array of Partition Configs" do
@@ -14,7 +14,7 @@ describe ActiveTableSet::TableSetConfig do
     end
 
     it "provides an array of Readable Tables" do
-      expect(config.writeable_tables.length).to eq(2)
+      expect(config.writable_tables.length).to eq(2)
     end
 
     it "provides an array of Writable Table" do
