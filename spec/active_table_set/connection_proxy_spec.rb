@@ -81,19 +81,19 @@ describe ActiveTableSet::ConnectionProxy do
 
     it "uses different pools for connections with different timeouts" do
       leader_pool_2 = double("leader_timeout_2_pool")
-      expect(leader_pool_2).to receive(:connection).exactly(4).times {"leader_timeout_2_connection" }
+      expect(leader_pool_2).to receive(:connection).exactly(4).times { "leader_timeout_2_connection" }
       expect(leader_pool_2).to receive(:release_connection).twice { true }
 
       follower_pool_2 = double("follower_timeout_2_pool")
-      expect(follower_pool_2).to receive(:connection).exactly(2).times {"follower_timeout_2_connection" }
+      expect(follower_pool_2).to receive(:connection).exactly(2).times { "follower_timeout_2_connection" }
       expect(follower_pool_2).to receive(:release_connection) { true }
 
       leader_pool_5 = double("leader_timeout_5_pool")
-      expect(leader_pool_5).to receive(:connection).exactly(4).times {"leader_timeout_5_connection" }
+      expect(leader_pool_5).to receive(:connection).exactly(4).times { "leader_timeout_5_connection" }
       expect(leader_pool_5).to receive(:release_connection).twice { true }
 
       follower_pool_5 = double("follower_timeout_5_pool")
-      expect(follower_pool_5).to receive(:connection).exactly(2).times {"follower_timeout_5_connection" }
+      expect(follower_pool_5).to receive(:connection).exactly(2).times { "follower_timeout_5_connection" }
       expect(follower_pool_5).to receive(:release_connection) { true }
 
       expect(mgr).to receive(:create_pool).exactly(4).times.and_return(leader_pool_2, follower_pool_2, leader_pool_5, follower_pool_5)
@@ -180,7 +180,7 @@ describe ActiveTableSet::ConnectionProxy do
 
     it "sets a default connection key" do
       pool_dbl_1 = double("pool_dbl_1")
-      expect(pool_dbl_1).to receive(:connection).and_return( "connection1" )
+      expect(pool_dbl_1).to receive(:connection).and_return("connection1")
 
       expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
       proxy.send(:thread_connection_key=, nil)
@@ -193,7 +193,7 @@ describe ActiveTableSet::ConnectionProxy do
 
     it "raises if trying to set default connection key within an existing key block" do
       pool_dbl_1 = double("pool_dbl_1")
-      expect(pool_dbl_1).to receive(:connection).and_return( "connection1" )
+      expect(pool_dbl_1).to receive(:connection).and_return("connection1")
       expect(pool_dbl_1).to receive(:release_connection) { true }
 
       expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
