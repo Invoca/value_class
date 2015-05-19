@@ -13,7 +13,7 @@ module ActiveTableSet
       end
 
       def proxy_with_default_table_set
-        proxy = ActiveTableSet::ConnectionProxy.new(config: ats_config.configuration)
+        proxy = ActiveTableSet::ConnectionProxy.new(config: ats_config.ats_configuration)
         proxy.set_default_table_set(table_set_name: "common")
         proxy
       end
