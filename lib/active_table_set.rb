@@ -10,6 +10,7 @@ require 'active_table_set/partition'
 require 'active_table_set/table_set'
 require 'active_table_set/connection_proxy'
 require 'active_table_set/connection_override'
+require 'active_table_set/database_configuration_override'
 require 'active_table_set/default_config_loader'
 
 require 'yaml'
