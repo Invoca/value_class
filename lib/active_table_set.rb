@@ -1,5 +1,5 @@
 require 'active_record'
-require 'active_record/connection_adapters/abstract_mysql_adapter'
+require 'active_record/connection_adapters/mysql2_adapter'
 
 require "active_table_set/version"
 require 'active_table_set/table_set_config'
