@@ -1,4 +1,5 @@
 require 'active_record'
+require 'active_record/connection_adapters/mysql2_adapter'
 
 require "active_table_set/version"
 require 'active_table_set/table_set_config'
@@ -10,6 +11,8 @@ require 'active_table_set/partition'
 require 'active_table_set/table_set'
 require 'active_table_set/connection_proxy'
 require 'active_table_set/connection_override'
+require 'active_table_set/database_configuration_override'
+require 'active_table_set/config_helpers'
 require 'active_table_set/default_config_loader'
 
 require 'yaml'
