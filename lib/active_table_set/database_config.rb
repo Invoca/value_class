@@ -1,6 +1,7 @@
+require 'active_support'
+
 module ActiveTableSet
   class DatabaseConfig
-    include ActiveSupport
 
     attr_accessor :host, :username, :password, :database, :timeout, :connect_timeout, :pool_size, :adapter, :collation, :encoding, :reconnect
 

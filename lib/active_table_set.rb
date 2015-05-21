@@ -14,6 +14,7 @@ require 'active_table_set/connection_override'
 require 'active_table_set/database_configuration_override'
 require 'active_table_set/config_helpers'
 require 'active_table_set/default_config_loader'
+require 'active_table_set/query_parser'
 
 require 'yaml'
 require 'active_support/core_ext'

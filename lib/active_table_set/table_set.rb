@@ -1,6 +1,6 @@
 module ActiveTableSet
   class TableSet
-    attr_reader :partitions
+    attr_reader :partitions, :writable_tables, :readable_tables
 
     def initialize(config:)
       config.partition_count > 0 or raise ArgumentError, "must provide config information for one or more partitions"
@@ -16,14 +16,6 @@ module ActiveTableSet
     def connection_key(access_mode: :write, partition_id: 0)
       partition_id <= (partitions.count - 1) or raise ArgumentError, "partition_id does not have a matching partition (id too big)"
       partitions[partition_id].connection_key(access_mode: access_mode)
-    end
-
-    def writable_tables
-      @writable_tables
-    end
-
-    def readable_tables
-      @readable_tables
     end
   end
 end

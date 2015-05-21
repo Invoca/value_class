@@ -1,0 +1,1 @@
+SELECT `advertisers`.* FROM `advertisers` WHERE `advertisers`.`id` = 1 LIMIT 1
