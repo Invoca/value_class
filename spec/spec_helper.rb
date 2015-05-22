@@ -73,5 +73,5 @@ class StubDbAdaptor < ActiveRecord::ConnectionAdapters::Mysql2Adapter
 end
 
 def load_sample_query(name)
-  File.read(File.expand_path("../active_table_set/fixtures/sample_queries/#{name}.sql",  __FILE__))
+  File.read(File.expand_path("../fixtures/sample_queries/#{name}.sql",  __FILE__))
 end
