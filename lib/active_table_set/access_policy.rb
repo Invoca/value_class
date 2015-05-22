@@ -1,5 +1,5 @@
 # Policies use the mysql replication wildcard format.
-# For example.
+# For example:
 # %.cf_%,%.fraud_reports,%.simple_sessions,%.payout_calls_during_check_period%,%.calls_fraud_reports%,%.pnapi_show_responses
 
 module ActiveTableSet
@@ -18,12 +18,20 @@ module ActiveTableSet
       @disallow_write_pattern = parse_pattern(disallow_write)
     end
 
+    def access_rules
+      [:allow_read, :disallow_read, :allow_write, :disallow_write].map do |access|
+        if (access_str = send(access)) && !access_str.blank?
+          "#{access}: #{access_str}"
+        end
+      end.compact
+    end
+
     def errors(write_tables:, read_tables:)
       [
-          allowed_access_errors(@allow_read_pattern, read_tables, 'read'),
-          allowed_access_errors(@allow_write_pattern, write_tables, 'write'),
-          disallowed_access_errors(@disallow_read_pattern, read_tables, 'read'),
-          disallowed_access_errors(@disallow_write_pattern, write_tables, 'write'),
+        allowed_access_errors(@allow_read_pattern, read_tables, 'read'),
+        allowed_access_errors(@allow_write_pattern, write_tables, 'write'),
+        disallowed_access_errors(@disallow_read_pattern, read_tables, 'read'),
+        disallowed_access_errors(@disallow_write_pattern, write_tables, 'write'),
       ].flatten.compact
     end
 

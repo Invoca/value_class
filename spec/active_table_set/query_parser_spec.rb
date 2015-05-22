@@ -1,9 +1,5 @@
 require 'spec_helper'
 
-def load_sample_query(name)
-  File.read(File.expand_path("../fixtures/sample_queries/#{name}.sql",  __FILE__))
-end
-
 describe ActiveTableSet::QueryParser do
   context "query_parser" do
     let(:parser)    {  }
@@ -14,7 +10,8 @@ describe ActiveTableSet::QueryParser do
         telco_select:              ["telco.lerg_melissa_prefixes", "telco.states", "telco.melissa_counties"],
         detail_report_select:      ["cf_advertiser_campaign_date_aggregate_pts", "cf_advertiser_campaign_dimensions"],
         detail_report_inner_query: ["cf_call_facts_20080101", "cf_virtual_line_dimensions", "cf_affiliate_dimensions", "cf_order_detail_dimensions"],
-        number_pool_select:        ["calls", "number_pools"]
+        number_pool_select:        ["calls", "number_pools"],
+        billing_select:            ["advertisers", "invoice_line_item_details", "cf_advertiser_dimensions"]
       }.each do |query_file, expected_reads|
         it "parses #{query_file}" do
           qp = ActiveTableSet::QueryParser.new(load_sample_query(query_file))

@@ -68,6 +68,18 @@ describe ActiveTableSet::AccessPolicy do
       expect(ap.errors(write_tables: ["affiliates"], read_tables: [])).to eq([])
     end
 
+    it "should have a clean way of reporting its configuration" do
+      ap = ActiveTableSet::AccessPolicy.new(allow_read: 'adv%,aff%', disallow_read: 'advertiser_camp%', allow_write: 'adv%,aff%')
+
+      expected = [
+        "allow_read: adv%,aff%",
+        "disallow_read: advertiser_camp%",
+        "allow_write: adv%,aff%"
+      ]
+
+      expect(ap.access_rules).to eq(expected)
+    end
+
   end
 end
 
