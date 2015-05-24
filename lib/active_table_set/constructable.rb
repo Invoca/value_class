@@ -29,6 +29,10 @@ module ActiveTableSet
           end
 
         instance_variable_set("@#{attribute.name}", second_value || attribute.options[:default])
+
+        if !second_value && attribute.options[:required]
+          raise ArgumentError,  "must provide a value for #{attribute.name}"
+        end
       end
     end
 

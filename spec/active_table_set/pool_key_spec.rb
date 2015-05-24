@@ -6,6 +6,7 @@ describe ActiveTableSet::PoolKey do
   let(:password) { "test_password" }
   let(:timeout)  { 5 }
   let(:config)   { ActiveTableSet::DatabaseConfig.new(timeout: timeout) }
+  let(:init_params) { {host: ip, username: username, password: password, timeout: timeout, config: config} }
 
   context "constructor" do
     it "takes database ip, username, password, and timeout as params" do
@@ -17,20 +18,11 @@ describe ActiveTableSet::PoolKey do
       expect(key.timeout).to eq(timeout)
     end
 
-    it "raises if not passed an host" do
-      expect { ActiveTableSet::PoolKey.new(username: username, password: password, timeout: timeout, config: config) }.to raise_error(ArgumentError, "missing keyword: host")
-    end
-
-    it "raises if not passed a username" do
-      expect { ActiveTableSet::PoolKey.new(host: ip, password: password, timeout: timeout, config: config) }.to raise_error(ArgumentError, "missing keyword: username")
-    end
-
-    it "raises if not passed a password" do
-      expect { ActiveTableSet::PoolKey.new(host: ip, username: username, timeout: timeout, config: config) }.to raise_error(ArgumentError, "missing keyword: password")
-    end
-
-    it "raises if not passed a timeout" do
-      expect { ActiveTableSet::PoolKey.new(host: ip, username: username, password: password, config: config) }.to raise_error(ArgumentError, "missing keyword: timeout")
+    [:host, :username, :password, :timeout, :config].each do |attr|
+      it "raises if not passed #{attr}" do
+        init_params.delete(attr)
+        expect { ActiveTableSet::PoolKey.new(init_params) }.to raise_error(ArgumentError, "must provide a value for #{attr}")
+      end
     end
   end
 

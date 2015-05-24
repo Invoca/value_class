@@ -26,6 +26,12 @@ class TestBicycle
   config_list_attribute :tires, insert_method: :tire, class_name: 'TestBikeTire'
 end
 
+class TestHeadlight
+  include ActiveTableSet::Constructable
+  config_attribute :lumens, required: true
+end
+
+
 describe ActiveTableSet::Constructable do
   context "configurable" do
     it "supports constructing instances from config" do
@@ -150,6 +156,13 @@ describe ActiveTableSet::Constructable do
         expect(bike.tires.map(&:diameter)).to eq([40, 50])
         expect(bike.tires.map(&:tred)).to eq([:mountain, :slicks])
       end
+
+    end
+  end
+
+  context "validations" do
+    it "should raise an exception if a required parameter is missing" do
+      expect { TestHeadlight.new }.to  raise_error(ArgumentError, "must provide a value for lumens")
 
     end
   end
