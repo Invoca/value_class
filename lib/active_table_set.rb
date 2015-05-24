@@ -3,7 +3,6 @@ require 'active_record/connection_adapters/mysql2_adapter'
 
 require "active_table_set/version"
 require 'active_table_set/constructable'
-require 'active_table_set/table_set_config'
 require 'active_table_set/database_config'
 require 'active_table_set/pool_manager'
 require 'active_table_set/pool_key'
