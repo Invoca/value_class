@@ -112,7 +112,7 @@ module ActiveTableSet
     end
 
     def build_table_set(name, config)
-      [name, ActiveTableSet::TableSet.new(config: ActiveTableSet::TableSetConfig.new(config))]
+      [name, ActiveTableSet::TableSet.new(config)]
     end
   end
 end

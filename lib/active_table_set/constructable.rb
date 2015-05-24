@@ -2,9 +2,24 @@ module ActiveTableSet
   module Constructable
     extend ActiveSupport::Concern
 
-    class Attribute < Struct.new(:name, :options)
+    class Attribute
+      attr_reader :name, :options
+      def initialize( name, options )
+        @name = name.freeze
+        @options = options.freeze
+      end
+
       def description(prefix="")
         "#{prefix}#{name}"
+      end
+
+      def default
+        value = options[:default]
+        begin
+          value.dup
+        rescue TypeError
+          value
+        end
       end
     end
 
@@ -28,7 +43,7 @@ module ActiveTableSet
             raw_value
           end
 
-        instance_variable_set("@#{attribute.name}", second_value || attribute.options[:default])
+        instance_variable_set("@#{attribute.name}", second_value || attribute.default)
 
         if !second_value && attribute.options[:required]
           raise ArgumentError,  "must provide a value for #{attribute.name}"
@@ -40,7 +55,14 @@ module ActiveTableSet
     def clone_config(&block)
       config = self.class.config_class.new
       self.class.config_attributes.each do |attr|
-        config.send("#{attr.name}=", send(attr.name))
+        current_value = send(attr.name)
+        dup_value =
+          begin
+            current_value.dup
+          rescue TypeError
+            current_value
+          end
+        config.send("#{attr.name}=", dup_value)
       end
       yield config
       self.class.new(config)
@@ -115,8 +137,8 @@ module ActiveTableSet
       def config(&block)
         config = config_class.new
         config_attributes.each do |attr|
-          if attr.options[:default]
-            config.send("#{attr.name}=", attr.options[:default])
+          if attr.default
+            config.send("#{attr.name}=", attr.default)
           end
         end
         yield config
