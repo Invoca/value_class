@@ -1,11 +1,11 @@
 module ActiveTableSet
   class PartitionConfig
-    include ActiveSupport
+    include ActiveTableSet::Configurable
 
-    def initialize(config:)
-      @leader    = build_database_config(config[:leader])
-      @followers = config[:followers].map { |h| build_database_config(h) }
-    end
+    # TODO Need partition key, and need interface to use it.
+    #config_attribute      :partition_key
+    config_attribute      :leader,    class_name: 'ActiveTableSet::DatabaseConfig'
+    config_list_attribute :followers, class_name: 'ActiveTableSet::DatabaseConfig'
 
     def leader_key
       leader.pool_key
@@ -13,26 +13,6 @@ module ActiveTableSet
 
     def follower_keys
       followers.map { |f| f.pool_key }
-    end
-
-    private
-
-    def leader
-      @leader
-    end
-
-    def followers
-      @followers
-    end
-
-    def build_database_config(config_hash)
-      ActiveTableSet::DatabaseConfig.new(
-        database: config_hash[:database],
-        timeout:  config_hash[:timeout],
-        host:     config_hash[:host],
-        username: config_hash[:username],
-        password: config_hash[:password]
-      )
     end
   end
 end

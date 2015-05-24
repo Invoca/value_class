@@ -2,22 +2,19 @@ require 'active_support'
 
 module ActiveTableSet
   class DatabaseConfig
+    include ActiveTableSet::Configurable
 
-    attr_accessor :host, :username, :password, :database, :timeout, :connect_timeout, :pool_size, :adapter, :collation, :encoding, :reconnect
-
-    def initialize(database: "", connect_timeout: 5, timeout: 2, encoding: "utf8", collation: "utf8_general_ci", adapter: "mysql2", pool_size: 5, host: "localhost", username: "", password: "", reconnect: true)
-      @database        = database
-      @connect_timeout = connect_timeout
-      @timeout         = timeout
-      @encoding        = encoding
-      @collation       = collation
-      @pool_size       = pool_size
-      @adapter         = adapter
-      @host            = host
-      @username        = username
-      @password        = password
-      @reconnect       = reconnect
-    end
+    config_attribute :host,            default: "localhost"
+    config_attribute :username,        default: ""
+    config_attribute :password,        default: ""
+    config_attribute :database,        default: ""
+    config_attribute :timeout,         default: 2
+    config_attribute :connect_timeout, default: 5
+    config_attribute :pool_size,       default: 5
+    config_attribute :adapter,         default: "mysql2"
+    config_attribute :collation,       default: "utf8_general_ci"
+    config_attribute :encoding,        default: "utf8"
+    config_attribute :reconnect,       default: true
 
     def specification
       ActiveSupport::HashWithIndifferentAccess.new(

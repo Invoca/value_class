@@ -22,6 +22,10 @@ class StubClient
     record_command(:query, [sql, options])
   end
 
+  def escape(string)
+    Mysql2::Client.escape(string)
+  end
+
   def self.escape(string)
     Mysql2::Client.escape(string)
   end
@@ -67,7 +71,7 @@ class StubDbAdaptor < ActiveRecord::ConnectionAdapters::Mysql2Adapter
   end
 
   def connect
-    self.connection =StubClient.new(@config)
+    self.connection = StubClient.new(@config)
     configure_connection
   end
 end

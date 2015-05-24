@@ -8,7 +8,7 @@ describe ActiveTableSet::PartitionConfig do
     let(:cfg)       { { :leader => leader, :followers => [follower1, follower2] } }
 
     it "provides a leader PoolKey" do
-      config = ActiveTableSet::PartitionConfig.new(config: cfg)
+      config = ActiveTableSet::PartitionConfig.new(cfg)
       leader = config.leader_key
 
       expect(leader.host).to     eq("127.0.0.8")
@@ -18,7 +18,7 @@ describe ActiveTableSet::PartitionConfig do
     end
 
     it "provides an array of followers PoolKeys" do
-      config = ActiveTableSet::PartitionConfig.new(config: cfg)
+      config = ActiveTableSet::PartitionConfig.new(cfg)
 
       followers = config.follower_keys
       follower1 = followers.first

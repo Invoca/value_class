@@ -4,13 +4,28 @@
 
 module ActiveTableSet
   class AccessPolicy
-    attr_reader :allow_read, :allow_write, :disallow_read, :disallow_write
+    include ActiveTableSet::Configurable
 
-    def initialize(allow_read: '%', allow_write: '%', disallow_read: '', disallow_write: '')
-      @allow_read = allow_read
-      @allow_write = allow_write
-      @disallow_read = disallow_read
-      @disallow_write = disallow_write
+    config_description "describes the read write rules for tables using using the mysql wildcard format"
+
+    config_attribute :allow_read,
+                     description: "Which tables can be read, defaults to '%'",
+                     default: '%'
+
+    config_attribute :allow_write,
+                     description: "Which tables can be written, defaults to '%'",
+                     default: '%'
+
+    config_attribute :disallow_read,
+                     description: "Which tables can not be read, defaults to ''",
+                     default: ''
+
+    config_attribute :disallow_write,
+                     description: "Which tables can not be written, defaults to ''",
+                     default: ''
+
+    def initialize(config = {})
+      super
 
       @allow_read_pattern = parse_pattern(allow_read)
       @allow_write_pattern = parse_pattern(allow_write)
@@ -60,4 +75,3 @@ module ActiveTableSet
     end
   end
 end
-

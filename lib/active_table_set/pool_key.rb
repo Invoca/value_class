@@ -25,7 +25,7 @@ module ActiveTableSet
 
     def reset_timeout(timeout)
       @timeout = timeout
-      @config.timeout = timeout
+      @config = @config.clone_config { |db_config| db_config.timeout = timeout }
     end
 
     def eql?(other_key)

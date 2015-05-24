@@ -27,6 +27,7 @@ module ActiveTableSet
   end
 end
 
+# TODO - move to enabled method.
 # this will place ActiveTableSet::ConnectionOverride at the front of the ancestor chain
 module ActiveRecord
   class Base

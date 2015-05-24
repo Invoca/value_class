@@ -1,15 +1,9 @@
 module ActiveTableSet
   class TableSetConfig
-    attr_reader :writable_tables, :readable_tables, :partitions
+    include ActiveTableSet::Configurable
 
-    def initialize(config:)
-      @partitions = config[:partitions].map { |part| ActiveTableSet::PartitionConfig.new(config: part) }
-      @writable_tables = config[:writable]
-      @readable_tables = config[:readable]
-    end
-
-    def partition_count
-      @partitions.length
-    end
+    config_attribute      :name
+    config_attribute      :access_policy,  class_name: 'ActiveTableSet::AccessPolicy'
+    config_list_attribute :partitions,     class_name: 'ActiveTableSet::PartitionConfig', insert_method: :add_partition
   end
 end
