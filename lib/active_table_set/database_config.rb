@@ -1,3 +1,4 @@
+require 'attr_comparable'
 require 'active_support'
 
 module ActiveTableSet
@@ -15,6 +16,9 @@ module ActiveTableSet
     config_attribute :collation,       default: "utf8_general_ci"
     config_attribute :encoding,        default: "utf8"
     config_attribute :reconnect,       default: true
+
+    include AttrComparable
+    attr_compare  :host, :username, :password, :timeout
 
     def specification
       ActiveSupport::HashWithIndifferentAccess.new(
@@ -37,8 +41,17 @@ module ActiveTableSet
       "#{adapter}_connection"
     end
 
-    def pool_key
-      ActiveTableSet::PoolKey.new(host: host, username: username, password: password, timeout: timeout, config: self)
+    def clone_with_new_timeout(timeout)
+      clone_config { |db_config| db_config.timeout = timeout }
     end
+
+    def eql?(other)
+      self == other
+    end
+
+    def hash
+      [host, username, password, timeout].hash
+    end
+
   end
 end

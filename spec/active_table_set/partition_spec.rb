@@ -57,19 +57,19 @@ describe ActiveTableSet::Partition do
 
     it "provides a leader connection key for write access" do
       connection_key = part.connection_key(access_mode: :write)
-      expect(connection_key).to eq(part.leader.pool_key)
+      expect(connection_key).to eq(part.leader)
     end
 
     it "provides a leader connection key for read access" do
       connection_key = part.connection_key(access_mode: :read)
-      expect(connection_key).to eq(part.leader.pool_key)
+      expect(connection_key).to eq(part.leader)
     end
 
     it "provides a chosen follower connection key for balanced read access" do
       part2 = ActiveTableSet::Partition.new(cfg)
       expect(part2).to receive(:follower_index).and_return(0)
       connection_key = part2.connection_key(access_mode: :balanced)
-      expect(connection_key).to eq(part2.followers.first.pool_key)
+      expect(connection_key).to eq(part2.followers.first)
     end
 
     it "returns nil for balanced follower connection key if no followers" do

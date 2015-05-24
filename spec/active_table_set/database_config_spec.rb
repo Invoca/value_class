@@ -19,7 +19,7 @@ describe ActiveTableSet::DatabaseConfig do
     end
 
     it "provides a pool key based on certain fields" do
-      key = ActiveTableSet::DatabaseConfig.new(host: "some.ip", username: "test_user", password: "secure_pwd", timeout: 10).pool_key
+      key = ActiveTableSet::DatabaseConfig.new(host: "some.ip", username: "test_user", password: "secure_pwd", timeout: 10)
       expect(key.host).to     eq("some.ip")
       expect(key.username).to eq("test_user")
       expect(key.password).to eq("secure_pwd")
@@ -31,4 +31,71 @@ describe ActiveTableSet::DatabaseConfig do
       expect(name).to eq("mysql2_connection")
     end
   end
+
+  let(:ip)       { "127.0.0.1" }
+  let(:username) { "test_user" }
+  let(:password) { "test_password" }
+  let(:timeout)  { 5 }
+  let(:init_params) { {host: ip, username: username, password: password, timeout: timeout} }
+
+  context "comparison" do
+    it "considers two keys equal if ip, username, password, and timeout all match" do
+      key1 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout)
+      key2 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout)
+      expect(key1).to eq(key2)
+    end
+
+    it "considers two keys not equal if hostes do not match" do
+      key1 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout)
+      key2 = ActiveTableSet::DatabaseConfig.new(host: "127.0.0.2", username: username, password: password, timeout: timeout)
+      expect(key1).not_to eq(key2)
+    end
+
+    it "considers two keys not equal if usernames do not match" do
+      key1 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout)
+      key2 = ActiveTableSet::DatabaseConfig.new(host: ip, username: "something", password: password, timeout: timeout)
+      expect(key1).not_to eq(key2)
+    end
+
+    it "considers two keys not equal if passwords do not match" do
+      key1 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout)
+      key2 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: "something", timeout: timeout)
+      expect(key1).not_to eq(key2)
+    end
+
+    it "considers two keys not equal if timeouts do not match" do
+      key1 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout)
+      key2 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: 6)
+      expect(key1).not_to eq(key2)
+    end
+  end
+
+  context "as hash key" do
+    it "finds matching hash entry on equivalent keys" do
+      key1 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout)
+      key2 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: 6)
+
+      test_hash = { key1 => "value1", key2 => "value2" }
+
+      key3 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout)
+      key4 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: 6)
+
+      expect(test_hash[key1]).to eq("value1")
+      expect(test_hash[key2]).to eq("value2")
+      expect(test_hash[key3]).to eq("value1")
+      expect(test_hash[key4]).to eq("value2")
+    end
+  end
+
+  context "clone and reset timeout" do
+    it "cleanly clones itself and its associated config" do
+      key1 = ActiveTableSet::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout)
+      key2 = key1.clone_with_new_timeout(15)
+
+      expect(key1.timeout).to eq(timeout)
+
+      expect(key2.timeout).to eq(15)
+    end
+  end
+
 end

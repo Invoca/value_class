@@ -18,16 +18,16 @@ module ActiveTableSet
       super
       leader or raise ArgumentError, "must provide a leader"
 
-      @keys = ([leader] + followers).map(&:pool_key)
+      @keys = [leader] + followers
       @index = 0
     end
 
     def leader_key
-      leader.pool_key
+      leader
     end
 
     def follower_keys
-      followers.map { |f| f.pool_key }
+      followers
     end
 
 
@@ -40,7 +40,7 @@ module ActiveTableSet
     def connection_key(access_mode: :write)
       case access_mode
       when :write, :read
-        leader.pool_key
+        leader
       when :balanced
         chosen_follower
       else

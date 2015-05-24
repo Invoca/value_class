@@ -9,7 +9,7 @@ module ActiveTableSet
     end
 
     def get_pool(key:)
-      @pools[key] ||= create_pool(key.config)
+      @pools[key] ||= create_pool(key)
     end
 
     def destroy_pool(key:)

@@ -5,7 +5,6 @@ require "active_table_set/version"
 require 'active_table_set/constructable'
 require 'active_table_set/database_config'
 require 'active_table_set/pool_manager'
-require 'active_table_set/pool_key'
 require 'active_table_set/partition'
 require 'active_table_set/table_set'
 require 'active_table_set/connection_proxy'
