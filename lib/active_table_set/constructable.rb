@@ -1,5 +1,5 @@
 module ActiveTableSet
-  module Configurable
+  module Constructable
     extend ActiveSupport::Concern
 
     class Attribute < Struct.new(:name, :options)

@@ -1,21 +1,21 @@
 require 'spec_helper'
 
 class TestBikeTire
-  include ActiveTableSet::Configurable
+  include ActiveTableSet::Constructable
 
   config_attribute :diameter, description: "The diameter in inches"
   config_attribute :tred,     description: "The tred on the tire"
 end
 
 class TestBikeSeat
-  include ActiveTableSet::Configurable
+  include ActiveTableSet::Constructable
 
   config_attribute :size, description: "The size of the bike seat in inches"
   config_attribute :color
 end
 
 class TestBicycle
-  include ActiveTableSet::Configurable
+  include ActiveTableSet::Constructable
 
   config_description "For riding around town"
   config_attribute :speeds
@@ -26,7 +26,7 @@ class TestBicycle
   config_list_attribute :tires, insert_method: :tire, class_name: 'TestBikeTire'
 end
 
-describe ActiveTableSet::Configurable do
+describe ActiveTableSet::Constructable do
   context "configurable" do
     it "supports constructing instances from config" do
       bike = TestBicycle.config do |bicycle|

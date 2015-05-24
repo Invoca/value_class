@@ -5,9 +5,7 @@ module ActiveTableSet
     def initialize(config:)
       config.partitions.count > 0 or raise ArgumentError, "must provide config information for one or more partitions"
 
-      @partitions = config.partitions.map.with_index { |part, index|
-        ActiveTableSet::Partition.new(leader_key: part.leader_key, follower_keys: part.follower_keys, index: index)
-      }
+      @partitions = config.partitions
 
       @access_policy = config.access_policy
     end

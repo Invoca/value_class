@@ -2,7 +2,7 @@ require 'active_support'
 
 module ActiveTableSet
   class DatabaseConfig
-    include ActiveTableSet::Configurable
+    include ActiveTableSet::Constructable
 
     config_attribute :host,            default: "localhost"
     config_attribute :username,        default: ""
