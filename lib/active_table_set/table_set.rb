@@ -1,6 +1,6 @@
 module ActiveTableSet
   class TableSet
-    include ActiveTableSet::Constructable
+    include ValueClass::Constructable
 
     config_attribute      :name
     config_attribute      :access_policy,  class_name: 'ActiveTableSet::AccessPolicy', default: {}

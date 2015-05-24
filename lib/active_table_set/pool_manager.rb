@@ -9,6 +9,7 @@ module ActiveTableSet
     end
 
     def get_pool(key:)
+      key or raise "Must provide a DatabaseConfig in order to get a pool"
       @pools[key] ||= create_pool(key)
     end
 
@@ -23,12 +24,10 @@ module ActiveTableSet
     private
 
     def create_pool(config)
-      config or raise "Must provide a DatabaseConfig in order to create a ConnectionPool"
       ActiveRecord::ConnectionAdapters::ConnectionPool.new(specification(config))
     end
 
     def specification(config)
-      config or raise "Must provide a DatabaseConfig in order to create a ConnectionSpecification"
       ActiveRecord::Base::ConnectionSpecification.new(config.specification, config.name)
     end
   end

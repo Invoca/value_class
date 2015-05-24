@@ -4,7 +4,7 @@
 
 module ActiveTableSet
   class AccessPolicy
-    include ActiveTableSet::Constructable
+    include ValueClass::Constructable
 
     config_description "describes the read write rules for tables using using the mysql wildcard format"
 

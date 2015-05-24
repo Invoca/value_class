@@ -1,4 +1,5 @@
-module ActiveTableSet
+# TODO - move to its own gem
+module ValueClass
   module Constructable
     extend ActiveSupport::Concern
 

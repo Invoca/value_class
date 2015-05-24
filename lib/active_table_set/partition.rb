@@ -4,7 +4,7 @@
 
 module ActiveTableSet
   class Partition
-    include ActiveTableSet::Constructable
+    include ValueClass::Constructable
 
     # TODO Need partition key, and need interface to use it.
     #config_attribute      :partition_key
