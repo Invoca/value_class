@@ -2,14 +2,14 @@ module ActiveTableSet
   class TableSet
     include ValueClass::Constructable
 
-    config_attribute      :name
-    config_attribute      :access_policy,  class_name: 'ActiveTableSet::AccessPolicy', default: {}
-    config_list_attribute :partitions,     class_name: 'ActiveTableSet::Partition', insert_method: :add_partition
+    value_attr      :name
+    value_attr      :access_policy,  class_name: 'ActiveTableSet::AccessPolicy', default: {}
+    value_list_attr :partitions,     class_name: 'ActiveTableSet::Partition', insert_method: :partition
 
     # TODO - construct a map of partitions by key
     def initialize(options = {})
       super
-      partitions.count > 0 or raise ArgumentError, "must provide one or more partitions"
+      partitions.count > 0 or   raise ArgumentError, "must provide one or more partitions"
     end
 
     # TODO - I think the empty value should be nil

@@ -5,17 +5,17 @@ module ActiveTableSet
   class DatabaseConfig
     include ValueClass::Constructable
 
-    config_attribute :host,            default: "localhost"
-    config_attribute :username,        default: ""
-    config_attribute :password,        default: ""
-    config_attribute :database,        default: ""
-    config_attribute :timeout,         default: 2
-    config_attribute :connect_timeout, default: 5
-    config_attribute :pool_size,       default: 5
-    config_attribute :adapter,         default: "mysql2"
-    config_attribute :collation,       default: "utf8_general_ci"
-    config_attribute :encoding,        default: "utf8"
-    config_attribute :reconnect,       default: true
+    value_attr :host,            default: "localhost"
+    value_attr :username,        default: ""
+    value_attr :password,        default: ""
+    value_attr :database,        default: ""
+    value_attr :timeout,         default: 2
+    value_attr :connect_timeout, default: 5
+    value_attr :pool_size,       default: 5
+    value_attr :adapter,         default: "mysql2"
+    value_attr :collation,       default: "utf8_general_ci"
+    value_attr :encoding,        default: "utf8"
+    value_attr :reconnect,       default: true
 
     include AttrComparable
     attr_compare  :host, :username, :password, :timeout

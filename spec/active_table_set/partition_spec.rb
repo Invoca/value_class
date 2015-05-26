@@ -38,6 +38,50 @@ describe ActiveTableSet::Partition do
       expect(follower2.username).to eq("tester2")
       expect(follower2.password).to eq("verysecure2")
     end
+
+    it "can be progressively constructed" do
+      config = ActiveTableSet::Partition.config do |part|
+        part.leader do |leader|
+          leader.host = "127.0.0.8"
+          leader.username = "tester"
+          leader.password = "verysecure"
+          leader.timeout  = 2
+          leader.database ="main"
+        end
+
+        part.follower do |follower|
+          follower.host = "127.0.0.9"
+          follower.username = "tester1"
+          follower.password = "verysecure1"
+          follower.timeout  = 2
+          follower.database ="replication1"
+        end
+
+        part.follower do |follower|
+          follower.host = "127.0.0.10"
+          follower.username = "tester2"
+          follower.password = "verysecure2"
+          follower.timeout  = 2
+          follower.database ="replication2"
+        end
+      end
+
+      leader    = config.leader
+      follower1 = config.followers.first
+      follower2 = config.followers.last
+
+      expect(leader.host).to     eq("127.0.0.8")
+      expect(leader.username).to eq("tester")
+      expect(leader.password).to eq("verysecure")
+
+      expect(follower1.host).to     eq("127.0.0.9")
+      expect(follower1.username).to eq("tester1")
+      expect(follower1.password).to eq("verysecure1")
+
+      expect(follower2.host).to     eq("127.0.0.10")
+      expect(follower2.username).to eq("tester2")
+      expect(follower2.password).to eq("verysecure2")
+    end
   end
 
   context "construction" do

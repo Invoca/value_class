@@ -3,32 +3,32 @@ require 'spec_helper'
 class TestBikeTire
   include ValueClass::Constructable
 
-  config_attribute :diameter, description: "The diameter in inches"
-  config_attribute :tred,     description: "The tred on the tire"
+  value_attr :diameter, description: "The diameter in inches"
+  value_attr :tred,     description: "The tred on the tire"
 end
 
 class TestBikeSeat
   include ValueClass::Constructable
 
-  config_attribute :size, description: "The size of the bike seat in inches"
-  config_attribute :color
+  value_attr :size, description: "The size of the bike seat in inches"
+  value_attr :color
 end
 
 class TestBicycle
   include ValueClass::Constructable
 
-  config_description "For riding around town"
-  config_attribute :speeds
-  config_attribute :color, default: :orange
-  config_attribute :seat, class_name: 'TestBikeSeat'
+  value_description "For riding around town"
+  value_attr :speeds
+  value_attr :color, default: :orange
+  value_attr :seat, class_name: 'TestBikeSeat'
 
-  config_list_attribute :riders, insert_method: :add_rider
-  config_list_attribute :tires, insert_method: :tire, class_name: 'TestBikeTire'
+  value_list_attr :riders, insert_method: :add_rider
+  value_list_attr :tires, insert_method: :tire, class_name: 'TestBikeTire'
 end
 
 class TestHeadlight
   include ValueClass::Constructable
-  config_attribute :lumens, required: true
+  value_attr :lumens, required: true
 end
 
 

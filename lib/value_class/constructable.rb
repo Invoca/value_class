@@ -26,7 +26,7 @@ module ValueClass
 
     # Default constructor
     def initialize(config = {})
-      self.class.config_attributes.each do |attribute|
+      self.class.value_attrs.each do |attribute|
         raw_value =
           if config.is_a?(Hash)
             config[attribute.name]
@@ -55,7 +55,7 @@ module ValueClass
 
     def clone_config(&block)
       config = self.class.config_class.new
-      self.class.config_attributes.each do |attr|
+      self.class.value_attrs.each do |attr|
         current_value = send(attr.name)
         dup_value =
           begin
@@ -72,17 +72,17 @@ module ValueClass
 
     module ClassMethods
       # Provide a description for the class. This is only used for documentation.
-      def config_description(value=nil)
+      def value_description(value=nil)
         if value
-          @config_description = value
+          @value_description = value
         end
-        @config_description
+        @value_description
       end
 
       # Defines a config attribute.
-      def config_attribute(attribute_name, options= {})
+      def value_attr(attribute_name, options= {})
         attribute = Attribute.new(attribute_name, options)
-        config_attributes << attribute
+        value_attrs << attribute
 
         # All attributes have a reader
         attr_reader(attribute.name)
@@ -106,8 +106,8 @@ module ValueClass
         end
       end
 
-      def config_list_attribute(attribute_name, options= {})
-        config_attribute(attribute_name, options.merge(default:[], class_name: nil, list_of_class: options[:class_name]))
+      def value_list_attr(attribute_name, options= {})
+        value_attr(attribute_name, options.merge(default:[], class_name: nil, list_of_class: options[:class_name]))
 
         if (insert_method = options[:insert_method])
           if (class_name = options[:class_name])
@@ -137,7 +137,7 @@ module ValueClass
       # in block.
       def config(&block)
         config = config_class.new
-        config_attributes.each do |attr|
+        value_attrs.each do |attr|
           if attr.default
             config.send("#{attr.name}=", attr.default)
           end
@@ -148,9 +148,9 @@ module ValueClass
 
       def config_help(prefix = "")
         [
-            "#{name}: #{config_description}",
+            "#{name}: #{value_description}",
             "  attributes:",
-            config_attributes.map { |ca| ca.description(prefix + "    ") }
+            value_attrs.map { |ca| ca.description(prefix + "    ") }
         ].flatten.join("\n") + "\n"
       end
 
@@ -160,14 +160,14 @@ module ValueClass
 
       def config_help(prefix = "")
         [
-            "#{name}: #{config_description}",
+            "#{name}: #{value_description}",
             "  attributes:",
-            config_attributes.map { |ca| ca.description(prefix + "    ") }
+            value_attrs.map { |ca| ca.description(prefix + "    ") }
         ].flatten.join("\n") + "\n"
       end
 
-      def config_attributes
-        @config_attributes ||= []
+      def value_attrs
+        @value_attrs ||= []
       end
     end
   end

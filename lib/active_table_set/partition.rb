@@ -7,9 +7,9 @@ module ActiveTableSet
     include ValueClass::Constructable
 
     # TODO Need partition key, and need interface to use it.
-    #config_attribute      :partition_key
-    config_attribute      :leader,    class_name: 'ActiveTableSet::DatabaseConfig'
-    config_list_attribute :followers, class_name: 'ActiveTableSet::DatabaseConfig'
+    #value_attr      :partition_key
+    value_attr      :leader,    class_name: 'ActiveTableSet::DatabaseConfig'
+    value_list_attr :followers, class_name: 'ActiveTableSet::DatabaseConfig', insert_method: 'follower'
 
     attr_reader :keys
     attr_reader :index
