@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 class TestBikeTire
   include ValueClass::Constructable
 

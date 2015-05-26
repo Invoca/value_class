@@ -1,7 +1,7 @@
 require 'active_record'
+require 'value_class'
 require 'active_record/connection_adapters/mysql2_adapter'
 
-require 'value_class/constructable'
 require 'active_table_set/config'
 require 'active_table_set/version'
 require 'active_table_set/database_config'
