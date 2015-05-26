@@ -27,6 +27,31 @@ module ValueClass
       end
     end
 
+    def get_value(options)
+      raw_value =
+          if config.is_a?(Hash)
+            config[name]
+          else
+            config.send(name)
+          end
+
+      second_value =
+          if raw_value.is_a?(Array) && options[:list_of_class]
+            inner_class = options[:list_of_class]
+            raw_value.map { |v| inner_class.constantize.new(v)}
+          elsif options[:class_name] && raw_value
+            options[:class_name].constantize.new(raw_value)
+          else
+            raw_value
+          end
+
+      if !second_value && attribute.options[:required]
+        raise ArgumentError,  "must provide a value for #{name}"
+      end
+
+      second_value || default
+    end
+
     def default
       value = options[:default]
       begin

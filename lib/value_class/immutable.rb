@@ -5,31 +5,7 @@ module ValueClass
     # Default constructor
     def initialize(config = {})
       self.class.value_attrs.each do |attribute|
-        ############################################################
-        # TODO - this can move to attribute
-        raw_value =
-            if config.is_a?(Hash)
-              config[attribute.name]
-            else
-              config.send(attribute.name)
-            end
-
-        second_value =
-            if raw_value.is_a?(Array) && attribute.options[:list_of_class]
-              inner_class = attribute.options[:list_of_class]
-              raw_value.map { |v| inner_class.constantize.new(v)}
-            elsif attribute.options[:class_name] && raw_value
-              attribute.options[:class_name].constantize.new(raw_value)
-            else
-              raw_value
-            end
-        ############################################################
-
-        instance_variable_set("@#{attribute.name}", second_value || attribute.default)
-
-        if !second_value && attribute.options[:required]
-          raise ArgumentError,  "must provide a value for #{attribute.name}"
-        end
+        instance_variable_set("@#{attribute.name}", attribute.get_value(config))
       end
     end
 
