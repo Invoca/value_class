@@ -27,7 +27,7 @@ module ValueClass
       end
     end
 
-    def get_value(options)
+    def get_value(config)
       raw_value =
           if config.is_a?(Hash)
             config[name]
@@ -45,7 +45,7 @@ module ValueClass
             raw_value
           end
 
-      if !second_value && attribute.options[:required]
+      if !second_value && options[:required]
         raise ArgumentError,  "must provide a value for #{name}"
       end
 
