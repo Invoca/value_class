@@ -85,6 +85,21 @@ describe ActiveTableSet::Configuration::DatabaseConfig do
       expect(test_hash[key3]).to eq("value1")
       expect(test_hash[key4]).to eq("value2")
     end
+
+    it "includes the database name in the comparison" do
+      key1 = ActiveTableSet::Configuration::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout, database: 'mydb')
+      key2 = ActiveTableSet::Configuration::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout, database: 'otherdb')
+
+      test_hash = { key1 => "value1", key2 => "value2" }
+
+      key3 = ActiveTableSet::Configuration::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout, database: 'mydb')
+      key4 = ActiveTableSet::Configuration::DatabaseConfig.new(host: ip, username: username, password: password, timeout: timeout, database: 'otherdb')
+
+      expect(test_hash[key1]).to eq("value1")
+      expect(test_hash[key2]).to eq("value2")
+      expect(test_hash[key3]).to eq("value1")
+      expect(test_hash[key4]).to eq("value2")
+    end
   end
 
   context "clone and reset timeout" do

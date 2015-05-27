@@ -5,6 +5,9 @@ require 'active_support/core_ext'
 # 3. Maintains variables to track which thread is active so that connections are not shared between threads.
 
 # TODO - move query timeouts out of the database key.   Do not keep separate pools for these, set connection when checked out.
+# wire up default connection
+# wire up enforce access policy
+
 
 module ActiveTableSet
   class ConnectionProxy
@@ -20,7 +23,6 @@ module ActiveTableSet
       @table_sets   = build_table_sets(config)
       @pool_manager = ActiveTableSet::PoolManager.new
     end
-
 
     def using(table_set:, access_mode: :write, partition_key: 0, timeout: nil, &blk)
       new_key = timeout_adjusted_database_config(table_set, access_mode, partition_key, timeout)

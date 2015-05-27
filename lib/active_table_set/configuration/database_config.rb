@@ -19,7 +19,7 @@ module ActiveTableSet
       value_attr :reconnect,       default: true
 
       include AttrComparable
-      attr_compare  :host, :username, :password, :timeout
+      attr_compare  :host, :username, :password, :timeout, :database
 
       def specification
         ActiveSupport::HashWithIndifferentAccess.new(
