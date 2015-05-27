@@ -77,7 +77,6 @@ describe ActiveTableSet::ConnectionProxy do
 
       expect(ActiveTableSet::Configuration::Partition).to receive(:pid) { 1 }
 
-
       expect(mgr).to receive(:create_pool).exactly(4).times.and_return(leader_pool_2, follower_pool_2, leader_pool_5, follower_pool_5)
 
       proxy.using(table_set: :test_ts, access_mode: :write) do

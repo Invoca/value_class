@@ -9,8 +9,9 @@ describe ActiveTableSet::Configuration::Config do
 
   it "can be constructed using a block" do
     ats_config = ActiveTableSet::Configuration::Config.config do |conf|
-      conf.enforce_access_policy = true
-      conf.environment = 'test'
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default_connection  =  { table_set: :common }
 
       conf.table_set do |ts|
         ts.name = :common
@@ -53,11 +54,10 @@ describe ActiveTableSet::Configuration::Config do
   end
 
   it "raises if no table set was specified" do
-    expect { ActiveTableSet::Configuration::Config.new }.to raise_error(ArgumentError, "no table sets defined")
+    expect { ActiveTableSet::Configuration::Config.new(default_connection:{table_set: :common}) }.to raise_error(ArgumentError, "no table sets defined")
   end
 
-  # TODO
-  # it "raises if a default connection setting is not specified" do
-  #   expect { ActiveTableSet::Configuration::Config.new(table_sets: [table_set_cfg]) }.to raise_error(ArgumentError, "must specify default connection")
-  # end
+  it "raises if a default connection setting is not specified" do
+    expect { ActiveTableSet::Configuration::Config.new(table_sets: [table_set_cfg]) }.to raise_error(ArgumentError, "must provide a value for default_connection")
+  end
 end

@@ -1,7 +1,3 @@
-#
-# Partition represents a set of one leader and zero or more followers.
-#
-
 module ActiveTableSet
   module Configuration
     class Partition

@@ -5,12 +5,14 @@ module ActiveTableSet
 
       value_attr      :enforce_access_policy, default: false
       value_attr      :environment
+      value_attr      :default_connection, class_name: 'ActiveTableSet::Configuration::DefaultConnection', required: true
 
       # TODO
       # - Keep a hash of table sets by name.
       # - assert that there is at least one table set.
       # - How to specify default database attributes?
-      # - How to specify default connection attributes?
+      # - Specify named timeout values, disallow arbitrary values
+
 
       value_list_attr :table_sets,     class_name: 'ActiveTableSet::Configuration::TableSet', insert_method: :table_set
 
