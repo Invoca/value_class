@@ -27,7 +27,7 @@ module ActiveTableSet
     end
 
 
-    def connection_key(access_mode: :write)
+    def database_config(access_mode: :write)
       case access_mode
       when :write, :read
         leader

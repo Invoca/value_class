@@ -96,29 +96,29 @@ describe ActiveTableSet::Partition do
     let(:f2_key) { ActiveTableSet::PoolKey.new(host: "127.0.0.9", username: "tester", password: "verysecure", timeout: 5, config: db_config) }
 
     it "provides a leader connection key for write access" do
-      connection_key = part.connection_key(access_mode: :write)
-      expect(connection_key).to eq(part.leader)
+      database_config = part.database_config(access_mode: :write)
+      expect(database_config).to eq(part.leader)
     end
 
     it "provides a leader connection key for read access" do
-      connection_key = part.connection_key(access_mode: :read)
-      expect(connection_key).to eq(part.leader)
+      database_config = part.database_config(access_mode: :read)
+      expect(database_config).to eq(part.leader)
     end
 
     it "provides a chosen follower connection key for balanced read access" do
       part2 = ActiveTableSet::Partition.new(cfg)
       expect(part2).to receive(:follower_index).and_return(0)
-      connection_key = part2.connection_key(access_mode: :balanced)
-      expect(connection_key).to eq(part2.followers.first)
+      database_config = part2.database_config(access_mode: :balanced)
+      expect(database_config).to eq(part2.followers.first)
     end
 
     it "returns nil for balanced follower connection key if no followers" do
-      connection_key = part.connection_key(access_mode: :balanced)
-      expect(connection_key).to eq(nil)
+      database_config = part.database_config(access_mode: :balanced)
+      expect(database_config).to eq(nil)
     end
 
     it "raises if connection key requested with unknown access_mode" do
-      expect { part.connection_key(access_mode: :something_weird) }.to raise_error(ArgumentError, "unknown access_mode")
+      expect { part.database_config(access_mode: :something_weird) }.to raise_error(ArgumentError, "unknown access_mode")
     end
   end
 end

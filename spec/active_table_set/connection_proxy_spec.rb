@@ -45,31 +45,31 @@ describe ActiveTableSet::ConnectionProxy do
     let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
 
     it "for access_mode :write" do
-      key = proxy.send(:connection_key, table_set: :test_ts, access_mode: :write)
+      key = proxy.send(:database_config, table_set: :test_ts, access_mode: :write)
       expect(key.host).to eq("127.0.0.8")
     end
 
     it "for access_mode :read" do
-      key = proxy.send(:connection_key, table_set: :test_ts, access_mode: :read)
+      key = proxy.send(:database_config, table_set: :test_ts, access_mode: :read)
       expect(key.host).to eq("127.0.0.8")
     end
 
     it "for access_mode :balanced with chosen_follower of index 0" do
       part = proxy.send(:table_sets)[:test_ts].partitions[0]
       allow(part).to receive(:follower_index).and_return(0)
-      key = proxy.send(:connection_key, table_set: :test_ts, access_mode: :balanced)
+      key = proxy.send(:database_config, table_set: :test_ts, access_mode: :balanced)
       expect(key.host).to eq("127.0.0.9")
     end
 
     it "for access_mode :balanced with chosen_follower of index 1" do
       part = proxy.send(:table_sets)[:test_ts].partitions[0]
       allow(part).to receive(:follower_index).and_return(1)
-      key = proxy.send(:connection_key, table_set: :test_ts, access_mode: :balanced)
+      key = proxy.send(:database_config, table_set: :test_ts, access_mode: :balanced)
       expect(key.host).to eq("127.0.0.10")
     end
 
     it "raises if request table_set does not exist" do
-      expect { proxy.send(:connection_key, table_set: "whatever") }.to raise_error(ArgumentError, "pool key requested from unknown table set whatever")
+      expect { proxy.send(:database_config, table_set: "whatever") }.to raise_error(ArgumentError, "pool key requested from unknown table set whatever")
     end
   end
 
@@ -80,7 +80,7 @@ describe ActiveTableSet::ConnectionProxy do
     it "gets a new pool from PoolManager" do
       expect(mgr).to receive(:create_pool).and_return("stand-in_for_actual_pool")
 
-      leader_key = proxy.send(:connection_key, table_set: :test_ts, access_mode: :write)
+      leader_key = proxy.send(:database_config, table_set: :test_ts, access_mode: :write)
       pool = proxy.send(:pool, leader_key)
       expect(mgr.pool_count).to eq(1)
       expect(pool).to eq("stand-in_for_actual_pool")
@@ -89,7 +89,7 @@ describe ActiveTableSet::ConnectionProxy do
     it "gets same pool from PoolManager for same pool key" do
       expect(mgr).to receive(:create_pool).once.and_return("stand-in_for_actual_pool")
 
-      leader_key = proxy.send(:connection_key, table_set: :test_ts, access_mode: :write)
+      leader_key = proxy.send(:database_config, table_set: :test_ts, access_mode: :write)
       pool = proxy.send(:pool, leader_key)
       expect(mgr.pool_count).to eq(1)
       expect(pool).to eq("stand-in_for_actual_pool")
@@ -161,9 +161,9 @@ describe ActiveTableSet::ConnectionProxy do
       expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
 
       proxy.using(table_set: :test_ts, access_mode: :read) do
-        pool1 = proxy.send(:pool, proxy.send(:thread_connection_key))
+        pool1 = proxy.send(:pool, proxy.send(:thread_database_config))
         proxy.using(table_set: :test_ts, access_mode: :read) do
-          pool2 = proxy.send(:pool, proxy.send(:thread_connection_key))
+          pool2 = proxy.send(:pool, proxy.send(:thread_database_config))
           expect(pool2).to eq(pool1)
         end
       end
@@ -181,9 +181,9 @@ describe ActiveTableSet::ConnectionProxy do
       expect(mgr).to receive(:create_pool).twice.and_return(pool_dbl_1, pool_dbl_2)
 
       proxy.using(table_set: :test_ts, access_mode: :read, timeout: 5) do
-        pool1 = proxy.send(:pool, proxy.send(:thread_connection_key))
+        pool1 = proxy.send(:pool, proxy.send(:thread_database_config))
         proxy.using(table_set: :test_ts, access_mode: :read, timeout: 10) do
-          pool2 = proxy.send(:pool, proxy.send(:thread_connection_key))
+          pool2 = proxy.send(:pool, proxy.send(:thread_database_config))
           expect(pool1).to_not eq(pool2)
         end
       end
@@ -202,12 +202,12 @@ describe ActiveTableSet::ConnectionProxy do
       expect(pool_dbl_1).to receive(:connection).and_return("connection1")
 
       expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
-      proxy.send(:thread_connection_key=, nil)
+      proxy.send(:thread_database_config=, nil)
       proxy.set_default_table_set(table_set_name: :test_ts)
       connection = proxy.connection
 
       expect(connection).to eq("connection1")
-      proxy.send(:thread_connection_key=, nil)
+      proxy.send(:thread_database_config=, nil)
     end
 
     it "raises if trying to set default connection key within an existing key block" do
@@ -217,13 +217,13 @@ describe ActiveTableSet::ConnectionProxy do
 
       expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
 
-      proxy.send(:thread_connection_key=, nil)
+      proxy.send(:thread_database_config=, nil)
       expect {
         proxy.using(table_set: :test_ts, access_mode: :read) do
           proxy.set_default_table_set(table_set_name: :whatever)
         end
       }.to raise_error(RuntimeError, "Can not use set_default_table_set while in the scope of an existing table set - startup only bro")
-      proxy.send(:thread_connection_key=, nil)
+      proxy.send(:thread_database_config=, nil)
     end
   end
 
@@ -317,18 +317,18 @@ describe ActiveTableSet::ConnectionProxy do
         threads = num_threads.times.map.with_index do |_,index|
           Thread.new do
             sleep 1
-            px.send(:thread_connection_key=, "key_#{index}")
+            px.send(:thread_database_config=, "key_#{index}")
           end
         end
 
         threads[0].join do
-          expect(px.send(:thread_connection_key)).to eq("key_0")
+          expect(px.send(:thread_database_config)).to eq("key_0")
         end
         threads[1].join do
-          expect(px.send(:thread_connection_key)).to eq("key_0")
+          expect(px.send(:thread_database_config)).to eq("key_0")
         end
         threads[2].join do
-          expect(px.send(:thread_connection_key)).to eq("key_0")
+          expect(px.send(:thread_database_config)).to eq("key_0")
         end
       ensure
         threads && threads.each(&:kill)

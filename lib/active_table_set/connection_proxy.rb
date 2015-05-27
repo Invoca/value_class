@@ -8,7 +8,7 @@ module ActiveTableSet
   class ConnectionProxy
     delegate *(ActiveRecord::ConnectionAdapters::Mysql2Adapter.instance_methods - ActiveTableSet::ConnectionProxy.instance_methods), :to => :connection
 
-    THREAD_DB_CONNECTION_KEY = :active_table_set_per_thread_connection_key
+    THREAD_DB_database_config = :active_table_set_per_thread_database_config
     DEFAULT_ACCESS_MODE  = :write
     DEFAULT_PARTITION_ID = 0
     DEFAULT_TIMEOUT_SECS = 2
@@ -19,9 +19,10 @@ module ActiveTableSet
       @pool_manager = ActiveTableSet::PoolManager.new
     end
 
-    def using(table_set:, access_mode: :write, partition_id: 0, timeout: nil, &blk)
-      new_key = timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
-      if new_key == thread_connection_key
+
+    def using(table_set:, access_mode: :write, partition_key: 0, timeout: nil, &blk)
+      new_key = timeout_adjusted_database_config(table_set, access_mode, partition_key, timeout)
+      if new_key == thread_database_config
         yield
       else
         yield_with_new_connection(new_key, &blk)
@@ -29,37 +30,37 @@ module ActiveTableSet
     end
 
     def connection
-      obtain_connection(thread_connection_key)
+      obtain_connection(thread_database_config)
     end
 
     def set_default_table_set(table_set_name:)
-      thread_connection_key.nil? or raise "Can not use set_default_table_set while in the scope of an existing table set - startup only bro"
-      if thread_connection_key
-        release_connection(thread_connection_key)
+      thread_database_config.nil? or raise "Can not use set_default_table_set while in the scope of an existing table set - startup only bro"
+      if thread_database_config
+        release_connection(thread_database_config)
       end
-      self.thread_connection_key = timeout_adjusted_connection_key(table_set_name, DEFAULT_ACCESS_MODE, DEFAULT_PARTITION_ID, DEFAULT_TIMEOUT_SECS)
+      self.thread_database_config = timeout_adjusted_database_config(table_set_name, DEFAULT_ACCESS_MODE, DEFAULT_PARTITION_ID, DEFAULT_TIMEOUT_SECS)
     end
 
     private
 
     def yield_with_new_connection(new_key)
-      old_key = thread_connection_key
-      self.thread_connection_key = new_key
+      old_key = thread_database_config
+      self.thread_database_config = new_key
       obtain_connection(new_key)
       yield
     ensure
       release_connection(new_key)
-      self.thread_connection_key = old_key
+      self.thread_database_config = old_key
     end
 
     ## THREAD SAFE KEYS ##
 
-    def thread_connection_key
-      Thread.current.thread_variable_get(THREAD_DB_CONNECTION_KEY)
+    def thread_database_config
+      Thread.current.thread_variable_get(THREAD_DB_database_config)
     end
 
-    def thread_connection_key=(key)
-      Thread.current.thread_variable_set(THREAD_DB_CONNECTION_KEY, key)
+    def thread_database_config=(key)
+      Thread.current.thread_variable_set(THREAD_DB_database_config, key)
     end
 
     ## CONNECTIONS ##
@@ -78,15 +79,15 @@ module ActiveTableSet
       end
     end
 
-    ## KEY MANAGEMENT ##
+    ## DATABASE MANAGEMENT ##
 
-    def connection_key(table_set:, access_mode: :write, partition_id: 0)
+    def database_config(table_set:, access_mode: :write, partition_key: nil)
       ts = table_sets[table_set] or raise ArgumentError, "pool key requested from unknown table set #{table_set}"
-      ts.connection_key(access_mode: access_mode, partition_id: partition_id)
+      ts.database_config(access_mode: access_mode, partition_key: partition_key)
     end
 
-    def timeout_adjusted_connection_key(table_set, access_mode, partition_id, timeout)
-      key = connection_key(table_set: table_set, access_mode: access_mode, partition_id: partition_id)
+    def timeout_adjusted_database_config(table_set, access_mode, partition_key, timeout)
+      key = database_config(table_set: table_set, access_mode: access_mode, partition_key: partition_key)
       timeout.nil? ? key : key.clone_with_new_timeout(timeout)
     end
 
