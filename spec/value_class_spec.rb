@@ -2,21 +2,21 @@ require 'value_class'
 
 module ValueClassTest
   class BikeTire
-    include ValueClass::Immutable
+    include ValueClass
 
     value_attr :diameter, description: "The diameter in inches"
     value_attr :tred,     description: "The tred on the tire"
   end
 
   class BikeSeat
-    include ValueClass::Immutable
+    include ValueClass
 
     value_attr :size, description: "The size of the bike seat in inches"
     value_attr :color
   end
 
   class Bicycle
-    include ValueClass::Immutable
+    include ValueClass
 
     value_description "For riding around town"
     value_attr :speeds
@@ -28,23 +28,23 @@ module ValueClassTest
   end
 
   class Headlight
-    include ValueClass::Immutable
+    include ValueClass
     value_attr :lumens, required: true
   end
 
   class HandleBar
-    include ValueClass::Immutable
+    include ValueClass
     value_attrs :style, :grip, :brakes, :headlight, :bell
   end
 
   class Gears
-    include ValueClass::Immutable
+    include ValueClass
     value_attrs :first_gear, :second_gear, :third_gear, default: 200
   end
 end
 
 
-describe ValueClass::Immutable do
+describe ValueClass do
   context "configurable" do
     it "supports generating a description" do
       expected_description  = <<-EOF.gsub(/^ {8}/, '')

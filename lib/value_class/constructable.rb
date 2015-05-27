@@ -1,7 +1,10 @@
+_ = ValueClass;
+
 module ValueClass
   module Constructable
     extend ActiveSupport::Concern
-    include Immutable
+
+    include ValueClass
 
     def clone_config(&block)
       config = self.class.config_class.new

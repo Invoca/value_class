@@ -33,46 +33,6 @@ describe ActiveTableSet::ConnectionProxy do
     end
   end
 
-  context "table set construction" do
-    it "constructs a hash of table sets based on configuration hash" do
-      proxy = ActiveTableSet::ConnectionProxy.new(config: main_cfg)
-      expect(proxy.send(:table_set_names).length).to eq(1)
-      expect(proxy.send(:table_set_names)[0]).to eq(:test_ts)
-    end
-  end
-
-  context "finds correct keys" do
-    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
-
-    it "for access_mode :write" do
-      key = proxy.send(:database_config, table_set: :test_ts, access_mode: :write)
-      expect(key.host).to eq("127.0.0.8")
-    end
-
-    it "for access_mode :read" do
-      key = proxy.send(:database_config, table_set: :test_ts, access_mode: :read)
-      expect(key.host).to eq("127.0.0.8")
-    end
-
-    it "for access_mode :balanced with chosen_follower of index 0" do
-      part = proxy.send(:table_sets)[:test_ts].partitions[0]
-      allow(part).to receive(:follower_index).and_return(0)
-      key = proxy.send(:database_config, table_set: :test_ts, access_mode: :balanced)
-      expect(key.host).to eq("127.0.0.9")
-    end
-
-    it "for access_mode :balanced with chosen_follower of index 1" do
-      part = proxy.send(:table_sets)[:test_ts].partitions[0]
-      allow(part).to receive(:follower_index).and_return(1)
-      key = proxy.send(:database_config, table_set: :test_ts, access_mode: :balanced)
-      expect(key.host).to eq("127.0.0.10")
-    end
-
-    it "raises if request table_set does not exist" do
-      expect { proxy.send(:database_config, table_set: "whatever") }.to raise_error(ArgumentError, "pool key requested from unknown table set whatever")
-    end
-  end
-
   context "using PoolManager" do
     let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
     let(:mgr)   { proxy.send(:pool_manager) }
@@ -114,6 +74,9 @@ describe ActiveTableSet::ConnectionProxy do
       follower_pool_5 = double("follower_timeout_5_pool")
       expect(follower_pool_5).to receive(:connection).exactly(2).times { "follower_timeout_5_connection" }
       expect(follower_pool_5).to receive(:release_connection) { true }
+
+      expect(ActiveTableSet::Configuration::Partition).to receive(:pid) { 1 }
+
 
       expect(mgr).to receive(:create_pool).exactly(4).times.and_return(leader_pool_2, follower_pool_2, leader_pool_5, follower_pool_5)
 

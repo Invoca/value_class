@@ -4,6 +4,8 @@ require 'active_support/core_ext'
 # 2. Has a PoolManager. It passes pool keys to the pool manager and gets connections back.
 # 3. Maintains variables to track which thread is active so that connections are not shared between threads.
 
+# TODO - move query timeouts out of the database key.   Do not keep separate pools for these, set connection when checked out.
+
 module ActiveTableSet
   class ConnectionProxy
     delegate *(ActiveRecord::ConnectionAdapters::Mysql2Adapter.instance_methods - ActiveTableSet::ConnectionProxy.instance_methods), :to => :connection
@@ -113,7 +115,7 @@ module ActiveTableSet
     end
 
     def build_table_set(name, config)
-      [name, ActiveTableSet::TableSet.new(config)]
+      [name, ActiveTableSet::Configuration::TableSet.new(config)]
     end
   end
 end

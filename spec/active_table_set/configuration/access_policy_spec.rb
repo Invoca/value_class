@@ -1,23 +1,23 @@
 require 'spec_helper'
 
-describe ActiveTableSet::AccessPolicy do
+describe ActiveTableSet::Configuration::AccessPolicy do
   context "access_policy" do
 
     it "allows access by default" do
-      ap = ActiveTableSet::AccessPolicy.new
+      ap = ActiveTableSet::Configuration::AccessPolicy.new
 
       expect(ap.errors(write_tables: ["advertiser_campaigns"], read_tables: ["advertisers"])).to eq([])
     end
 
     it "should allow access to be blocked by disallowing it" do
-      ap = ActiveTableSet::AccessPolicy.new(disallow_read: 'advertisers')
+      ap = ActiveTableSet::Configuration::AccessPolicy.new(disallow_read: 'advertisers')
 
       expected = ['Cannot read advertisers']
       expect(ap.errors(write_tables: [], read_tables: ["advertisers"])).to eq(expected)
     end
 
     it "should allow disallowed lists to support wildcards" do
-      ap = ActiveTableSet::AccessPolicy.new(disallow_read: 'adv%')
+      ap = ActiveTableSet::Configuration::AccessPolicy.new(disallow_read: 'adv%')
 
       expected = ['Cannot read advertisers']
       expect(ap.errors(write_tables: [], read_tables: ["advertisers"])).to eq(expected)
@@ -26,7 +26,7 @@ describe ActiveTableSet::AccessPolicy do
     end
 
     it "should report multiple errors" do
-      ap = ActiveTableSet::AccessPolicy.new(disallow_read: 'adv%')
+      ap = ActiveTableSet::Configuration::AccessPolicy.new(disallow_read: 'adv%')
 
       expected = [
           'Cannot read advertisers',
@@ -38,7 +38,7 @@ describe ActiveTableSet::AccessPolicy do
     end
 
     it "should allow multiple patterns" do
-      ap = ActiveTableSet::AccessPolicy.new(disallow_read: 'adv%,aff%')
+      ap = ActiveTableSet::Configuration::AccessPolicy.new(disallow_read: 'adv%,aff%')
 
       expect(ap.errors(write_tables: [], read_tables: ["advertisers"])).to eq(['Cannot read advertisers'])
       expect(ap.errors(write_tables: [], read_tables: ["affiliates"])).to eq(['Cannot read affiliates'])
@@ -47,7 +47,7 @@ describe ActiveTableSet::AccessPolicy do
     end
 
     it "should report read and write errors" do
-      ap = ActiveTableSet::AccessPolicy.new(disallow_read: 'adv%,aff%', disallow_write: 'adv%,aff%')
+      ap = ActiveTableSet::Configuration::AccessPolicy.new(disallow_read: 'adv%,aff%', disallow_write: 'adv%,aff%')
 
       expect(ap.errors(write_tables: [], read_tables: ["advertisers"])).to eq(['Cannot read advertisers'])
       expect(ap.errors(write_tables: ["affiliates"], read_tables: [])).to eq(['Cannot write affiliates'])
@@ -56,7 +56,7 @@ describe ActiveTableSet::AccessPolicy do
     end
 
     it "should check allowed policies" do
-      ap = ActiveTableSet::AccessPolicy.new(allow_read: 'adv%,aff%', allow_write: 'adv%,aff%')
+      ap = ActiveTableSet::Configuration::AccessPolicy.new(allow_read: 'adv%,aff%', allow_write: 'adv%,aff%')
 
       expected = [
           'Cannot read users',
@@ -69,7 +69,7 @@ describe ActiveTableSet::AccessPolicy do
     end
 
     it "should have a clean way of reporting its configuration" do
-      ap = ActiveTableSet::AccessPolicy.new(allow_read: 'adv%,aff%', disallow_read: 'advertiser_camp%', allow_write: 'adv%,aff%')
+      ap = ActiveTableSet::Configuration::AccessPolicy.new(allow_read: 'adv%,aff%', disallow_read: 'advertiser_camp%', allow_write: 'adv%,aff%')
 
       expected = [
         "allow_read: adv%,aff%",

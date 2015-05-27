@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ActiveTableSet::MysqlConnectionMonitor do
 
   context "connection monitor" do
-    let(:no_advertisers) { ActiveTableSet::AccessPolicy.new(disallow_read: 'adv%,aff%', disallow_write: 'adv%,aff%') }
+    let(:no_advertisers) { ActiveTableSet::Configuration::AccessPolicy.new(disallow_read: 'adv%,aff%', disallow_write: 'adv%,aff%') }
 
     it "confirm you can monitor connections" do
       @connection = StubDbAdaptor.stub_db_connection()

@@ -81,6 +81,5 @@ module ActiveTableSet
     def parse_joins
       @read_tables += query.scan(JOIN_MATCH).flatten
     end
-
   end
 end
