@@ -5,7 +5,7 @@ module ValueClass
 
     def clone_config(&block)
       config = self.class.config_class.new
-      self.class.value_attrs.each do |attr|
+      self.class.value_attributes.each do |attr|
         current_value = send(attr.name)
         dup_value =
           begin
@@ -22,11 +22,10 @@ module ValueClass
 
     module ClassMethods
 
-      # Constructs an instance using the configuration created in the passed
-      # in block.
+      # Constructs an instance using the configuration created in the passed in block.
       def config(&block)
         config = config_class.new
-        value_attrs.each do |attr|
+        value_attributes.each do |attr|
           if attr.default
             config.send("#{attr.name}=", attr.default)
           end
@@ -35,12 +34,11 @@ module ValueClass
         new(config)
       end
 
-      # Constructs
       def config_class
         unless @config_class
           @config_class= Class.new
 
-          value_attrs.each do |attribute|
+          value_attributes.each do |attribute|
             # Define assignment operator
             @config_class.send(:attr_writer, attribute.name)
 
@@ -82,7 +80,6 @@ module ValueClass
             end
           end
         end
-
         @config_class
       end
 

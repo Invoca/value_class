@@ -31,6 +31,16 @@ module ValueClassTest
     include ValueClass::Immutable
     value_attr :lumens, required: true
   end
+
+  class HandleBar
+    include ValueClass::Immutable
+    value_attrs :style, :grip, :brakes, :headlight, :bell
+  end
+
+  class Gears
+    include ValueClass::Immutable
+    value_attrs :first_gear, :second_gear, :third_gear, default: 200
+  end
 end
 
 
@@ -64,11 +74,29 @@ describe ValueClass::Immutable do
         expect(bike.tires.map(&:tred)).to eq([:mountain, :slicks])
       end
     end
-  end
 
-  context "validations" do
     it "should raise an exception if a required parameter is missing" do
       expect { ValueClassTest::Headlight.new }.to  raise_error(ArgumentError, "must provide a value for lumens")
+    end
+
+    it "allow for quick declaration using default options" do
+      handle_bar = ValueClassTest::HandleBar.new(style: :chopper, grip: :cork_tape, brakes: true, bell: false)
+
+      expect(handle_bar.style).to eq(:chopper)
+      expect(handle_bar.grip).to eq(:cork_tape)
+      expect(handle_bar.brakes).to eq(true)
+      expect(handle_bar.bell).to eq(false)
+      expect(handle_bar.brakes).to eq(true)
+
+      expect(handle_bar.headlight).to eq(nil)
+    end
+
+    it "allow for quick declaration while specifying options" do
+      gear = ValueClassTest::Gears.new(first_gear: 20)
+
+      expect(gear.first_gear).to eq(20)
+      expect(gear.second_gear).to eq(200)
+      expect(gear.third_gear).to eq(200)
     end
   end
 end

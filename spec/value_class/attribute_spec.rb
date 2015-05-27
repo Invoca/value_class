@@ -1,5 +1,16 @@
 require 'value_class'
 
+module ValueClassSpec
+  class Automobile
+    attr_accessor :wheels, :doors
+
+    def initialize(options)
+      @wheels = options[:wheels]
+      @doors = options[:doors]
+    end
+  end
+end
+
 describe ValueClass::Attribute do
   context "attribute" do
 
@@ -40,6 +51,49 @@ describe ValueClass::Attribute do
       attr = ValueClass::Attribute.new("testAttr", default: {cat: "felix"})
 
       expect(attr.default).to eq(cat: "felix")
+    end
+
+    context "get_value" do
+      it "reads from a hash" do
+        attr = ValueClass::Attribute.new(:testAttr, {})
+        expect(attr.get_value(testAttr: "found it!")).to eq("found it!")
+      end
+
+      it "reads from a method on the passed in class" do
+        attr = ValueClass::Attribute.new(:testAttr, {})
+        value = Struct.new(:testAttr).new("found it!")
+        expect(attr.get_value(testAttr: "found it!")).to eq("found it!")
+      end
+
+      it "knows the difference between false and nil when assigning" do
+        attr = ValueClass::Attribute.new(:testAttr, default: "this is not what I wanted")
+        expect(attr.get_value(testAttr:false)).to eq(false)
+      end
+
+      context "typed attributes" do
+        it "casts the passed in value to the type if a class is specified" do
+          attr = ValueClass::Attribute.new(:testAttr, class_name: "ValueClassSpec::Automobile")
+
+          value = attr.get_value(testAttr: {wheels: 4, doors: 2})
+
+          expect(value.class).to eq(ValueClassSpec::Automobile)
+          expect(value.wheels).to eq(4)
+          expect(value.doors).to eq(2)
+        end
+
+        it "casts the passed in value to the type if a class is specified" do
+          attr = ValueClass::Attribute.new(:testAttr, list_of_class: "ValueClassSpec::Automobile")
+
+          value = attr.get_value(testAttr: [{wheels: 4, doors: 2},{wheels: 18, doors: 2}])
+
+          expect(value.first.class).to eq(ValueClassSpec::Automobile)
+          expect(value.first.wheels).to eq(4)
+          expect(value.first.doors).to eq(2)
+
+          expect(value.last.wheels).to eq(18)
+          expect(value.last.doors).to eq(2)
+        end
+      end
     end
 
   end

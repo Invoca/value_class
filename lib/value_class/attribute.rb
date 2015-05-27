@@ -35,8 +35,8 @@ module ValueClass
             config.send(name)
           end
 
-      second_value =
-          if raw_value.is_a?(Array) && options[:list_of_class]
+      cast_value =
+          if options[:list_of_class] && raw_value.is_a?(Array)
             inner_class = options[:list_of_class]
             raw_value.map { |v| inner_class.constantize.new(v)}
           elsif options[:class_name] && raw_value
@@ -45,11 +45,15 @@ module ValueClass
             raw_value
           end
 
-      if !second_value && options[:required]
+      if cast_value.nil? && options[:required]
         raise ArgumentError,  "must provide a value for #{name}"
       end
 
-      second_value || default
+      if cast_value.nil?
+        default
+      else
+        cast_value
+      end
     end
 
     def default
