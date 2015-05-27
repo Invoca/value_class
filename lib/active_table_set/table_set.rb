@@ -9,10 +9,14 @@ module ActiveTableSet
     # TODO - construct a map of partitions by key
     def initialize(options = {})
       super
-      partitions.count > 0 or   raise ArgumentError, "must provide one or more partitions"
+      partitions.count > 0 or raise ArgumentError, "must provide one or more partitions"
     end
 
+    # TODO - if there is more than one parition, all paritions must have a key
+
     # TODO - I think the empty value should be nil
+    # TODO - should asssert if passing nil and parititioned.
+
     def connection_key(access_mode: :write, partition_id: 0)
       partition_id <= (partitions.count - 1) or raise ArgumentError, "partition_id does not have a matching partition (id too big)"
       partitions[partition_id].connection_key(access_mode: access_mode)

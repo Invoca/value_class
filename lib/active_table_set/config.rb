@@ -6,7 +6,9 @@ module ActiveTableSet
     value_attr      :environment
 
     # TODO
-    # - How to specify default database attributes
+    # - Keep a hash of table sets by name.
+    # - assert that there is at least one table set.
+    # - How to specify default database attributes?
     # - How to specify default connection attributes?
 
     value_list_attr :table_sets,     class_name: 'ActiveTableSet::TableSet', insert_method: :table_set

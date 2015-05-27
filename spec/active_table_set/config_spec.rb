@@ -46,6 +46,4 @@ describe ActiveTableSet::Config do
     expect(ats_config.table_sets.size).to eq(1)
     expect(ats_config.enforce_access_policy).to eq(true)
   end
-
-  it "can be constructed from "
 end

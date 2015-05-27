@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe ActiveTableSet::Partition do
-#  let(:config)    { ActiveTableSet::DatabaseConfig.new }
   let(:key)       { ActiveTableSet::PoolKey.new(host: "localhost", username: "tester", password: "verysecure", timeout: 5, config: config) }
   let(:db_config) { ActiveTableSet::DatabaseConfig.new(username: "tester", password: "verysecure", host: "localhost", timeout: 5)  }
 
@@ -41,6 +40,8 @@ describe ActiveTableSet::Partition do
 
     it "can be progressively constructed" do
       config = ActiveTableSet::Partition.config do |part|
+        part.partition_key = 'alpha'
+
         part.leader do |leader|
           leader.host = "127.0.0.8"
           leader.username = "tester"
@@ -66,10 +67,10 @@ describe ActiveTableSet::Partition do
         end
       end
 
+      expect(config.partition_key).to eq("alpha")
       leader    = config.leader
       follower1 = config.followers.first
       follower2 = config.followers.last
-
       expect(leader.host).to     eq("127.0.0.8")
       expect(leader.username).to eq("tester")
       expect(leader.password).to eq("verysecure")
@@ -87,11 +88,6 @@ describe ActiveTableSet::Partition do
   context "construction" do
     it "raises if not passed a leader" do
       expect { ActiveTableSet::Partition.new }.to raise_error(ArgumentError, "must provide a leader")
-    end
-
-    it "provides reasonable defaults" do
-      expect(part.send(:keys).count).to eq(1)
-      expect(part.index).to eq(0)
     end
   end
 
