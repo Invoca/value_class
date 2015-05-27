@@ -2,7 +2,7 @@ module ActiveTableSet
   class Config
     include ValueClass::Constructable
 
-    value_attr      :enforce_access_policy
+    value_attr      :enforce_access_policy, default: false
     value_attr      :environment
 
     # TODO

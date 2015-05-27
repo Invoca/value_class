@@ -31,7 +31,6 @@ describe ValueClass::Attribute do
       expect(ex.class).to eq(ArgumentError)
 
       expect(ex.message).to eq("Unknown option(s): not_a_valid_parameter")
-
     end
 
     it "can have a description" do

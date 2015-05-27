@@ -53,7 +53,14 @@ module ValueClass
                 end
               EORUBY
             else
-              @config_class.send(:attr_reader, attribute.name)
+              config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
+                def #{attribute.name}(value = nil)
+                  unless value.nil?
+                    @#{attribute.name} = value
+                  end
+                  @#{attribute.name}
+                end
+              EORUBY
             end
 
             # Define insert method

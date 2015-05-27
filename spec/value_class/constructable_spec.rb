@@ -61,6 +61,22 @@ describe ValueClass::Constructable do
       expect(bike.seat.size).to eq(:large)
     end
 
+    it "supports assignment without the equals operator" do
+      bike = ConstructableSpec::Bicycle.config do |bicycle|
+        bicycle.speeds 10
+        bicycle.color  :blue
+        bicycle.seat do |seat|
+          seat.color :green
+          seat.size  :large
+        end
+      end
+
+      expect(bike.speeds).to eq(10)
+      expect(bike.color).to eq(:blue)
+      expect(bike.seat.color).to eq(:green)
+      expect(bike.seat.size).to eq(:large)
+    end
+
     it "supports accessing variables from outside the scope" do
       seat_color = :magenta
 
