@@ -9,6 +9,12 @@ module ActiveTableSet
           @@connection_proxy ||= ActiveTableSet.connection_proxy
         end
       end
+
+      def self.prepended(base)
+        class << base
+          prepend ClassMethods
+        end
+      end
     end
   end
 end
