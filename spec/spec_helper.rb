@@ -3,6 +3,12 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'active_table_set'
 require 'pry'
 
+module Rails
+  def self.env
+    'test'
+  end
+end
+
 class StubClient
   attr_accessor :reconnect, :connect_timeout, :read_timeout, :write_timeout, :local_infile, :charset_name
   attr_accessor :query_options

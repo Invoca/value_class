@@ -46,7 +46,7 @@ describe ActiveTableSet::ConnectionProxy do
         ts.name = :sharded
 
         ts.access_policy do |ap|
-          ap.allow_write    'cf_%'
+            ap.allow_write    'cf_%'
         end
 
         ts.partition do |part|

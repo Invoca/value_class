@@ -6,6 +6,7 @@ module ActiveTableSet
       value_attr      :enforce_access_policy, default: false
       value_attr      :environment
       value_attr      :default_connection, class_name: 'ActiveTableSet::Configuration::DefaultConnection', required: true
+      value_list_attr :table_sets,     class_name: 'ActiveTableSet::Configuration::TableSet', insert_method: :table_set
 
       # TODO -- How to specify default database attributes?
       # TODO -- Specify named timeout values, disallow arbitrary values  For example :web, 110 seconds,  :bulk = 15 minutes... :ringswitch_event_processor - 1 second.   :ringswitch_deferred - 15 seconds
@@ -15,7 +16,6 @@ module ActiveTableSet
       # TODO -- Define users outside of DB spec?
 
 
-      value_list_attr :table_sets,     class_name: 'ActiveTableSet::Configuration::TableSet', insert_method: :table_set
 
       def initialize(options={})
         super

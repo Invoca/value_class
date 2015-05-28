@@ -1,13 +1,41 @@
 require 'spec_helper'
 
-describe ActiveTableSet::MysqlConnectionMonitor do
+describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
+  before :each do
+    ActiveTableSet.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default_connection  =  { table_set: :common }
+
+      conf.table_set do |ts|
+        ts.name = :common
+
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host      "10.0.0.1"
+            leader.username  "tester"
+            leader.password  "verysecure"
+            leader.timeout   2
+            leader.database  "main"
+          end
+        end
+      end
+    end
+
+    ActiveTableSet.enable
+  end
 
   context "connection monitor" do
     let(:no_advertisers) { ActiveTableSet::Configuration::AccessPolicy.new(disallow_read: 'adv%,aff%', disallow_write: 'adv%,aff%') }
 
     it "confirm you can monitor connections" do
       @connection = StubDbAdaptor.stub_db_connection()
-      ActiveTableSet::MysqlConnectionMonitor.install(@connection)
+      ActiveTableSet::Extensions::MysqlConnectionMonitor.install(@connection)
 
       expect(@connection.respond_to?(:access_policy)).to eq(true)
       @connection.access_policy = no_advertisers
@@ -15,14 +43,14 @@ describe ActiveTableSet::MysqlConnectionMonitor do
 
     it "does nothing if the access policy is empty" do
       @connection = StubDbAdaptor.stub_db_connection()
-      ActiveTableSet::MysqlConnectionMonitor.install(@connection)
+      ActiveTableSet::Extensions::MysqlConnectionMonitor.install(@connection)
 
       @connection.select_rows(load_sample_query(:multi_table_update))
     end
 
     it "does nothing if the query is allowed" do
       @connection = StubDbAdaptor.stub_db_connection()
-      ActiveTableSet::MysqlConnectionMonitor.install(@connection)
+      ActiveTableSet::Extensions::MysqlConnectionMonitor.install(@connection)
 
       @connection.access_policy = no_advertisers
 
@@ -32,7 +60,7 @@ describe ActiveTableSet::MysqlConnectionMonitor do
 
     it "reports useful error messages when an connection attempts to access " do
       @connection = StubDbAdaptor.stub_db_connection()
-      ActiveTableSet::MysqlConnectionMonitor.install(@connection)
+      ActiveTableSet::Extensions::MysqlConnectionMonitor.install(@connection)
 
       @connection.access_policy = no_advertisers
 
