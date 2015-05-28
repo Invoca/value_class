@@ -4,9 +4,10 @@ require 'active_support/core_ext'
 # 2. Has a PoolManager. It passes pool keys to the pool manager and gets connections back.
 # 3. Maintains variables to track which thread is active so that connections are not shared between threads.
 
-# TODO - move query timeouts out of the database key.   Do not keep separate pools for these, set connection when checked out.
-# wire up default connection
-# wire up enforce access policy
+# TODO -- move query timeouts out of the database key.   Do not keep separate pools for these, set connection when checked out.
+# TODO -- wire up default connection
+# TODO -- wire up enforce access policy
+# TODO -- Get rid of delegation from connection proxy.  Instead, extend the class to add the syntax we want.
 
 
 module ActiveTableSet
@@ -20,7 +21,6 @@ module ActiveTableSet
 
     def initialize(config:)
       @config       = config
-      @table_sets   = build_table_sets(config)
       @pool_manager = ActiveTableSet::PoolManager.new
     end
 
@@ -86,10 +86,10 @@ module ActiveTableSet
     ## DATABASE MANAGEMENT ##
 
     def database_config(table_set:, access_mode: :write, partition_key: nil)
-      ts = table_sets[table_set] or raise ArgumentError, "pool key requested from unknown table set #{table_set}"
-      ts.database_config(access_mode: access_mode, partition_key: partition_key)
+      @config.database_config(table_set: table_set, access_mode: access_mode, partition_key: partition_key)
     end
 
+    # TODO - deprecated in favor of setting the timeout on a connection when passed out from the pool.
     def timeout_adjusted_database_config(table_set, access_mode, partition_key, timeout)
       key = database_config(table_set: table_set, access_mode: access_mode, partition_key: partition_key)
       timeout.nil? ? key : key.clone_with_new_timeout(timeout)
@@ -101,23 +101,6 @@ module ActiveTableSet
 
     def pool(key)
       pool_manager.get_pool(key: key)
-    end
-
-    ## TABLE SETS ##
-
-    attr_reader :table_sets
-
-    def table_set_names
-      table_sets.keys
-    end
-
-    def build_table_sets(config)
-      ts = config[:table_sets].keys.map { |ts_key| build_table_set(ts_key, config[:table_sets][ts_key]) }
-      Hash[*ts.flatten]
-    end
-
-    def build_table_set(name, config)
-      [name, ActiveTableSet::Configuration::TableSet.new(config)]
     end
   end
 end

@@ -1,12 +1,119 @@
 require 'spec_helper'
 
 describe ActiveTableSet::ConnectionProxy do
-  let(:leader)        { { :host => "127.0.0.8",  :username => "tester",  :password => "verysecure",  :timeout => 2, :database => "main" } }
-  let(:follower1)     { { :host => "127.0.0.9",  :username => "tester1", :password => "verysecure1", :timeout => 2, :database => "replication1" } }
-  let(:follower2)     { { :host => "127.0.0.10", :username => "tester2", :password => "verysecure2", :timeout => 2, :database => "replication2" } }
-  let(:partition_cfg) { { :leader => leader, :followers => [follower1, follower2] } }
-  let(:table_set_cfg) { { :test_ts => { :partitions => [partition_cfg], :access_policy => { disallow_read: "cf_%" } } } }
-  let(:main_cfg)      { { :table_sets => table_set_cfg } }
+  let(:large_table_set) do
+    ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default_connection  =  { table_set: :common }
+
+      conf.table_set do |ts|
+        ts.name = :common
+
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host      "10.0.0.1"
+            leader.username  "tester"
+            leader.password  "verysecure"
+            leader.timeout   2
+            leader.database  "main"
+          end
+
+          part.follower do |follower|
+            follower.host      "10.0.0.2"
+            follower.username  "tester1"
+            follower.password  "verysecure1"
+            follower.timeout   2
+            follower.database  "replication1"
+          end
+
+          part.follower do |follower|
+            follower.host      "10.0.0.3"
+            follower.username  "tester2"
+            follower.password  "verysecure2"
+            follower.timeout   2
+            follower.database  "replication2"
+          end
+        end
+      end
+
+      conf.table_set do |ts|
+        ts.name = :sharded
+
+        ts.access_policy do |ap|
+          ap.allow_write    'cf_%'
+        end
+
+        ts.partition do |part|
+          part.partition_key 'alpha'
+          part.leader do |leader|
+            leader.host      "11.0.1.1"
+            leader.username  "tester"
+            leader.password  "verysecure"
+            leader.timeout   2
+            leader.database  "main"
+          end
+
+          part.follower do |follower|
+            follower.host      "11.0.1.2"
+            follower.username  "tester1"
+            follower.password  "verysecure1"
+            follower.timeout   2
+            follower.database  "replication1"
+          end
+
+          part.follower do |follower|
+            follower.host      "11.0.1.3"
+            follower.username  "tester2"
+            follower.password  "verysecure2"
+            follower.timeout   2
+            follower.database  "replication2"
+          end
+        end
+
+        ts.partition do |part|
+          part.partition_key 'beta'
+
+          part.leader do |leader|
+            leader.host      "11.0.2.1"
+            leader.username  "tester"
+            leader.password  "verysecure"
+            leader.timeout   2
+            leader.database  "main"
+          end
+
+          part.follower do |follower|
+            follower.host      "11.0.2.2"
+            follower.username  "tester1"
+            follower.password  "verysecure1"
+            follower.timeout   2
+            follower.database  "replication1"
+          end
+
+          part.follower do |follower|
+            follower.host      "11.0.2.3"
+            follower.username  "tester2"
+            follower.password  "verysecure2"
+            follower.timeout   2
+            follower.database  "replication2"
+          end
+        end
+      end
+    end
+  end
+
+
+  # let(:leader)        { { :host => "127.0.0.8",  :username => "tester",  :password => "verysecure",  :timeout => 2, :database => "main" } }
+  # let(:follower1)     { { :host => "127.0.0.9",  :username => "tester1", :password => "verysecure1", :timeout => 2, :database => "replication1" } }
+  # let(:follower2)     { { :host => "127.0.0.10", :username => "tester2", :password => "verysecure2", :timeout => 2, :database => "replication2" } }
+  # let(:partition_cfg) { { :leader => leader, :followers => [follower1, follower2] } }
+  # let(:table_set_cfg) { { :common => { :partitions => [partition_cfg], :access_policy => { disallow_read: "cf_%" } } } }
+  # let(:main_cfg)      { { :table_sets => table_set_cfg } }
 
   context "construction" do
     it "raises on missing config parameter" do
@@ -15,11 +122,10 @@ describe ActiveTableSet::ConnectionProxy do
   end
 
   context "delegation to connection" do
-    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: large_table_set) }
     let(:mgr)   { proxy.send(:pool_manager) }
 
     it "delegates all AbstractAdapter methods to the current connection" do
-
       connection = double("connection")
       pool = double("pool")
       expect(mgr).to receive(:create_pool).and_return(pool)
@@ -34,13 +140,13 @@ describe ActiveTableSet::ConnectionProxy do
   end
 
   context "using PoolManager" do
-    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: large_table_set) }
     let(:mgr)   { proxy.send(:pool_manager) }
 
     it "gets a new pool from PoolManager" do
       expect(mgr).to receive(:create_pool).and_return("stand-in_for_actual_pool")
 
-      leader_key = proxy.send(:database_config, table_set: :test_ts, access_mode: :write)
+      leader_key = proxy.send(:database_config, table_set: :common, access_mode: :write)
       pool = proxy.send(:pool, leader_key)
       expect(mgr.pool_count).to eq(1)
       expect(pool).to eq("stand-in_for_actual_pool")
@@ -49,7 +155,7 @@ describe ActiveTableSet::ConnectionProxy do
     it "gets same pool from PoolManager for same pool key" do
       expect(mgr).to receive(:create_pool).once.and_return("stand-in_for_actual_pool")
 
-      leader_key = proxy.send(:database_config, table_set: :test_ts, access_mode: :write)
+      leader_key = proxy.send(:database_config, table_set: :common, access_mode: :write)
       pool = proxy.send(:pool, leader_key)
       expect(mgr.pool_count).to eq(1)
       expect(pool).to eq("stand-in_for_actual_pool")
@@ -79,32 +185,32 @@ describe ActiveTableSet::ConnectionProxy do
 
       expect(mgr).to receive(:create_pool).exactly(4).times.and_return(leader_pool_2, follower_pool_2, leader_pool_5, follower_pool_5)
 
-      proxy.using(table_set: :test_ts, access_mode: :write) do
+      proxy.using(table_set: :common, access_mode: :write) do
         connection = proxy.connection
         expect(connection).to eq("leader_timeout_2_connection")
       end
 
-      proxy.using(table_set: :test_ts, access_mode: :read) do
+      proxy.using(table_set: :common, access_mode: :read) do
         connection = proxy.connection
         expect(connection).to eq("leader_timeout_2_connection")
       end
 
-      proxy.using(table_set: :test_ts, access_mode: :balanced) do
+      proxy.using(table_set: :common, access_mode: :balanced) do
         connection = proxy.connection
         expect(connection).to eq("follower_timeout_2_connection")
       end
 
-      proxy.using(table_set: :test_ts, access_mode: :write, timeout: 5) do
+      proxy.using(table_set: :common, access_mode: :write, timeout: 5) do
         connection = proxy.connection
         expect(connection).to eq("leader_timeout_5_connection")
       end
 
-      proxy.using(table_set: :test_ts, access_mode: :balanced, timeout: 5) do
+      proxy.using(table_set: :common, access_mode: :balanced, timeout: 5) do
         connection = proxy.connection
         expect(connection).to eq("follower_timeout_5_connection")
       end
 
-      proxy.using(table_set: :test_ts, access_mode: :read, timeout: 5) do
+      proxy.using(table_set: :common, access_mode: :read, timeout: 5) do
         connection = proxy.connection
         expect(connection).to eq("leader_timeout_5_connection")
       end
@@ -112,7 +218,7 @@ describe ActiveTableSet::ConnectionProxy do
   end
 
   context "handles nested blocks using thread-safe keys" do
-    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: large_table_set) }
     let(:mgr)   { proxy.send(:pool_manager) }
 
     it "uses existing pool if new key matches current key" do
@@ -122,9 +228,9 @@ describe ActiveTableSet::ConnectionProxy do
 
       expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
 
-      proxy.using(table_set: :test_ts, access_mode: :read) do
+      proxy.using(table_set: :common, access_mode: :read) do
         pool1 = proxy.send(:pool, proxy.send(:thread_database_config))
-        proxy.using(table_set: :test_ts, access_mode: :read) do
+        proxy.using(table_set: :common, access_mode: :read) do
           pool2 = proxy.send(:pool, proxy.send(:thread_database_config))
           expect(pool2).to eq(pool1)
         end
@@ -142,9 +248,9 @@ describe ActiveTableSet::ConnectionProxy do
 
       expect(mgr).to receive(:create_pool).twice.and_return(pool_dbl_1, pool_dbl_2)
 
-      proxy.using(table_set: :test_ts, access_mode: :read, timeout: 5) do
+      proxy.using(table_set: :common, access_mode: :read, timeout: 5) do
         pool1 = proxy.send(:pool, proxy.send(:thread_database_config))
-        proxy.using(table_set: :test_ts, access_mode: :read, timeout: 10) do
+        proxy.using(table_set: :common, access_mode: :read, timeout: 10) do
           pool2 = proxy.send(:pool, proxy.send(:thread_database_config))
           expect(pool1).to_not eq(pool2)
         end
@@ -156,7 +262,7 @@ describe ActiveTableSet::ConnectionProxy do
   end
 
   context "setting default context without a block" do
-    let(:proxy)  { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:proxy)  { ActiveTableSet::ConnectionProxy.new(config: large_table_set) }
     let(:mgr)    { proxy.send(:pool_manager) }
 
     it "sets a default connection key" do
@@ -165,7 +271,7 @@ describe ActiveTableSet::ConnectionProxy do
 
       expect(mgr).to receive(:create_pool).once.and_return(pool_dbl_1)
       proxy.send(:thread_database_config=, nil)
-      proxy.set_default_table_set(table_set_name: :test_ts)
+      proxy.set_default_table_set(table_set_name: :common)
       connection = proxy.connection
 
       expect(connection).to eq("connection1")
@@ -181,7 +287,7 @@ describe ActiveTableSet::ConnectionProxy do
 
       proxy.send(:thread_database_config=, nil)
       expect {
-        proxy.using(table_set: :test_ts, access_mode: :read) do
+        proxy.using(table_set: :common, access_mode: :read) do
           proxy.set_default_table_set(table_set_name: :whatever)
         end
       }.to raise_error(RuntimeError, "Can not use set_default_table_set while in the scope of an existing table set - startup only bro")
@@ -190,7 +296,7 @@ describe ActiveTableSet::ConnectionProxy do
   end
 
   context "retrieves connections with default timeout" do
-    let(:proxy)  { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:proxy)  { ActiveTableSet::ConnectionProxy.new(config: large_table_set) }
     let(:mgr)    { proxy.send(:pool_manager) }
 
     it "for access_mode :write" do
@@ -199,7 +305,7 @@ describe ActiveTableSet::ConnectionProxy do
       expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
 
-      proxy.using(table_set: :test_ts, access_mode: :write) do
+      proxy.using(table_set: :common, access_mode: :write) do
         connection = proxy.connection
         expect(connection).to eq("stand-in_for_actual_connection")
       end
@@ -211,7 +317,7 @@ describe ActiveTableSet::ConnectionProxy do
       expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
 
-      proxy.using(table_set: :test_ts, access_mode: :read) do
+      proxy.using(table_set: :common, access_mode: :read) do
         connection = proxy.connection
         expect(connection).to eq("stand-in_for_actual_connection")
       end
@@ -223,7 +329,7 @@ describe ActiveTableSet::ConnectionProxy do
       expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
 
-      proxy.using(table_set: :test_ts, access_mode: :balanced) do
+      proxy.using(table_set: :common, access_mode: :balanced) do
         connection = proxy.connection
         expect(connection).to eq("stand-in_for_actual_connection")
       end
@@ -231,7 +337,7 @@ describe ActiveTableSet::ConnectionProxy do
   end
 
   context "retrieves connections with timeout over-ride" do
-    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: main_cfg) }
+    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: large_table_set) }
     let(:mgr)   { proxy.send(:pool_manager) }
 
     it "for access_mode :write" do
@@ -240,7 +346,7 @@ describe ActiveTableSet::ConnectionProxy do
       expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
 
-      proxy.using(table_set: :test_ts, access_mode: :write, timeout: 25) do
+      proxy.using(table_set: :common, access_mode: :write, timeout: 25) do
         connection = proxy.connection
         expect(connection).to eq("stand-in_for_actual_connection")
       end
@@ -252,7 +358,7 @@ describe ActiveTableSet::ConnectionProxy do
       expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
 
-      proxy.using(table_set: :test_ts, access_mode: :read, timeout: 25) do
+      proxy.using(table_set: :common, access_mode: :read, timeout: 25) do
         connection = proxy.connection
         expect(connection).to eq("stand-in_for_actual_connection")
       end
@@ -264,7 +370,7 @@ describe ActiveTableSet::ConnectionProxy do
       expect(test_pool).to receive(:release_connection) { true }
       expect(mgr).to receive(:create_pool).once.and_return(test_pool)
 
-      proxy.using(table_set: :test_ts, access_mode: :balanced, timeout: 25) do
+      proxy.using(table_set: :common, access_mode: :balanced, timeout: 25) do
         connection = proxy.connection
         expect(connection).to eq("stand-in_for_actual_connection")
       end
@@ -275,7 +381,7 @@ describe ActiveTableSet::ConnectionProxy do
     it "saves and retrieves per-thread key values" do
       num_threads = 3
       begin
-        px = ActiveTableSet::ConnectionProxy.new(config: main_cfg)
+        px = ActiveTableSet::ConnectionProxy.new(config: large_table_set)
         threads = num_threads.times.map.with_index do |_,index|
           Thread.new do
             sleep 1

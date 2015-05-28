@@ -1,4 +1,9 @@
+# TODO - Needs to implement comparison operators using attr_comparible. (Possibly declare in constructor?)
+# TODO - Should support eql and hash notation.
+# TODO - Add eql and hash notation to attr_comparible
+
 require 'active_record'
+require 'attr_comparable'
 require 'active_support/core_ext'
 
 require 'value_class/attribute'
@@ -8,9 +13,20 @@ module ValueClass
 
   # Default constructor
   def initialize(config = {})
+    self.class.declare_comparison_operators
     self.class.value_attributes.each do |attribute|
       instance_variable_set("@#{attribute.name}", attribute.get_value(config))
     end
+  end
+
+  def eql?(other)
+    self == other
+  end
+
+  def hash
+    self.class.value_attributes.map do |attribute|
+      instance_variable_get("@#{attribute.name}")
+    end.hash
   end
 
   module ClassMethods
@@ -47,6 +63,15 @@ module ValueClass
 
     def value_attributes
       @value_attrs ||= []
+    end
+
+    def declare_comparison_operators
+      unless @comparison_operators_declared
+        @comparison_operators_declared = true
+
+        include AttrComparable
+        attr_compare(value_attributes.map(&:name))
+      end
     end
   end
 end

@@ -98,5 +98,26 @@ describe ValueClass do
       expect(gear.second_gear).to eq(200)
       expect(gear.third_gear).to eq(200)
     end
+
+    context "comparison" do
+      it "allows value types to be comparied" do
+        gear      = ValueClassTest::Gears.new(first_gear: 20)
+        gear_same = ValueClassTest::Gears.new(first_gear: 20)
+        gear_diff = ValueClassTest::Gears.new(first_gear: 21)
+
+        expect(gear).to     eq(gear_same)
+        expect(gear).not_to eq(gear_diff)
+
+        expect(gear).to     eql(gear_same)
+        expect(gear).not_to eql(gear_diff)
+
+        expect(gear.hash).to     eq(gear_same.hash)
+        expect(gear.hash).not_to eq(gear_diff.hash)
+
+        test_hash = { gear_same => "value1", gear_diff => "value2" }
+
+        expect(test_hash[gear]).to eq("value1")
+      end
+    end
   end
 end

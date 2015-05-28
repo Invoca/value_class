@@ -1,3 +1,5 @@
+# TODO - Move to extensions folder
+
 # Overrides ActiveRecord::Base.connection and adds in several additional methods
 module ActiveTableSet
   module ConnectionOverride
