@@ -2,8 +2,6 @@ require 'spec_helper'
 
 describe ActiveTableSet::QueryParser do
   context "query_parser" do
-    let(:parser)    {  }
-
     context "selects" do
       {
         advertiser_select:         ["advertisers"],

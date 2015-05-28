@@ -9,9 +9,7 @@ module ActiveTableSet
       value_list_attr :table_sets,           class_name: 'ActiveTableSet::Configuration::TableSet', insert_method: :table_set
       value_list_attr :test_scenarios,       class_name: 'ActiveTableSet::Configuration::TestScenario', insert_method: :test_scenario
 
-      # TODO -- How to specify default database attributes?
       # TODO -- Specify named timeout values, disallow arbitrary values  For example :web, 110 seconds,  :bulk = 15 minutes... :ringswitch_event_processor - 1 second.   :ringswitch_deferred - 15 seconds
-      # TODO -- Define test_scenario config and implement.
       # TODO -- Define method to return list of DB connections.
       # TODO -- Add description for all config parameters.
       # TODO -- Define users outside of DB spec?

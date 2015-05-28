@@ -16,7 +16,6 @@ require 'active_table_set/version'
 require 'active_table_set/pool_manager'
 require 'active_table_set/connection_proxy'
 require 'active_table_set/query_parser'
-require 'yaml'
 require 'active_support/core_ext'
 require 'active_support/hash_with_indifferent_access'
 

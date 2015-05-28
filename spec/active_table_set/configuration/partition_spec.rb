@@ -1,13 +1,7 @@
 require 'spec_helper'
 
 describe ActiveTableSet::Configuration::Partition do
-  let(:db_config) { ActiveTableSet::Configuration::DatabaseConfig.new(username: "tester", password: "verysecure", host: "localhost", timeout: 5)  }
-
-  let(:leader)    { { :host => "127.0.0.8",  :username => "tester",  :password => "verysecure",  :timeout => 2, :database => "main" } }
-  let(:follower1) { { :host => "127.0.0.9",  :username => "tester1", :password => "verysecure1", :timeout => 2, :database => "replication1" } }
-  let(:follower2) { { :host => "127.0.0.10", :username => "tester2", :password => "verysecure2", :timeout => 2, :database => "replication2" } }
   let(:cfg)       { { :leader => leader, :followers => [follower1, follower2] } }
-
   let(:part)      { ActiveTableSet::Configuration::Partition.new( leader: leader) }
 
   context "config" do

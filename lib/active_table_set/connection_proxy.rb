@@ -12,6 +12,7 @@ require 'active_record/connection_adapters/mysql2_adapter'
 # TODO -- wire up default connection
 # TODO -- wire up enforce access policy
 # TODO -- Get rid of delegation from connection proxy.  Instead, extend the class to add the syntax we want.
+# TODO -- Wireup test scenarios
 
 
 module ActiveTableSet
