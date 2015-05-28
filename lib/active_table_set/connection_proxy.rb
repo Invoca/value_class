@@ -19,15 +19,13 @@ module ActiveTableSet
   class ConnectionProxy
     delegate *(ActiveRecord::ConnectionAdapters::Mysql2Adapter.instance_methods - ActiveTableSet::ConnectionProxy.instance_methods), :to => :connection
 
-    THREAD_DB_CONFIG = :active_table_set_per_thread_database_config
-    DEFAULT_ACCESS_MODE  = :write
-    DEFAULT_PARTITION_ID = 0
-    DEFAULT_TIMEOUT_SECS = 2
+    include ValueClass::ThreadLocalAttribute
+    thread_local_instance_attr :thread_database_config
+    thread_local_instance_attr :test_scenario
 
     def initialize(config:)
       @config       = config
       @pool_manager = ActiveTableSet::PoolManager.new
-      self.thread_database_config=nil
     end
 
     def using(table_set:, access_mode: :write, partition_key: 0, timeout: nil, &blk)
@@ -42,6 +40,12 @@ module ActiveTableSet
     def connection
       obtain_connection(thread_database_config)
     end
+
+
+    # Prefer values from config...
+    DEFAULT_ACCESS_MODE  = :write
+    DEFAULT_PARTITION_ID = 0
+    DEFAULT_TIMEOUT_SECS = 2
 
     def set_default_table_set(table_set_name:)
       thread_database_config.nil? or raise "Can not use set_default_table_set while in the scope of an existing table set - startup only bro"
@@ -61,16 +65,6 @@ module ActiveTableSet
     ensure
       release_connection(new_key)
       self.thread_database_config = old_key
-    end
-
-    ## THREAD SAFE KEYS ##
-
-    def thread_database_config
-      Thread.current.thread_variable_get(THREAD_DB_CONFIG)
-    end
-
-    def thread_database_config=(key)
-      Thread.current.thread_variable_set(THREAD_DB_CONFIG, key)
     end
 
     ## CONNECTIONS ##

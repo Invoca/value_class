@@ -79,3 +79,5 @@ end
 
 # Constructable builds off of the above, so we require it last.
 require 'value_class/constructable'
+require 'value_class/thread_local_attribute'
+

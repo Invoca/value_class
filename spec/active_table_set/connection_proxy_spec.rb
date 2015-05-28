@@ -264,31 +264,4 @@ describe ActiveTableSet::ConnectionProxy do
       end
     end
   end
-
-  context "per-thread keys" do
-    it "saves and retrieves per-thread key values" do
-      num_threads = 3
-      begin
-        px = ActiveTableSet::ConnectionProxy.new(config: large_table_set)
-        threads = num_threads.times.map.with_index do |_,index|
-          Thread.new do
-            sleep 1
-            px.send(:thread_database_config=, "key_#{index}")
-          end
-        end
-
-        threads[0].join do
-          expect(px.send(:thread_database_config)).to eq("key_0")
-        end
-        threads[1].join do
-          expect(px.send(:thread_database_config)).to eq("key_0")
-        end
-        threads[2].join do
-          expect(px.send(:thread_database_config)).to eq("key_0")
-        end
-      ensure
-        threads && threads.each(&:kill)
-      end
-    end
-  end
 end

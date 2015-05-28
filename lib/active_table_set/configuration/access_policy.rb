@@ -1,7 +1,3 @@
-# Policies use the mysql replication wildcard format.
-# For example:
-# %.cf_%,%.fraud_reports,%.simple_sessions,%.payout_calls_during_check_period%,%.calls_fraud_reports%,%.pnapi_show_responses
-
 module ActiveTableSet
   module Configuration
     class AccessPolicy
