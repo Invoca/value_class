@@ -126,6 +126,8 @@ describe ActiveTableSet::ConnectionProxy do
     let(:mgr)   { proxy.send(:pool_manager) }
 
     it "delegates all AbstractAdapter methods to the current connection" do
+      proxy.set_default_table_set(table_set_name: :common)
+
       connection = double("connection")
       pool = double("pool")
       expect(mgr).to receive(:create_pool).and_return(pool)
@@ -181,7 +183,7 @@ describe ActiveTableSet::ConnectionProxy do
       expect(follower_pool_5).to receive(:connection).exactly(2).times { "follower_timeout_5_connection" }
       expect(follower_pool_5).to receive(:release_connection) { true }
 
-      expect(ActiveTableSet::Configuration::Partition).to receive(:pid) { 1 }
+      allow(ActiveTableSet::Configuration::Partition).to receive(:pid) { 1 }
 
       expect(mgr).to receive(:create_pool).exactly(4).times.and_return(leader_pool_2, follower_pool_2, leader_pool_5, follower_pool_5)
 

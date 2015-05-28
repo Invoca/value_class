@@ -14,7 +14,7 @@ module ActiveTableSet
   class ConnectionProxy
     delegate *(ActiveRecord::ConnectionAdapters::Mysql2Adapter.instance_methods - ActiveTableSet::ConnectionProxy.instance_methods), :to => :connection
 
-    THREAD_DB_database_config = :active_table_set_per_thread_database_config
+    THREAD_DB_CONFIG = :active_table_set_per_thread_database_config
     DEFAULT_ACCESS_MODE  = :write
     DEFAULT_PARTITION_ID = 0
     DEFAULT_TIMEOUT_SECS = 2
@@ -59,12 +59,16 @@ module ActiveTableSet
 
     ## THREAD SAFE KEYS ##
 
+    def thread_database_key
+      @thread_database_key ||= "#{THREAD_DB_CONFIG}:#{object_id}"
+    end
+
     def thread_database_config
-      Thread.current.thread_variable_get(THREAD_DB_database_config)
+      Thread.current.thread_variable_get(thread_database_key)
     end
 
     def thread_database_config=(key)
-      Thread.current.thread_variable_set(THREAD_DB_database_config, key)
+      Thread.current.thread_variable_set(thread_database_key, key)
     end
 
     ## CONNECTIONS ##

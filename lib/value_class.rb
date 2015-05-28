@@ -1,7 +1,3 @@
-# TODO - Needs to implement comparison operators using attr_comparible. (Possibly declare in constructor?)
-# TODO - Should support eql and hash notation.
-# TODO - Add eql and hash notation to attr_comparible
-
 require 'active_record'
 require 'attr_comparable'
 require 'active_support/core_ext'
@@ -19,6 +15,7 @@ module ValueClass
     end
   end
 
+  # TODO - These need to be added to attr_comparible
   def eql?(other)
     self == other
   end
