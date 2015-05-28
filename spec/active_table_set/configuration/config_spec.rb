@@ -105,19 +105,167 @@ describe ActiveTableSet::Configuration::Config do
 
   context "database_config" do
     it "finds common connections" do
-      db_config = large_table_set.database_config(table_set: :common)
+      db_config = large_table_set.database_config(
+          table_set: :common,
+          access_mode: :write,
+          partition_key: nil,
+          test_scenario: nil )
 
       expect(db_config.host).to eq("10.0.0.1")
     end
 
     it "finds sharded connections" do
-      db_config = large_table_set.database_config(table_set: :sharded, partition_key: "alpha")
+      db_config = large_table_set.database_config(
+          table_set: :sharded,
+          access_mode: :write,
+          partition_key: "alpha",
+          test_scenario: nil )
 
       expect(db_config.host).to eq("11.0.1.1")
     end
 
     it "raises if the table set is not found" do
-      expect { large_table_set.database_config(table_set: :not_found) }.to raise_error(ArgumentError, "Unknown table set not_found, available_table_sets: common, sharded")
+      expect { large_table_set.database_config(
+          table_set: :not_found,
+          access_mode: :write,
+          partition_key: nil,
+          test_scenario: nil) }.to raise_error(ArgumentError, "Unknown table set not_found, available_table_sets: common, sharded")
+    end
+
+    it "returns the test scenario if it is overridden" do
+      db_config = large_table_set.database_config(
+          table_set: :sharded,
+          access_mode: :write,
+          partition_key: "alpha",
+          test_scenario: "legacy" )
+
+      expect(db_config.host).to eq("12.0.0.1")
+    end
+
+    it "raises if the test scenario is not found" do
+      expect { large_table_set.database_config(
+          table_set: :common,
+          access_mode: :write,
+          partition_key: nil,
+          test_scenario: "badname") }.to raise_error(ArgumentError, "Unknown test scenario badname, available_table_sets: fixture, legacy" )
+    end
+
+  end
+
+  context "all_database_configurations" do
+    it "can report all database confgurations from table sets" do
+      database_configurations = large_table_set.all_database_configurations
+
+      expected = [{"database"=>"main",
+                   "connect_timeout"=>5,
+                   "read_timeout"=>2,
+                   "write_timeout"=>2,
+                   "encoding"=>"utf8",
+                   "collation"=>"utf8_general_ci",
+                   "adapter"=>"mysql2",
+                   "pool"=>5,
+                   "reconnect"=>true,
+                   "host"=>"10.0.0.1",
+                   "username"=>"tester",
+                   "password"=>"verysecure"},
+                  {"database"=>"replication1",
+                   "connect_timeout"=>5,
+                   "read_timeout"=>2,
+                   "write_timeout"=>2,
+                   "encoding"=>"utf8",
+                   "collation"=>"utf8_general_ci",
+                   "adapter"=>"mysql2",
+                   "pool"=>5,
+                   "reconnect"=>true,
+                   "host"=>"10.0.0.2",
+                   "username"=>"tester1",
+                   "password"=>"verysecure1"},
+                  {"database"=>"replication2",
+                   "connect_timeout"=>5,
+                   "read_timeout"=>2,
+                   "write_timeout"=>2,
+                   "encoding"=>"utf8",
+                   "collation"=>"utf8_general_ci",
+                   "adapter"=>"mysql2",
+                   "pool"=>5,
+                   "reconnect"=>true,
+                   "host"=>"10.0.0.3",
+                   "username"=>"tester2",
+                   "password"=>"verysecure2"},
+                  {"database"=>"main",
+                   "connect_timeout"=>5,
+                   "read_timeout"=>2,
+                   "write_timeout"=>2,
+                   "encoding"=>"utf8",
+                   "collation"=>"utf8_general_ci",
+                   "adapter"=>"mysql2",
+                   "pool"=>5,
+                   "reconnect"=>true,
+                   "host"=>"11.0.1.1",
+                   "username"=>"tester",
+                   "password"=>"verysecure"},
+                  {"database"=>"replication1",
+                   "connect_timeout"=>5,
+                   "read_timeout"=>2,
+                   "write_timeout"=>2,
+                   "encoding"=>"utf8",
+                   "collation"=>"utf8_general_ci",
+                   "adapter"=>"mysql2",
+                   "pool"=>5,
+                   "reconnect"=>true,
+                   "host"=>"11.0.1.2",
+                   "username"=>"tester1",
+                   "password"=>"verysecure1"},
+                  {"database"=>"replication2",
+                   "connect_timeout"=>5,
+                   "read_timeout"=>2,
+                   "write_timeout"=>2,
+                   "encoding"=>"utf8",
+                   "collation"=>"utf8_general_ci",
+                   "adapter"=>"mysql2",
+                   "pool"=>5,
+                   "reconnect"=>true,
+                   "host"=>"11.0.1.3",
+                   "username"=>"tester2",
+                   "password"=>"verysecure2"},
+                  {"database"=>"main",
+                   "connect_timeout"=>5,
+                   "read_timeout"=>2,
+                   "write_timeout"=>2,
+                   "encoding"=>"utf8",
+                   "collation"=>"utf8_general_ci",
+                   "adapter"=>"mysql2",
+                   "pool"=>5,
+                   "reconnect"=>true,
+                   "host"=>"11.0.2.1",
+                   "username"=>"tester",
+                   "password"=>"verysecure"},
+                  {"database"=>"replication1",
+                   "connect_timeout"=>5,
+                   "read_timeout"=>2,
+                   "write_timeout"=>2,
+                   "encoding"=>"utf8",
+                   "collation"=>"utf8_general_ci",
+                   "adapter"=>"mysql2",
+                   "pool"=>5,
+                   "reconnect"=>true,
+                   "host"=>"11.0.2.2",
+                   "username"=>"tester1",
+                   "password"=>"verysecure1"},
+                  {"database"=>"replication2",
+                   "connect_timeout"=>5,
+                   "read_timeout"=>2,
+                   "write_timeout"=>2,
+                   "encoding"=>"utf8",
+                   "collation"=>"utf8_general_ci",
+                   "adapter"=>"mysql2",
+                   "pool"=>5,
+                   "reconnect"=>true,
+                   "host"=>"11.0.2.3",
+                   "username"=>"tester2",
+                   "password"=>"verysecure2"}]
+
+      expect(database_configurations).to eq(expected)
     end
   end
 end

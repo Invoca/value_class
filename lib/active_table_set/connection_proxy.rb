@@ -92,7 +92,12 @@ module ActiveTableSet
     ## DATABASE MANAGEMENT ##
 
     def database_config(table_set:, access_mode: :write, partition_key: nil)
-      @config.database_config(table_set: table_set, access_mode: access_mode, partition_key: partition_key)
+      @config.database_config(
+          table_set: table_set,
+          access_mode: access_mode,
+          partition_key: partition_key,
+          test_scenario: nil
+      )
     end
 
     # TODO - deprecated in favor of setting the timeout on a connection when passed out from the pool.

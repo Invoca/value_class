@@ -231,6 +231,24 @@ module SpecHelper
           end
         end
       end
+
+      conf.test_scenario do |db|
+        db.scenario_name "legacy"
+        db.host      "12.0.0.1"
+        db.username  "tester1"
+        db.password  "verysecure1"
+        db.timeout   2
+        db.database  "replication1"
+      end
+
+      conf.test_scenario do |db|
+        db.scenario_name "fixture"
+        db.host      "12.0.0.2"
+        db.username  "tester1"
+        db.password  "verysecure1"
+        db.timeout   2
+        db.database  "replication1"
+      end
     end
   end
 end
