@@ -16,8 +16,6 @@ module ActiveTableSet
       # TODO -- Add description for all config parameters.
       # TODO -- Define users outside of DB spec?
 
-
-
       def initialize(options={})
         super
         table_sets.any? or raise ArgumentError, "no table sets defined"
@@ -27,6 +25,15 @@ module ActiveTableSet
       def database_config(table_set:, access_mode: :write, partition_key: nil)
         ts = @table_sets_by_name[table_set] or raise ArgumentError, "Unknown table set #{table_set}, available_table_sets: #{@table_sets_by_name.keys.sort.join(", ")}"
         ts.database_config(access_mode: access_mode, partition_key: partition_key)
+      end
+
+      def all_database_configurations
+         # TODO - not sure exactly what is needed here yet.
+        table_sets.map do |ts|
+          ts.partitions.map do |part|
+            [part.leader] + part.followers
+          end
+        end.flatten.uniq
       end
     end
   end

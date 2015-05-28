@@ -1,8 +1,8 @@
 require 'active_support/core_ext'
 
 # For the delegation trick
-
 require 'active_record/connection_adapters/mysql2_adapter'
+
 # The ConnectionProxy does 3 different things:
 # 1. Maintains the tree of TableSets => Partitions => PoolKeys which it uses to retrieve the appropriate pool key.
 # 2. Has a PoolManager. It passes pool keys to the pool manager and gets connections back.
@@ -26,6 +26,7 @@ module ActiveTableSet
     def initialize(config:)
       @config       = config
       @pool_manager = ActiveTableSet::PoolManager.new
+      self.thread_database_config=nil
     end
 
     def using(table_set:, access_mode: :write, partition_key: 0, timeout: nil, &blk)
@@ -63,16 +64,12 @@ module ActiveTableSet
 
     ## THREAD SAFE KEYS ##
 
-    def thread_database_key
-      @thread_database_key ||= "#{THREAD_DB_CONFIG}:#{object_id}"
-    end
-
     def thread_database_config
-      Thread.current.thread_variable_get(thread_database_key)
+      Thread.current.thread_variable_get(THREAD_DB_CONFIG)
     end
 
     def thread_database_config=(key)
-      Thread.current.thread_variable_set(thread_database_key, key)
+      Thread.current.thread_variable_set(THREAD_DB_CONFIG, key)
     end
 
     ## CONNECTIONS ##
@@ -104,7 +101,6 @@ module ActiveTableSet
     end
 
     ## POOL MANAGER ##
-
     attr_reader :pool_manager
 
     def pool(key)

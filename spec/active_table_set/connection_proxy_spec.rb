@@ -107,14 +107,6 @@ describe ActiveTableSet::ConnectionProxy do
     end
   end
 
-
-  # let(:leader)        { { :host => "127.0.0.8",  :username => "tester",  :password => "verysecure",  :timeout => 2, :database => "main" } }
-  # let(:follower1)     { { :host => "127.0.0.9",  :username => "tester1", :password => "verysecure1", :timeout => 2, :database => "replication1" } }
-  # let(:follower2)     { { :host => "127.0.0.10", :username => "tester2", :password => "verysecure2", :timeout => 2, :database => "replication2" } }
-  # let(:partition_cfg) { { :leader => leader, :followers => [follower1, follower2] } }
-  # let(:table_set_cfg) { { :common => { :partitions => [partition_cfg], :access_policy => { disallow_read: "cf_%" } } } }
-  # let(:main_cfg)      { { :table_sets => table_set_cfg } }
-
   context "construction" do
     it "raises on missing config parameter" do
       expect { ActiveTableSet::ConnectionProxy.new }.to raise_error(ArgumentError, "missing keyword: config")
