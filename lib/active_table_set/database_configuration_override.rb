@@ -1,3 +1,4 @@
+# TODO - deprecate
 module ActiveTableSet
   module DatabaseConfigurationOverride
     extend ActiveSupport::Concern

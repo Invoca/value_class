@@ -70,6 +70,10 @@ module ValueClass
         attr_compare(value_attributes.map(&:name))
       end
     end
+
+    def inherited(new_child_class)
+      value_attributes.each { |attr| new_child_class.value_attributes << attr }
+    end
   end
 end
 

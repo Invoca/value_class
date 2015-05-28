@@ -1,6 +1,3 @@
-require 'attr_comparable'
-require 'active_support'
-
 module ActiveTableSet
   module Configuration
     class DatabaseConfig

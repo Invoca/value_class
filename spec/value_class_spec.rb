@@ -41,6 +41,10 @@ module ValueClassTest
     include ValueClass
     value_attrs :first_gear, :second_gear, :third_gear, default: 200
   end
+
+  class MountainBicycle < Bicycle
+    value_attr :shocks
+  end
 end
 
 
@@ -117,6 +121,16 @@ describe ValueClass do
         test_hash = { gear_same => "value1", gear_diff => "value2" }
 
         expect(test_hash[gear]).to eq("value1")
+      end
+    end
+
+    context "inheritance" do
+      it "allows value objects to be inherited from each other" do
+        bike = ValueClassTest::MountainBicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}], shocks: true )
+
+        expect(bike.tires.map(&:diameter)).to eq([40, 50])
+        expect(bike.tires.map(&:tred)).to eq([:mountain, :slicks])
+        expect(bike.shocks).to eq(true)
       end
     end
   end

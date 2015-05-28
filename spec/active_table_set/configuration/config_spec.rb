@@ -159,6 +159,54 @@ describe ActiveTableSet::Configuration::Config do
     expect(ats_config.enforce_access_policy).to eq(true)
   end
 
+  it "allows test scenarios to be specified" do
+    ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default_connection  =  { table_set: :common }
+
+      conf.table_set do |ts|
+        ts.name = :common
+
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host      "127.0.0.8"
+            leader.username  "tester"
+            leader.password  "verysecure"
+            leader.timeout   2
+            leader.database  "main"
+          end
+        end
+      end
+
+      conf.test_scenario do |ts|
+        ts.scenario_name "legacy"
+        ts.host      "127.0.0.8"
+        ts.username  "tester"
+        ts.password  "verysecure"
+        ts.timeout   2
+        ts.database  "main"
+      end
+
+      conf.test_scenario do |ts|
+        ts.scenario_name "adwords"
+        ts.host      "127.0.0.8"
+        ts.username  "tester"
+        ts.password  "verysecure"
+        ts.timeout   2
+        ts.database  "main"
+      end
+    end
+
+    expect(ats_config.test_scenarios.size).to eq(2)
+    expect(ats_config.test_scenarios.first.scenario_name).to eq("legacy")
+  end
+
   it "raises if no table set was specified" do
     expect { ActiveTableSet::Configuration::Config.new(default_connection:{table_set: :common}) }.to raise_error(ArgumentError, "no table sets defined")
   end
@@ -183,6 +231,5 @@ describe ActiveTableSet::Configuration::Config do
     it "raises if the table set is not found" do
       expect { large_table_set.database_config(table_set: :not_found) }.to raise_error(ArgumentError, "Unknown table set not_found, available_table_sets: common, sharded")
     end
-
   end
 end

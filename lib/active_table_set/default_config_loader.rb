@@ -1,3 +1,5 @@
+# TODO - deprecate
+
 module ActiveTableSet
   # Override this class with your own in config/initializers
   class DefaultConfigLoader

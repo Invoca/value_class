@@ -1,3 +1,4 @@
+# TODO - deprecate
 module ActiveTableSet
   module ConfigHelpers
     def load_yaml_config(filename)
