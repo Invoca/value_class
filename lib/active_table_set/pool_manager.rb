@@ -13,6 +13,7 @@ module ActiveTableSet
       @pools[key] ||= create_pool(key)
     end
 
+# TODO - Get rid of these methods (tests only)
     def destroy_pool(key:)
       @pools.delete(key)
     end
@@ -20,8 +21,6 @@ module ActiveTableSet
     def pool_count
       @pools.length
     end
-
-    private
 
     def create_pool(config)
       ActiveRecord::ConnectionAdapters::ConnectionPool.new(specification(config))

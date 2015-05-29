@@ -10,10 +10,11 @@ module Rails
 end
 
 class StubClient
+  attr_reader :called_commands, :config
   attr_accessor :reconnect, :connect_timeout, :read_timeout, :write_timeout, :local_infile, :charset_name
   attr_accessor :query_options
 
-  def initialize(config)
+  def initialize(config = {})
     @config = config
     @called_commands = []
     @query_options = Mysql2::Client.default_query_options.dup
@@ -21,7 +22,7 @@ class StubClient
   end
 
   def record_command(command, args)
-    @called_commands << [ command, args]
+    @called_commands << [command, args]
   end
 
   def query(sql, options = {})
@@ -49,7 +50,7 @@ class StubClient
 
   SIMPLE_METHODS = [ :close, :abandon_results!, :info, :server_info, :socket, :async_result, :last_id, :affected_rows,
                      :thread_id, :ping, :select_db, :more_results?, :next_result, :store_result, :warning_count, :query_info_string,
-                     :encoding, :initialize_ext
+                     :encoding, :initialize_ext, :clear_cache!, :schema_cache
   ]
 
   SIMPLE_METHODS.each do |method|
@@ -81,6 +82,38 @@ class StubDbAdaptor < ActiveRecord::ConnectionAdapters::Mysql2Adapter
     configure_connection
   end
 end
+
+class StubConnectionPool
+  attr_accessor :stub_client
+
+  def initialize(config = {})
+    @config = config
+  end
+
+  def connection
+    stub_client || StubClient.new(@config)
+  end
+
+  def release_connection
+  end
+end
+
+class PoolManagerStub
+  attr_accessor :responses
+  attr_reader :pool_requests
+  attr_accessor :stub_pool
+
+  def initialize
+    @pool_requests = []
+    @responses = []
+  end
+
+  def get_pool(key:)
+    @pool_requests << key
+    @stub_pool || StubConnectionPool.new(key.specification)
+  end
+end
+
 
 def load_sample_query(name)
   File.read(File.expand_path("../fixtures/sample_queries/#{name}.sql",  __FILE__))

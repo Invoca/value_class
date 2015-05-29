@@ -8,99 +8,68 @@ describe ActiveTableSet::ConnectionProxy do
   end
 
   context "delegation to connection" do
-    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: large_table_set) }
-    let(:mgr)   { proxy.send(:pool_manager) }
+    let(:stub_client) {StubClient.new()}
+    let(:stub_pool) { StubConnectionPool.new() }
+    let(:proxy_with_stub_pool) do
+      allow(ActiveTableSet::PoolManager).to receive(:new) { PoolManagerStub.new }
+      ActiveTableSet::ConnectionProxy.new(config: large_table_set)
+    end
+    let(:mgr)   { proxy_with_stub_pool.send(:pool_manager) }
 
     it "delegates all AbstractAdapter methods to the current connection" do
-      proxy.set_default_table_set(table_set_name: :common)
+      mgr.stub_pool = stub_pool
+      stub_pool.stub_client = stub_client
 
-      connection = double("connection")
-      pool = double("pool")
-      expect(mgr).to receive(:create_pool).and_return(pool)
-      expect(pool).to receive(:connection).exactly(2).times { connection }
+      proxy_with_stub_pool.set_default_table_set(table_set_name: :common)
 
-      expect(connection).to receive(:clear_cache!).and_return("cleared!")
-      expect(proxy.clear_cache!).to eq("cleared!")
+      proxy_with_stub_pool.schema_cache
+      proxy_with_stub_pool.clear_cache!
 
-      expect(connection).to receive(:schema_cache).and_return("schema")
-      expect(proxy.schema_cache).to eq("schema")
+      expect(stub_client.called_commands).to eq([[:schema_cache, []], [:clear_cache!, []]])
     end
   end
 
   context "using PoolManager" do
-    let(:proxy) { ActiveTableSet::ConnectionProxy.new(config: large_table_set) }
+    let(:stub_client) {StubClient.new()}
+    let(:stub_pool) { StubConnectionPool.new() }
+    let(:proxy) do
+      allow(ActiveTableSet::PoolManager).to receive(:new) { PoolManagerStub.new }
+      ActiveTableSet::ConnectionProxy.new(config: large_table_set)
+    end
     let(:mgr)   { proxy.send(:pool_manager) }
 
-    it "gets a new pool from PoolManager" do
-      expect(mgr).to receive(:create_pool).and_return("stand-in_for_actual_pool")
-
-      leader_key = proxy.send(:database_config, table_set: :common, access_mode: :write)
-      pool = proxy.send(:pool, leader_key)
-      expect(mgr.pool_count).to eq(1)
-      expect(pool).to eq("stand-in_for_actual_pool")
-    end
-
-    it "gets same pool from PoolManager for same pool key" do
-      expect(mgr).to receive(:create_pool).once.and_return("stand-in_for_actual_pool")
-
-      leader_key = proxy.send(:database_config, table_set: :common, access_mode: :write)
-      pool = proxy.send(:pool, leader_key)
-      expect(mgr.pool_count).to eq(1)
-      expect(pool).to eq("stand-in_for_actual_pool")
-
-      pool2 = proxy.send(:pool, leader_key)
-      expect(pool).to eq(pool2)
-    end
-
-    it "uses different pools for connections with different timeouts" do
-      leader_pool_2 = double("leader_timeout_2_pool")
-      expect(leader_pool_2).to receive(:connection).exactly(4).times { "leader_timeout_2_connection" }
-      expect(leader_pool_2).to receive(:release_connection).twice { true }
-
-      follower_pool_2 = double("follower_timeout_2_pool")
-      expect(follower_pool_2).to receive(:connection).exactly(2).times { "follower_timeout_2_connection" }
-      expect(follower_pool_2).to receive(:release_connection) { true }
-
-      leader_pool_5 = double("leader_timeout_5_pool")
-      expect(leader_pool_5).to receive(:connection).exactly(4).times { "leader_timeout_5_connection" }
-      expect(leader_pool_5).to receive(:release_connection).twice { true }
-
-      follower_pool_5 = double("follower_timeout_5_pool")
-      expect(follower_pool_5).to receive(:connection).exactly(2).times { "follower_timeout_5_connection" }
-      expect(follower_pool_5).to receive(:release_connection) { true }
-
-      allow(ActiveTableSet::Configuration::Partition).to receive(:pid) { 1 }
-
-      expect(mgr).to receive(:create_pool).exactly(4).times.and_return(leader_pool_2, follower_pool_2, leader_pool_5, follower_pool_5)
+    it "returns different connections for different configurations" do
+      allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
 
       proxy.using(table_set: :common, access_mode: :write) do
         connection = proxy.connection
-        expect(connection).to eq("leader_timeout_2_connection")
+        expect(connection.config[:host]).to eq("10.0.0.1")
       end
 
       proxy.using(table_set: :common, access_mode: :read) do
-        connection = proxy.connection
-        expect(connection).to eq("leader_timeout_2_connection")
+        expect(proxy.connection.config[:host]).to eq("10.0.0.1")
       end
 
       proxy.using(table_set: :common, access_mode: :balanced) do
-        connection = proxy.connection
-        expect(connection).to eq("follower_timeout_2_connection")
+        expect(proxy.connection.config[:host]).to eq("10.0.0.2")
       end
 
-      proxy.using(table_set: :common, access_mode: :write, timeout: 5) do
-        connection = proxy.connection
-        expect(connection).to eq("leader_timeout_5_connection")
+      proxy.using(table_set: :common, access_mode: :write, timeout: 55) do
+        expect(proxy.connection.config[:host]).to eq("10.0.0.1")
+        expect(proxy.connection.config[:read_timeout]).to eq(55)
+        expect(proxy.connection.config[:write_timeout]).to eq(55)
       end
 
       proxy.using(table_set: :common, access_mode: :balanced, timeout: 5) do
-        connection = proxy.connection
-        expect(connection).to eq("follower_timeout_5_connection")
+        expect(proxy.connection.config[:host]).to eq("10.0.0.2")
+        expect(proxy.connection.config[:read_timeout]).to eq(5)
+        expect(proxy.connection.config[:write_timeout]).to eq(5)
       end
 
       proxy.using(table_set: :common, access_mode: :read, timeout: 5) do
-        connection = proxy.connection
-        expect(connection).to eq("leader_timeout_5_connection")
+        expect(proxy.connection.config[:host]).to eq("10.0.0.1")
+        expect(proxy.connection.config[:read_timeout]).to eq(5)
+        expect(proxy.connection.config[:write_timeout]).to eq(5)
       end
     end
   end
