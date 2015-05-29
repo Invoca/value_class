@@ -2,6 +2,8 @@
 # TODO -- (later) Define users outside of DB spec?
 # TODO -- (later) Add description for all config parameters.
 
+# TODO - the default connection should allow a test scenario
+
 module ActiveTableSet
   module Configuration
     class Config
@@ -20,6 +22,7 @@ module ActiveTableSet
         @test_scenarios_by_name = test_scenarios.inject({}) { |memo, ts| memo[ts.scenario_name] = ts; memo }
       end
 
+      # TODO - This set of parameters may be the same as default_connection.
       def database_config(table_set:, access_mode:, partition_key:, test_scenario:)
         if test_scenario
           ts = @test_scenarios_by_name[test_scenario] or raise ArgumentError, "Unknown test scenario #{test_scenario}, available_table_sets: #{@test_scenarios_by_name.keys.sort.join(", ")}"
@@ -30,11 +33,38 @@ module ActiveTableSet
       end
 
       def database_configuration
-        table_sets.map do |ts|
-          ts.partitions.map do |part|
-            ([part.leader] + part.followers).map { |dc| dc.specification }
+        result = {}
+
+        default_config = database_config(
+            table_set: default_connection.table_set,
+            access_mode: default_connection.access_mode,
+            partition_key: default_connection.partition_key,
+            test_scenario: nil
+        )
+
+        result[environment] = default_config.specification
+
+        table_sets.each do |ts|
+          ts.partitions.each_with_index do |part, index|
+            prefix =
+                if ts.partitioned?
+                  "#{environment}_#{ts.name}"
+                else
+                  "#{environment}_#{ts.name}_#{part.partition_key}"
+                end
+
+            result["#{prefix}_leader"] = part.leader.specification
+
+            part.followers.each_with_index do |follower, index|
+              result["#{prefix}_follower_#{index}"] = follower.specification
+            end
           end
-        end.flatten.uniq
+        end
+
+        test_scenarios.each do |ts|
+          result["#{environment}_test_scenario_#{ts.scenario_name}"] = ts.specification
+        end
+        result
       end
     end
   end
