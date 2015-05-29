@@ -152,9 +152,9 @@ describe ActiveTableSet::Configuration::Config do
 
   end
 
-  context "all_database_configurations" do
+  context "database_configuration" do
     it "can report all database confgurations from table sets" do
-      database_configurations = large_table_set.all_database_configurations
+      database_configurations = large_table_set.database_configuration
 
       expected = [{"database"=>"main",
                    "connect_timeout"=>5,

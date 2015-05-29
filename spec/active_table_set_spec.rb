@@ -80,10 +80,45 @@ describe ActiveTableSet do
     end
 
     expect(ActiveRecord::Base).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionOverride)
+    expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
 
     ActiveTableSet.enable
 
     proxy = ActiveTableSet.connection_proxy
     expect(proxy.class).to eq(ActiveTableSet::ConnectionProxy)
+  end
+
+  it "has a database_config method that delegates to the connection" do
+    ActiveTableSet.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default_connection  =  { table_set: :common }
+
+      conf.table_set do |ts|
+        ts.name = :common
+
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host      "10.0.0.1"
+            leader.username  "tester"
+            leader.password  "verysecure"
+            leader.timeout   2
+            leader.database  "main"
+          end
+        end
+      end
+    end
+
+    config = ActiveTableSet.instance_eval('@config')
+    expect(config).to receive(:database_configuration) { "configuration" }
+
+    db_config = ActiveTableSet.database_configuration
+
+    expect(db_config).to eq("configuration")
   end
 end

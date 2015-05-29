@@ -29,7 +29,7 @@ module ActiveTableSet
         end
       end
 
-      def all_database_configurations
+      def database_configuration
         table_sets.map do |ts|
           ts.partitions.map do |part|
             ([part.leader] + part.followers).map { |dc| dc.specification }
