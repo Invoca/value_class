@@ -41,6 +41,9 @@ describe ActiveTableSet::ConnectionProxy do
     it "returns different connections for different configurations" do
       allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
 
+      connection = proxy.connection
+      expect(connection.config[:host]).to eq("10.0.0.1")
+
       proxy.using(table_set: :common, access_mode: :write) do
         connection = proxy.connection
         expect(connection.config[:host]).to eq("10.0.0.1")

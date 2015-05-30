@@ -38,6 +38,13 @@ module ActiveTableSet
     end
 
     def connection
+      if !thread_database_config
+        self.thread_database_config = timeout_adjusted_database_config(
+            @config.default_connection.table_set,
+            @config.default_connection.access_mode,
+            @config.default_connection.partition_key,
+            @config.default_connection.timeout )
+      end
       obtain_connection(thread_database_config)
     end
 
