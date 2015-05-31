@@ -8,9 +8,10 @@ describe ActiveTableSet::Configuration::TestScenario do
 
   context "allows construction" do
     it "can be constructed" do
-      test_scenario = ActiveTableSet::Configuration::TestScenario.new(scenario_name: 'main', host: ip)
+      test_scenario = ActiveTableSet::Configuration::TestScenario.new(scenario_name: 'main', host: ip, timeout: 40)
 
       expect(test_scenario.scenario_name).to eq('main')
+      expect(test_scenario.timeout).to       eq(40)
     end
   end
 

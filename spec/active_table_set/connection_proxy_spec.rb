@@ -11,7 +11,7 @@ describe ActiveTableSet::ConnectionProxy do
     let(:stub_client) {StubClient.new()}
     let(:stub_pool) { StubConnectionPool.new() }
     let(:proxy_with_stub_pool) do
-      allow(ActiveTableSet::PoolManager).to receive(:new) { PoolManagerStub.new }
+      allow(ActiveTableSet::PoolManager).to receive(:new) { StubPoolManager.new }
       ActiveTableSet::ConnectionProxy.new(config: large_table_set)
     end
     let(:mgr)   { proxy_with_stub_pool.send(:pool_manager) }
@@ -33,7 +33,7 @@ describe ActiveTableSet::ConnectionProxy do
     let(:stub_client) {StubClient.new()}
     let(:stub_pool) { StubConnectionPool.new() }
     let(:proxy) do
-      allow(ActiveTableSet::PoolManager).to receive(:new) { PoolManagerStub.new }
+      allow(ActiveTableSet::PoolManager).to receive(:new) { StubPoolManager.new }
       ActiveTableSet::ConnectionProxy.new(config: large_table_set)
     end
     let(:mgr)   { proxy.send(:pool_manager) }

@@ -10,7 +10,7 @@ describe ActiveTableSet::ConnectionManager do
   context "with a stubbed pool manager" do
     let(:connection_manager) do
       allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
-      ActiveTableSet::ConnectionManager.new(config: large_table_set, pool_manager: PoolManagerStub.new )
+      ActiveTableSet::ConnectionManager.new(config: large_table_set, pool_manager: StubPoolManager.new )
     end
 
     it "provides a default connection" do

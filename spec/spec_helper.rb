@@ -9,7 +9,6 @@ module Rails
   end
 end
 
-# TODO - move stubs into their own files.
 class StubClient
   attr_reader :called_commands, :config
   attr_accessor :reconnect, :connect_timeout, :read_timeout, :write_timeout, :local_infile, :charset_name
@@ -99,8 +98,7 @@ class StubConnectionPool
   end
 end
 
-# TODO rename StubPoolManager
-class PoolManagerStub
+class StubPoolManager
   attr_accessor :responses
   attr_reader :pool_requests
   attr_accessor :stub_pool
