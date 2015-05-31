@@ -9,6 +9,7 @@ module Rails
   end
 end
 
+# TODO - move stubs into their own files.
 class StubClient
   attr_reader :called_commands, :config
   attr_accessor :reconnect, :connect_timeout, :read_timeout, :write_timeout, :local_infile, :charset_name
@@ -98,6 +99,7 @@ class StubConnectionPool
   end
 end
 
+# TODO rename StubPoolManager
 class PoolManagerStub
   attr_accessor :responses
   attr_reader :pool_requests
@@ -165,7 +167,7 @@ module SpecHelper
     ActiveTableSet::Configuration::Config.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
-      conf.default_connection  =  { table_set: :common }
+      conf.default  =  { table_set: :common }
 
       conf.table_set do |ts|
         ts.name = :common
@@ -191,7 +193,7 @@ module SpecHelper
     ActiveTableSet::Configuration::Config.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
-      conf.default_connection  =  { table_set: :common }
+      conf.default  =  { table_set: :common }
 
       conf.read_only_username  "read_only_tester"
       conf.read_only_password  "verysecure_too"

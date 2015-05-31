@@ -5,7 +5,7 @@ describe ActiveTableSet::Configuration::Config do
     ats_config = ActiveTableSet::Configuration::Config.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
-      conf.default_connection  =  { table_set: :common }
+      conf.default  =  { table_set: :common }
 
       conf.table_set do |ts|
         ts.name = :common
@@ -48,7 +48,7 @@ describe ActiveTableSet::Configuration::Config do
     ats_config = ActiveTableSet::Configuration::Config.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
-      conf.default_connection  =  { table_set: :common }
+      conf.default  =  { table_set: :common }
 
       conf.table_set do |ts|
         ts.name = :common
@@ -90,70 +90,75 @@ describe ActiveTableSet::Configuration::Config do
   end
 
   it "raises if no table set was specified" do
-    expect { ActiveTableSet::Configuration::Config.new(default_connection:{table_set: :common}) }.to raise_error(ArgumentError, "no table sets defined")
+    expect { ActiveTableSet::Configuration::Config.new(default:{table_set: :common}) }.to raise_error(ArgumentError, "no table sets defined")
   end
 
   it "raises if a default connection setting is not specified" do
-    expect { ActiveTableSet::Configuration::Config.new(table_sets: [table_set_cfg]) }.to raise_error(ArgumentError, "must provide a value for default_connection")
+    expect { ActiveTableSet::Configuration::Config.new(table_sets: [table_set_cfg]) }.to raise_error(ArgumentError, "must provide a value for default")
   end
 
   context "connection_spec" do
     it "finds common connections" do
-      using_spec = ActiveTableSet::Configuration::Request.new(
+      request = ActiveTableSet::Configuration::Request.new(
           table_set: :common,
           access_mode: :write,
           partition_key: nil,
           test_scenario: nil,
           timeout: 100 )
 
-      con_spec = large_table_set.connection_spec(using_spec)
+      con_spec = large_table_set.connection_spec(request)
 
       expect(con_spec.specification.host).to eq("10.0.0.1")
     end
 
     it "finds sharded connections" do
-      using_spec = ActiveTableSet::Configuration::Request.new(
+      request = ActiveTableSet::Configuration::Request.new(
           table_set: :sharded,
           access_mode: :write,
           partition_key: "alpha",
           test_scenario: nil,
           timeout: 100 )
 
-      con_spec = large_table_set.connection_spec(using_spec)
+      con_spec = large_table_set.connection_spec(request)
 
       expect(con_spec.specification.host).to eq("11.0.1.1")
     end
 
 
     it "raises if the table set is not found" do
-      using_spec = ActiveTableSet::Configuration::Request.new(
+      request = ActiveTableSet::Configuration::Request.new(
           table_set: :not_found,
           access_mode: :write,
           partition_key: "alpha",
           test_scenario: nil,
           timeout: 100 )
 
-      expect { large_table_set.connection_spec(using_spec) }.to raise_error(ArgumentError, "Unknown table set not_found, available_table_sets: common, sharded")
+      expect { large_table_set.connection_spec(request) }.to raise_error(ArgumentError, "Unknown table set not_found, available_table_sets: common, sharded")
     end
 
-    # TODO
-    # it "returns the test scenario if it is overridden" do
-    #   db_config = large_table_set.database_config(
-    #       table_set: :sharded,
-    #       access_mode: :write,
-    #       partition_key: "alpha",
-    #       test_scenario: "legacy" )
-    #
-    #   expect(db_config.host).to eq("12.0.0.1")
-    # end
-    #
-    # it "raises if the test scenario is not found" do
-    #   expect { large_table_set.database_config(
-    #       table_set: :common,
-    #       access_mode: :write,
-    #       partition_key: nil,
-    #       test_scenario: "badname") }.to raise_error(ArgumentError, "Unknown test scenario badname, available_table_sets: fixture, legacy" )
-    # end
+    it "returns the test scenario if it is overridden" do
+      request = ActiveTableSet::Configuration::Request.new(
+        table_set: :common,
+        access_mode: :write,
+        partition_key: "alpha",
+        test_scenario: "legacy",
+        timeout: 100 )
+
+      con_spec = large_table_set.connection_spec(request)
+
+      expect(con_spec.specification.host).to eq("12.0.0.1")
+    end
+
+    it "raises if the test scenario is not found" do
+      request = ActiveTableSet::Configuration::Request.new(
+        table_set: :common,
+        access_mode: :write,
+        partition_key: "alpha",
+        test_scenario: "badname",
+        timeout: 100 )
+
+      expect { large_table_set.connection_spec(request) }.to raise_error(ArgumentError, "Unknown test_scenario badname, available test scenarios: fixture, legacy" )
+    end
 
   end
 
@@ -177,48 +182,28 @@ describe ActiveTableSet::Configuration::Config do
     end
   end
 
-  context "convenience" do
-    it "database attributes to be specified at every level" do
+  context "default" do
+
+    it "uses the specified default when constructed" do
       ats_config = ActiveTableSet::Configuration::Config.config do |conf|
         conf.enforce_access_policy true
         conf.environment           'test'
-        conf.default_connection  =  { table_set: :common }
-
-        conf.host "13.0.0.1"
+        conf.default  =  { table_set: :common }
 
         conf.table_set do |ts|
           ts.name = :common
 
-          ts.access_policy do |ap|
-            ap.disallow_read  'cf_%'
-            ap.disallow_write 'cf_%'
-          end
-
           ts.partition do |part|
             part.leader do |leader|
-              leader.host      "127.0.0.8"
+              leader.host                 "127.0.0.8"
               leader.read_write_username  "tester"
               leader.read_write_password  "verysecure"
-              leader.database  "main"
+              leader.database             "main"
             end
           end
         end
-
-        conf.test_scenario do |ts|
-          ts.scenario_name "legacy"
-          ts.host      "127.0.0.8"
-          ts.read_write_username  "tester"
-          ts.read_write_password  "verysecure"
-          ts.database  "main"
-        end
-
-        conf.test_scenario do |ts|
-          ts.scenario_name "adwords"
-          ts.read_write_username  "tester"
-          ts.read_write_password  "verysecure"
-          ts.database  "main"
-        end
       end
+
     end
 
   end

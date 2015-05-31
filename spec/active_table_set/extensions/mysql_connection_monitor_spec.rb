@@ -5,7 +5,7 @@ describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
     ActiveTableSet.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
-      conf.default_connection  =  { table_set: :common }
+      conf.default  =  { table_set: :common }
 
       conf.table_set do |ts|
         ts.name = :common

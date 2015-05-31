@@ -1,16 +1,75 @@
 require 'spec_helper'
 
 describe ActiveTableSet::Configuration::Request do
-  context "default_connection" do
+  context "default" do
     it "can be constructed" do
       dc = ActiveTableSet::Configuration::Request.new(table_set: :common)
 
       expect(dc.table_set).to   eq(:common)
-      expect(dc.access_mode).to eq(:write)
     end
 
-    it "raises if you do not specify a table set" do
-      expect { ActiveTableSet::Configuration::Request.new({}) }.to raise_error(ArgumentError, "must provide a value for table_set")
+    context "merge" do
+      it "allows requests to be merged" do
+        orig = ActiveTableSet::Configuration::Request.new(
+          table_set: :common,
+          access_mode: :write,
+          partition_key: nil,
+          timeout: 10,
+          test_scenario: nil
+        )
+
+        replacement = ActiveTableSet::Configuration::Request.new(
+          timeout: 110
+        )
+
+        merged = orig.merge(replacement)
+
+        expect(merged.table_set).to eq(:common)
+        expect(merged.access_mode).to eq(:write)
+        expect(merged.partition_key).to eq(nil)
+        expect(merged.timeout).to eq(110)
+        expect(merged.test_scenario).to eq(nil)
+      end
+
+      it "clears the partition key if the table set changes" do
+        orig = ActiveTableSet::Configuration::Request.new(
+          table_set: :sharded,
+          access_mode: :write,
+          partition_key: "alpha",
+          timeout: 10,
+          test_scenario: nil
+        )
+
+        replacement = ActiveTableSet::Configuration::Request.new(
+          table_set: :common
+        )
+
+        merged = orig.merge(replacement)
+
+        expect(merged.table_set).to eq(:common)
+        expect(merged.access_mode).to eq(:write)
+        expect(merged.partition_key).to eq(nil)
+        expect(merged.timeout).to eq(10)
+        expect(merged.test_scenario).to eq(nil)
+      end
+
+      it "allows a hash to be passed instead of an instance" do
+        orig = ActiveTableSet::Configuration::Request.new(
+          table_set: :common,
+          access_mode: :write,
+          partition_key: nil,
+          timeout: 10,
+          test_scenario: nil
+        )
+
+        merged = orig.merge(timeout: 110)
+
+        expect(merged.table_set).to eq(:common)
+        expect(merged.access_mode).to eq(:write)
+        expect(merged.partition_key).to eq(nil)
+        expect(merged.timeout).to eq(110)
+        expect(merged.test_scenario).to eq(nil)
+      end
     end
   end
 end

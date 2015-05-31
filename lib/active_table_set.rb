@@ -16,10 +16,13 @@ require 'active_table_set/extensions/mysql_connection_monitor'
 require 'active_table_set/version'
 require 'active_table_set/pool_manager'
 require 'active_table_set/connection_proxy'
+require 'active_table_set/connection_manager'
 require 'active_table_set/query_parser'
 require 'active_support/core_ext'
 require 'active_support/hash_with_indifferent_access'
 require 'rails'
+
+# TODO - robocup this whole gem
 
 module ActiveTableSet
   # The user settings mapped to internal structures...
@@ -27,6 +30,7 @@ module ActiveTableSet
   # TODO - these names are WAY too close
 
   # This the internal setting.  (Need failover spec?)
+  # TODO - remove timeout
   ConnectionSpec = ValueClass.struct(:specification, :access_policy, :timeout, :connection_name)
 
   # This is the active record interface for a pool.

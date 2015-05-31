@@ -40,10 +40,10 @@ module ActiveTableSet
     def connection
       if !thread_database_config
         self.thread_database_config = timeout_adjusted_database_config(
-            @config.default_connection.table_set,
-            @config.default_connection.access_mode,
-            @config.default_connection.partition_key,
-            @config.default_connection.timeout )
+            @config.default.table_set,
+            @config.default.access_mode,
+            @config.default.partition_key,
+            @config.default.timeout )
       end
       # TODO - Don't change connection unless the key changes...
       obtain_connection(thread_database_config)

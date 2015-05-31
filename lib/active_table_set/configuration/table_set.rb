@@ -1,3 +1,4 @@
+# TODO - should be able to directly declare leader and followers, only mention partitions if partitioned.
 module ActiveTableSet
   module Configuration
     class TableSet  < DatabaseConnection

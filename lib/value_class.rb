@@ -12,6 +12,7 @@ module ValueClass
     self.class.declare_comparison_operators
     self.class.value_attributes.each do |attribute|
       instance_variable_set("@#{attribute.name}", attribute.get_value(config))
+      # TODO - Freeze
     end
   end
 
