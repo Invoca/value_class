@@ -62,32 +62,50 @@ describe ActiveTableSet::Configuration::TableSet do
     end
   end
 
-  context "database_config" do
+  context "connection_spec" do
     it "when using a single partition, does not concern itself with the partition key" do
-      table_set = ActiveTableSet::Configuration::TableSet.new(table_set_cfg)
-      connection = table_set.database_config(access_mode: :write)
-      expect(connection.host).to eq("127.0.0.8")
+      table_set = small_table_set.table_sets.first
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :balanced, timeout: 100)
+
+      con_spec = table_set.connection_spec(using_spec, [], "foo")
+
+      expect(con_spec.specification.host).to eq(table_set.partitions.first.leader.host)
+      expect(con_spec.specification.username).to eq(table_set.partitions.first.leader.read_only_username)
+    end
+
+    it "passes along itself as an alternate database context, and forwards the access mode, access_policy and context" do
+      table_set = small_table_set.table_sets.first
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :balanced, timeout: 120)
+
+      con_spec = table_set.connection_spec(using_spec, [], "foo")
+
+      expect(con_spec.specification.database).to eq(table_set.database)
+      expect(con_spec.timeout).to eq(120)
+      expect(con_spec.access_policy).to eq(table_set.access_policy)
+      expect(con_spec.connection_name).to eq("foo_common_balanced")
     end
 
     context "with multiple partitions" do
       it "returns connections out of the right partition when provided a key" do
-        table_set = ActiveTableSet::Configuration::TableSet.new(multi_table_set_cfg)
+        table_set = large_table_set.table_sets.last
+        using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :write, timeout: 100, partition_key: "alpha")
 
-        connection = table_set.database_config(access_mode: :write, partition_key: 'alpha')
-        expect(connection.host).to eq("127.0.0.8")
+        con_spec = table_set.connection_spec(using_spec, [], "foo")
 
-        connection = table_set.database_config(access_mode: :write, partition_key: 'beta')
-        expect(connection.host).to eq("10.0.0.1")
+        expect(con_spec.specification.host).to     eq(table_set.partitions.first.leader.host)
+        expect(con_spec.specification.username).to eq(table_set.partitions.first.leader.read_write_username)
       end
 
       it "when using a multiple partitions, requires the partition key" do
-        table_set = ActiveTableSet::Configuration::TableSet.new(multi_table_set_cfg)
-        expect { table_set.database_config(access_mode: :write) }.to raise_error(ArgumentError, "Table set test_multi is partioned, you must provide a partition key. Available partitions: alpha, beta")
+        table_set = large_table_set.table_sets.last
+        using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :write, timeout: 100)
+        expect { table_set.connection_spec(using_spec, [], "foo") }.to raise_error(ArgumentError, "Table set sharded is partioned, you must provide a partition key. Available partitions: alpha, beta")
       end
 
       it "alerts when passing an invalid parition key" do
-        table_set = ActiveTableSet::Configuration::TableSet.new(multi_table_set_cfg)
-        expect { table_set.database_config(access_mode: :write, partition_key: 'omega') }.to raise_error(ArgumentError, "Partition omega not found in table set test_multi. Available partitions: alpha, beta")
+        table_set = large_table_set.table_sets.last
+        using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :write, timeout: 100, partition_key: "omega")
+        expect { table_set.connection_spec(using_spec, [], "foo") }.to raise_error(ArgumentError, "Partition omega not found in table set sharded. Available partitions: alpha, beta")
       end
     end
   end

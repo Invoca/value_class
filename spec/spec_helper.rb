@@ -110,7 +110,7 @@ class PoolManagerStub
 
   def get_pool(key:)
     @pool_requests << key
-    @stub_pool || StubConnectionPool.new(key.specification)
+    @stub_pool || StubConnectionPool.new(key)
   end
 end
 
@@ -122,15 +122,15 @@ end
 
 module SpecHelper
   def leader
-    { :host => "127.0.0.8",  :username => "tester",  :password => "verysecure",  :timeout => 2, :database => "main" }
+    { :host => "127.0.0.8",  :read_write_username => "tester",  :read_write_password => "verysecure",  :timeout => 2, :database => "main" }
   end
 
   def follower1
-    { :host => "127.0.0.9",  :username => "tester1", :password => "verysecure1", :timeout => 2, :database => "replication1" }
+    { :host => "127.0.0.9",  :read_write_username => "tester1", :read_write_password => "verysecure1", :timeout => 2, :database => "replication1" }
   end
 
   def follower2
-    { :host => "127.0.0.10", :username => "tester2", :password => "verysecure2", :timeout => 2, :database => "replication2" }
+    { :host => "127.0.0.10", :read_write_username => "tester2", :read_write_password => "verysecure2", :timeout => 2, :database => "replication2" }
   end
 
   def partition_cfg
@@ -142,15 +142,15 @@ module SpecHelper
   end
 
   def beta_leader
-    { :host => "10.0.0.1",   :username => "beta",  :password => "verysecure",  :timeout => 2, :database => "main" }
+    { :host => "10.0.0.1",   :read_write_username => "beta",  :read_write_password => "verysecure",  :timeout => 2, :database => "main" }
   end
 
   def beta_follower1
-    { :host => "10.0.0.2",   :username => "beta1", :password => "verysecure1", :timeout => 2, :database => "replication1" }
+    { :host => "10.0.0.2",   :read_write_username => "beta1", :read_write_password => "verysecure1", :timeout => 2, :database => "replication1" }
   end
 
   def beta_follower2
-    { :host => "10.0.0.3",   :username => "beta2", :password => "verysecure2", :timeout => 2, :database => "replication2" }
+    { :host => "10.0.0.3",   :read_write_username => "beta2", :read_write_password => "verysecure2", :timeout => 2, :database => "replication2" }
   end
 
   def beta_partition_cfg
@@ -161,11 +161,41 @@ module SpecHelper
     { :name => "test_multi", :partitions => [partition_cfg, beta_partition_cfg], :access_policy => { :disallow_read => "cf_%" } }
   end
 
+  def small_table_set
+    ActiveTableSet::Configuration::Config.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default_connection  =  { table_set: :common }
+
+      conf.table_set do |ts|
+        ts.name = :common
+
+        ts.database "main"
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host      "10.0.0.1"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.read_only_username  "read_only_tester_part"
+            leader.read_only_password  "verysecure_too_part"
+            leader.timeout   2
+          end
+        end
+      end
+
+    end
+
+  end
+
   def large_table_set
     ActiveTableSet::Configuration::Config.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
       conf.default_connection  =  { table_set: :common }
+
+      conf.read_only_username  "read_only_tester"
+      conf.read_only_password  "verysecure_too"
 
       conf.table_set do |ts|
         ts.name = :common
@@ -178,24 +208,28 @@ module SpecHelper
         ts.partition do |part|
           part.leader do |leader|
             leader.host      "10.0.0.1"
-            leader.username  "tester"
-            leader.password  "verysecure"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.read_only_username  "read_only_tester_part"
+            leader.read_only_password  "verysecure_too_part"
             leader.timeout   2
             leader.database  "main"
           end
 
           part.follower do |follower|
             follower.host      "10.0.0.2"
-            follower.username  "tester1"
-            follower.password  "verysecure1"
+            follower.read_write_username  "tester1"
+            follower.read_write_password  "verysecure1"
+            follower.read_only_username  "read_only_tester_follower"
+            follower.read_only_password  "verysecure_too_follower"
             follower.timeout   2
             follower.database  "replication1"
           end
 
           part.follower do |follower|
             follower.host      "10.0.0.3"
-            follower.username  "tester2"
-            follower.password  "verysecure2"
+            follower.read_write_username  "tester2"
+            follower.read_write_password  "verysecure2"
             follower.timeout   2
             follower.database  "replication2"
           end
@@ -213,24 +247,24 @@ module SpecHelper
           part.partition_key 'alpha'
           part.leader do |leader|
             leader.host      "11.0.1.1"
-            leader.username  "tester"
-            leader.password  "verysecure"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
             leader.timeout   2
             leader.database  "main"
           end
 
           part.follower do |follower|
             follower.host      "11.0.1.2"
-            follower.username  "tester1"
-            follower.password  "verysecure1"
+            follower.read_write_username  "tester1"
+            follower.read_write_password  "verysecure1"
             follower.timeout   2
             follower.database  "replication1"
           end
 
           part.follower do |follower|
             follower.host      "11.0.1.3"
-            follower.username  "tester2"
-            follower.password  "verysecure2"
+            follower.read_write_username  "tester2"
+            follower.read_write_password  "verysecure2"
             follower.timeout   2
             follower.database  "replication2"
           end
@@ -241,26 +275,10 @@ module SpecHelper
 
           part.leader do |leader|
             leader.host      "11.0.2.1"
-            leader.username  "tester"
-            leader.password  "verysecure"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
             leader.timeout   2
             leader.database  "main"
-          end
-
-          part.follower do |follower|
-            follower.host      "11.0.2.2"
-            follower.username  "tester1"
-            follower.password  "verysecure1"
-            follower.timeout   2
-            follower.database  "replication1"
-          end
-
-          part.follower do |follower|
-            follower.host      "11.0.2.3"
-            follower.username  "tester2"
-            follower.password  "verysecure2"
-            follower.timeout   2
-            follower.database  "replication2"
           end
         end
       end
@@ -268,8 +286,8 @@ module SpecHelper
       conf.test_scenario do |db|
         db.scenario_name "legacy"
         db.host      "12.0.0.1"
-        db.username  "tester1"
-        db.password  "verysecure1"
+        db.read_write_username  "tester1"
+        db.read_write_password  "verysecure1"
         db.timeout   2
         db.database  "replication1"
       end
@@ -277,8 +295,8 @@ module SpecHelper
       conf.test_scenario do |db|
         db.scenario_name "fixture"
         db.host      "12.0.0.2"
-        db.username  "tester1"
-        db.password  "verysecure1"
+        db.read_write_username  "tester1"
+        db.read_write_password  "verysecure1"
         db.timeout   2
         db.database  "replication1"
       end

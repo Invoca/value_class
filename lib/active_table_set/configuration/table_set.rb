@@ -1,8 +1,6 @@
 module ActiveTableSet
   module Configuration
-    class TableSet
-      include ValueClass::Constructable
-
+    class TableSet  < DatabaseConnection
       value_attr      :name
       value_attr      :access_policy,  class_name: 'ActiveTableSet::Configuration::AccessPolicy', default: {}
       value_list_attr :partitions,     class_name: 'ActiveTableSet::Configuration::Partition', insert_method: :partition
@@ -22,16 +20,21 @@ module ActiveTableSet
         partitions.count > 1
       end
 
-      def database_config(access_mode: :write, partition_key: nil)
-        if partitioned?
-          partition_key or raise ArgumentError, "Table set #{name} is partioned, you must provide a partition key. Available partitions: #{partition_keys.join(", ")}"
+      def connection_spec(using_params, database_connections, connection_name_prefix)
+        updated_prefix = "#{connection_name_prefix}_#{name}"
+        target_partition =
+          if partitioned?
+            partition_key = using_params.partition_key
+            partition_key or raise ArgumentError, "Table set #{name} is partioned, you must provide a partition key. Available partitions: #{partition_keys.join(", ")}"
 
-          (selected_partition = @partitions_by_key[partition_key]) or raise ArgumentError, "Partition #{partition_key} not found in table set #{name}. Available partitions: #{partition_keys.join(", ")}"
+            (selected_partition = @partitions_by_key[partition_key]) or raise ArgumentError, "Partition #{partition_key} not found in table set #{name}. Available partitions: #{partition_keys.join(", ")}"
 
-          selected_partition.database_config(access_mode: access_mode)
-        else
-          partitions.first.database_config(access_mode: access_mode)
-        end
+            selected_partition
+          else
+            partitions.first
+          end
+
+        target_partition.connection_spec(using_params, [self] + database_connections, updated_prefix, access_policy)
       end
 
       private

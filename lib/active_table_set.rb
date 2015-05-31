@@ -1,9 +1,9 @@
 require 'active_record'
 require 'value_class'
 
+require 'active_table_set/configuration/database_connection'
 require 'active_table_set/configuration/access_policy'
-require 'active_table_set/configuration/default_connection'
-require 'active_table_set/configuration/database_config'
+require 'active_table_set/configuration/using_spec'
 require 'active_table_set/configuration/test_scenario'
 require 'active_table_set/configuration/partition'
 require 'active_table_set/configuration/table_set'
@@ -22,6 +22,14 @@ require 'active_support/hash_with_indifferent_access'
 require 'rails'
 
 module ActiveTableSet
+  # The user settings mapped to internal structures...
+  # TODO - Does this need a connection name?
+  # TODO - these names are WAY too close
+  ConnectionSpec = ValueClass.struct(:specification, :access_policy, :timeout, :connection_name)
+
+  # The specification passed to the database layer
+  ConnectionSpecification = ValueClass.struct(:host, :database, :username, :password, :connect_timeout, :read_timeout, :write_timeout, :encoding, :collation, :adapter, :pool, :reconnect)
+
   class << self
     def config
       @config = ActiveTableSet::Configuration::Config.config { |conf| yield conf }

@@ -26,6 +26,13 @@ module ValueClass
     end.hash
   end
 
+  def to_hash
+    self.class.value_attributes.inject(ActiveSupport::HashWithIndifferentAccess.new()) do |hash, attribute|
+      hash[attribute.name] = attribute.hash_value(instance_variable_get("@#{attribute.name}"))
+      hash
+    end
+  end
+
   module ClassMethods
     def value_description(value=nil)
       if value
@@ -75,9 +82,16 @@ module ValueClass
       value_attributes.each { |attr| new_child_class.value_attributes << attr }
     end
   end
+
+  def self.struct(*args)
+    Class.new do
+      include ValueClass::Constructable
+      value_attrs *args
+    end
+  end
 end
 
-# Constructable builds off of the above, so we require it last.
+# These build off of the above, so they are required last
 require 'value_class/constructable'
 require 'value_class/thread_local_attribute'
 

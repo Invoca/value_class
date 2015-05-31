@@ -45,6 +45,11 @@ module ValueClassTest
   class MountainBicycle < Bicycle
     value_attr :shocks
   end
+
+  class QuickGears < ValueClass.struct(:first_gear, :second_gear, :third_gear, default: 200)
+  end
+
+  QuickerGears = ValueClass.struct(:first_gear, :second_gear, :third_gear, default: 200)
 end
 
 
@@ -124,6 +129,25 @@ describe ValueClass do
       end
     end
 
+    context "to_hash" do
+      it "allows creation of a hash from the instance" do
+        bike = ValueClassTest::MountainBicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}], shocks: true )
+        expected = {
+            "speeds" => 10,
+            "color"  => :gold,
+            "riders" => [],
+            "seat"   => nil,
+            "tires"  => [
+                { "diameter" => 40, "tred" => :mountain},
+                { "diameter" => 50, "tred" => :slicks}
+            ],
+            "shocks" => true
+        }
+
+        expect(bike.to_hash).to eq(expected)
+      end
+    end
+
     context "inheritance" do
       it "allows value objects to be inherited from each other" do
         bike = ValueClassTest::MountainBicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}], shocks: true )
@@ -131,6 +155,24 @@ describe ValueClass do
         expect(bike.tires.map(&:diameter)).to eq([40, 50])
         expect(bike.tires.map(&:tred)).to eq([:mountain, :slicks])
         expect(bike.shocks).to eq(true)
+      end
+    end
+
+    context "shorthand declaration using struct" do
+      it "allows inheritance from a struct" do
+        gear = ValueClassTest::QuickGears.new(first_gear: 20)
+
+        expect(gear.first_gear).to eq(20)
+        expect(gear.second_gear).to eq(200)
+        expect(gear.third_gear).to eq(200)
+      end
+
+      it "allows shorthand types to be assigned" do
+        gear = ValueClassTest::QuickerGears.new(first_gear: 20)
+
+        expect(gear.first_gear).to eq(20)
+        expect(gear.second_gear).to eq(200)
+        expect(gear.third_gear).to eq(200)
       end
     end
   end

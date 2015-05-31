@@ -18,8 +18,8 @@ describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
         ts.partition do |part|
           part.leader do |leader|
             leader.host      "10.0.0.1"
-            leader.username  "tester"
-            leader.password  "verysecure"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
             leader.timeout   2
             leader.database  "main"
           end

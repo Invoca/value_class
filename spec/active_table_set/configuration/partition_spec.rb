@@ -10,8 +10,8 @@ describe ActiveTableSet::Configuration::Partition do
       leader = config.leader
 
       expect(leader.host).to     eq("127.0.0.8")
-      expect(leader.username).to eq("tester")
-      expect(leader.password).to eq("verysecure")
+      expect(leader.read_write_username).to eq("tester")
+      expect(leader.read_write_password).to eq("verysecure")
       expect(leader.timeout).to  eq(2)
     end
 
@@ -23,58 +23,61 @@ describe ActiveTableSet::Configuration::Partition do
       follower2 = followers.last
 
       expect(follower1.host).to     eq("127.0.0.9")
-      expect(follower1.username).to eq("tester1")
-      expect(follower1.password).to eq("verysecure1")
+      expect(follower1.read_write_username).to eq("tester1")
+      expect(follower1.read_write_password).to eq("verysecure1")
 
       expect(follower2.host).to     eq("127.0.0.10")
-      expect(follower2.username).to eq("tester2")
-      expect(follower2.password).to eq("verysecure2")
+      expect(follower2.read_write_username).to eq("tester2")
+      expect(follower2.read_write_password).to eq("verysecure2")
     end
 
     it "can be progressively constructed" do
       config = ActiveTableSet::Configuration::Partition.config do |part|
         part.partition_key = 'alpha'
+        part.database = 'greek_letters'
 
         part.leader do |leader|
           leader.host = "127.0.0.8"
-          leader.username = "tester"
-          leader.password = "verysecure"
+          leader.read_write_username = "tester"
+          leader.read_write_password = "verysecure"
           leader.timeout  = 2
           leader.database ="main"
         end
 
         part.follower do |follower|
           follower.host = "127.0.0.9"
-          follower.username = "tester1"
-          follower.password = "verysecure1"
+          follower.read_write_username = "tester1"
+          follower.read_write_password = "verysecure1"
           follower.timeout  = 2
           follower.database ="replication1"
         end
 
         part.follower do |follower|
           follower.host = "127.0.0.10"
-          follower.username = "tester2"
-          follower.password = "verysecure2"
+          follower.read_write_username = "tester2"
+          follower.read_write_password = "verysecure2"
           follower.timeout  = 2
           follower.database ="replication2"
         end
       end
 
       expect(config.partition_key).to eq("alpha")
+      expect(config.database).to      eq("greek_letters")
+
       leader    = config.leader
       follower1 = config.followers.first
       follower2 = config.followers.last
       expect(leader.host).to     eq("127.0.0.8")
-      expect(leader.username).to eq("tester")
-      expect(leader.password).to eq("verysecure")
+      expect(leader.read_write_username).to eq("tester")
+      expect(leader.read_write_password).to eq("verysecure")
 
       expect(follower1.host).to     eq("127.0.0.9")
-      expect(follower1.username).to eq("tester1")
-      expect(follower1.password).to eq("verysecure1")
+      expect(follower1.read_write_username).to eq("tester1")
+      expect(follower1.read_write_password).to eq("verysecure1")
 
       expect(follower2.host).to     eq("127.0.0.10")
-      expect(follower2.username).to eq("tester2")
-      expect(follower2.password).to eq("verysecure2")
+      expect(follower2.read_write_username).to eq("tester2")
+      expect(follower2.read_write_password).to eq("verysecure2")
     end
   end
 
@@ -84,38 +87,81 @@ describe ActiveTableSet::Configuration::Partition do
     end
   end
 
-  context "connections" do
-    it "provides a leader connection key for write access" do
-      database_config = part.database_config(access_mode: :write)
-      expect(database_config).to eq(part.leader)
+  context "connection_spec" do
+    it "provides a connection to the leader using the read write user when in write mode" do
+      part = large_table_set.table_sets.first.partitions.first
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :write, timeout: 100)
+
+      con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
+
+      expect(con_spec.specification.host).to eq(part.leader.host)
+      expect(con_spec.specification.username).to eq(part.leader.read_write_username)
     end
 
+    it "passes through the timeout, access policy and connection_name" do
+      part = large_table_set.table_sets.first.partitions.first
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :write, timeout: 100)
+
+      con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
+
+      expect(con_spec.timeout).to eq(100)
+      expect(con_spec.access_policy).to eq("access_policy")
+      expect(con_spec.connection_name).to eq("foo_write")
+    end
+
+
+    # TODO - this is wrong.  Read access should prefer to avoid the leader.
     it "provides a leader connection key for read access" do
-      database_config = part.database_config(access_mode: :read)
-      expect(database_config).to eq(part.leader)
+      part = large_table_set.table_sets.first.partitions.first
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :read, timeout: 100)
+
+      con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
+
+      expect(con_spec.specification.host).to eq(part.leader.host)
+      expect(con_spec.specification.username).to eq(part.leader.read_only_username)
     end
 
-    it "provides a chosen database config for balanced read access" do
-      expect(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(0)
-      part2 = ActiveTableSet::Configuration::Partition.new(cfg)
-      database_config = part2.database_config(access_mode: :balanced)
-      expect(database_config.host).to eq(leader[:host])
+    it "provides a chosen database config for balanced read access (when leader is chosen)" do
+      allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(0)
+
+      part = large_table_set.table_sets.first.partitions.first
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :balanced, timeout: 100)
+
+      con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
+
+      expect(con_spec.specification.host).to eq(part.leader.host)
+      expect(con_spec.specification.username).to eq(part.leader.read_only_username)
     end
 
-    it "provides a chosen follower connection key for balanced read access" do
-      expect(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
-      part2 = ActiveTableSet::Configuration::Partition.new(cfg)
-      database_config = part2.database_config(access_mode: :balanced)
-      expect(database_config.host).to eq(follower1[:host])
+    it "provides a chosen database config for balanced read access (when follower is chosen)" do
+      allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
+
+      part = large_table_set.table_sets.first.partitions.first
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :balanced, timeout: 100)
+
+      con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
+
+      expect(con_spec.specification.host).to eq(part.followers.first.host)
+      expect(con_spec.specification.username).to eq(part.followers.first.read_only_username)
     end
 
-    it "returns leader for balanced follower connection key if no followers" do
-      database_config = part.database_config(access_mode: :balanced)
-      expect(database_config.host).to eq(leader[:host])
+    it "provides a chosen database config for balanced access (when no followers)" do
+      allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
+
+      part = large_table_set.table_sets.first.partitions.first.clone_config { |clone| clone.followers = [] }
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :balanced, timeout: 100)
+
+      con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
+
+      expect(con_spec.specification.host).to eq(part.leader.host)
+      expect(con_spec.specification.username).to eq(part.leader.read_only_username)
     end
 
     it "raises if connection key requested with unknown access_mode" do
-      expect { part.database_config(access_mode: :something_weird) }.to raise_error(ArgumentError, "unknown access_mode")
+      part = large_table_set.table_sets.first.partitions.first
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :something_weird, timeout: 100)
+
+      expect { part.connection_spec(using_spec, [], "foo", "access_policy") }.to raise_error(ArgumentError, "unknown access_mode something_weird")
     end
   end
 end

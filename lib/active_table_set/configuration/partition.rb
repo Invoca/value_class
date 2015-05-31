@@ -1,11 +1,9 @@
 module ActiveTableSet
   module Configuration
-    class Partition
-      include ValueClass::Constructable
-
+    class Partition < DatabaseConnection
       value_attr      :partition_key
-      value_attr      :leader,    class_name: 'ActiveTableSet::Configuration::DatabaseConfig'
-      value_list_attr :followers, class_name: 'ActiveTableSet::Configuration::DatabaseConfig', insert_method: 'follower'
+      value_attr      :leader,    class_name: 'ActiveTableSet::Configuration::DatabaseConnection'
+      value_list_attr :followers, class_name: 'ActiveTableSet::Configuration::DatabaseConnection', insert_method: 'follower'
 
       def initialize(options={})
         super
@@ -17,15 +15,31 @@ module ActiveTableSet
         @chosen_follower = available_database_configs[selected_index]
       end
 
-      def database_config(access_mode: :write)
-        case access_mode
-        when :write, :read
-          leader
-        when :balanced
-          @chosen_follower
-        else
-          raise ArgumentError, "unknown access_mode"
-        end
+      # TODO - using_params or using_spec
+      def connection_spec(using_params, database_connections, connection_name_prefix, access_policy)
+        context = "#{connection_name_prefix}_#{using_params.access_mode}"
+        selected_config =
+            case using_params.access_mode
+            when :write, :read
+              leader
+            when :balanced
+              @chosen_follower
+            else
+              raise ArgumentError, "unknown access_mode #{using_params.access_mode}"
+            end
+
+        specification = selected_config.connection_specification(
+            alternates: [self] + database_connections,
+            context: context,
+            access_mode: using_params.access_mode
+        )
+
+        ConnectionSpec.new(
+           specification:   specification,
+           access_policy:   access_policy,
+           timeout:         using_params.timeout,
+           connection_name: context
+        )
       end
 
       def self.pid

@@ -8,6 +8,10 @@ module ValueClassSpec
       @wheels = options[:wheels]
       @doors = options[:doors]
     end
+
+    def to_hash
+      { "wheels" => @wheels, "doors" => @doors }
+    end
   end
 end
 
@@ -95,5 +99,18 @@ describe ValueClass::Attribute do
       end
     end
 
+    context "hash_value" do
+      it "passes along the value" do
+        attr = ValueClass::Attribute.new(:testAttr, {})
+        expect(attr.hash_value("found it!")).to eq("found it!")
+      end
+
+      it "returns a hash from a typed value" do
+        attr = ValueClass::Attribute.new(:testAttr, class_name: "ValueClassSpec::Automobile")
+
+        auto = ValueClassSpec::Automobile.new(wheels: 4, doors: 2)
+        expect(attr.hash_value(auto)).to eq("wheels" => 4, "doors" => 2)
+      end
+    end
   end
 end

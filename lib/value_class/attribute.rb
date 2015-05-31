@@ -56,6 +56,16 @@ module ValueClass
       end
     end
 
+    def hash_value(raw_value)
+      if options[:list_of_class] && raw_value.is_a?(Array)
+        raw_value.map(&:to_hash)
+      elsif options[:class_name] && raw_value
+        raw_value.to_hash
+      else
+        raw_value
+      end
+    end
+
     def default
       value = options[:default]
       begin

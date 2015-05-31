@@ -14,6 +14,10 @@ require 'active_record/connection_adapters/mysql2_adapter'
 # TODO -- Get rid of delegation from connection proxy.  Instead, extend the class to add the syntax we want.
 # TODO -- Wireup test scenarios
 
+# TODO - break usernames out of database config.
+# TODO - need read_write_user and read_only_user as separate config.
+# TODO - need to be able to specify the following at
+
 
 module ActiveTableSet
   class ConnectionProxy
@@ -92,19 +96,21 @@ module ActiveTableSet
 
     ## DATABASE MANAGEMENT ##
 
-    def database_config(table_set:, access_mode: :write, partition_key: nil)
-      @config.database_config(
+    def database_config(table_set:, access_mode: :write, partition_key: nil, timeout: 50)
+      using_spec = ActiveTableSet::Configuration::UsingSpec.new(
           table_set: table_set,
           access_mode: access_mode,
           partition_key: partition_key,
-          test_scenario: nil
+          test_scenario: nil,
+          timeout: timeout
       )
+
+       @config.connection_spec(using_spec).specification
     end
 
     # TODO - deprecated in favor of setting the timeout on a connection when passed out from the pool.
     def timeout_adjusted_database_config(table_set, access_mode, partition_key, timeout)
-      key = database_config(table_set: table_set, access_mode: access_mode, partition_key: partition_key)
-      timeout.nil? ? key : key.clone_with_new_timeout(timeout)
+      database_config(table_set: table_set, access_mode: access_mode, partition_key: partition_key, timeout: timeout)
     end
 
     ## POOL MANAGER ##
