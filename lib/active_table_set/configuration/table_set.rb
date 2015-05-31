@@ -21,11 +21,11 @@ module ActiveTableSet
         partitions.count > 1
       end
 
-      def connection_spec(using_params, database_connections, connection_name_prefix)
+      def connection_spec(request, database_connections, connection_name_prefix)
         updated_prefix = "#{connection_name_prefix}_#{name}"
         target_partition =
           if partitioned?
-            partition_key = using_params.partition_key
+            partition_key = request.partition_key
             partition_key or raise ArgumentError, "Table set #{name} is partioned, you must provide a partition key. Available partitions: #{partition_keys.join(", ")}"
 
             (selected_partition = @partitions_by_key[partition_key]) or raise ArgumentError, "Partition #{partition_key} not found in table set #{name}. Available partitions: #{partition_keys.join(", ")}"
@@ -35,7 +35,7 @@ module ActiveTableSet
             partitions.first
           end
 
-        target_partition.connection_spec(using_params, [self] + database_connections, updated_prefix, access_policy)
+        target_partition.connection_spec(request, [self] + database_connections, updated_prefix, access_policy)
       end
 
       private

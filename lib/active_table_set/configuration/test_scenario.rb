@@ -5,7 +5,7 @@ module ActiveTableSet
 
       # TODO - need timeout here.
 
-      def connection_spec(using_params, database_connections, connection_name_prefix, previous_spec)
+      def connection_spec(request, database_connections, connection_name_prefix, previous_spec)
         context = "#{connection_name_prefix}_#{scenario_name}"
 
         specification = connection_specification(
@@ -18,7 +18,6 @@ module ActiveTableSet
         ConnectionSpec.new(
           specification:   specification,
           access_policy:   previous_spec.access_policy,
-          timeout:         previous_spec.timeout,
           connection_name: context
         )
       end

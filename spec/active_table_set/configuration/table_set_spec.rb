@@ -80,7 +80,6 @@ describe ActiveTableSet::Configuration::TableSet do
       con_spec = table_set.connection_spec(request, [], "foo")
 
       expect(con_spec.specification.database).to eq(table_set.database)
-      expect(con_spec.timeout).to eq(120)
       expect(con_spec.access_policy).to eq(table_set.access_policy)
       expect(con_spec.connection_name).to eq("foo_common_balanced")
     end

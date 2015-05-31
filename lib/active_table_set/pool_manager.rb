@@ -27,7 +27,7 @@ module ActiveTableSet
     end
 
     def specification(config)
-      ActiveRecord::Base::ConnectionSpecification.new(config.specification, config.name)
+      ActiveRecord::Base::PoolKey.new(config.specification, config.name)
     end
   end
 end

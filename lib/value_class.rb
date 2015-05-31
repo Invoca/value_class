@@ -9,10 +9,10 @@ module ValueClass
 
   # Default constructor
   def initialize(config = {})
+    check_constructor_params(config)
     self.class.declare_comparison_operators
     self.class.value_attributes.each do |attribute|
-      instance_variable_set("@#{attribute.name}", attribute.get_value(config))
-      # TODO - Freeze
+      instance_variable_set("@#{attribute.name}", attribute.get_value(config).freeze)
     end
   end
 
@@ -29,8 +29,26 @@ module ValueClass
 
   def to_hash
     self.class.value_attributes.inject(ActiveSupport::HashWithIndifferentAccess.new()) do |hash, attribute|
-      hash[attribute.name] = attribute.hash_value(instance_variable_get("@#{attribute.name}"))
+      # Attributes are frozen, but hash with indifferent access mutates values (!!!), so we have to dup
+      # in order to get a value we can use
+      unsafe_version = attribute.hash_value(instance_variable_get("@#{attribute.name}"))
+      safe_version =
+        begin
+          unsafe_version.dup
+        rescue TypeError
+          unsafe_version
+        end
+
+      hash[attribute.name] = safe_version
       hash
+    end
+  end
+
+  protected
+  def check_constructor_params(config)
+    if config.is_a?(Hash)
+      extra_keys = config.keys - self.class.value_attributes.map(&:name)
+      extra_keys.empty? or raise ArgumentError, "unknown attribute #{extra_keys.join(", ")}"
     end
   end
 

@@ -27,15 +27,13 @@ require 'rails'
 module ActiveTableSet
   # The user settings mapped to internal structures...
 
-  # TODO - these names are WAY too close
-
   # This the internal setting.  (Need failover spec?)
-  # TODO - remove timeout
-  ConnectionSpec = ValueClass.struct(:specification, :access_policy, :timeout, :connection_name)
+  # TODO - rename specification pool key.
+  ConnectionSpec = ValueClass.struct(:specification, :access_policy, :connection_name)
 
   # This is the active record interface for a pool.
-  # TODO - Pool Key - and move it back to its own class.
-  ConnectionSpecification = ValueClass.struct(:host, :database, :username, :password, :connect_timeout, :read_timeout, :write_timeout, :encoding, :collation, :adapter, :pool, :reconnect)
+  # TODO - move it back to its own class.
+  PoolKey = ValueClass.struct(:host, :database, :username, :password, :connect_timeout, :read_timeout, :write_timeout, :encoding, :collation, :adapter, :pool, :reconnect)
 
   class << self
     def config

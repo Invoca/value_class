@@ -100,7 +100,6 @@ describe ActiveTableSet::Configuration::Partition do
 
       con_spec = part.connection_spec(request, [], "foo", "access_policy")
 
-      expect(con_spec.timeout).to eq(100)
       expect(con_spec.access_policy).to eq("access_policy")
       expect(con_spec.connection_name).to eq("foo_write")
     end

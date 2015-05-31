@@ -38,9 +38,9 @@ module ValueClass
       cast_value =
           if options[:list_of_class] && raw_value.is_a?(Array)
             inner_class = options[:list_of_class]
-            raw_value.map { |v| inner_class.constantize.new(v)}
+            raw_value.map { |v| inner_class.constantize.new(v).freeze}
           elsif options[:class_name] && raw_value
-            options[:class_name].constantize.new(raw_value)
+            options[:class_name].constantize.new(raw_value).freeze
           else
             raw_value
           end

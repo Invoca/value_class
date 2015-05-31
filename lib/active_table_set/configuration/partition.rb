@@ -15,30 +15,28 @@ module ActiveTableSet
         @chosen_follower = available_database_configs[selected_index]
       end
 
-      # TODO - using_params or using_spec?
-      def connection_spec(using_params, database_connections, connection_name_prefix, access_policy)
-        context = "#{connection_name_prefix}_#{using_params.access_mode}"
+      def connection_spec(request, database_connections, connection_name_prefix, access_policy)
+        context = "#{connection_name_prefix}_#{request.access_mode}"
         selected_config =
-            case using_params.access_mode
+            case request.access_mode
             when :write, :read
               leader
             when :balanced
               @chosen_follower
             else
-              raise ArgumentError, "unknown access_mode #{using_params.access_mode}"
+              raise ArgumentError, "unknown access_mode #{request.access_mode}"
             end
 
         specification = selected_config.connection_specification(
             alternates: [self] + database_connections,
             context: context,
-            access_mode: using_params.access_mode,
-            timeout: using_params.timeout
+            access_mode: request.access_mode,
+            timeout: request.timeout
         )
 
         ConnectionSpec.new(
            specification:   specification,
            access_policy:   access_policy,
-           timeout:         using_params.timeout,
            connection_name: context
         )
       end

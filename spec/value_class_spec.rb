@@ -84,8 +84,21 @@ describe ValueClass do
       end
     end
 
+    it "should freeze all attributes" do
+      bike = ValueClassTest::Bicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}] )
+
+      expect(bike.speeds.frozen?).to      eq(true)
+      expect(bike.color.frozen?).to       eq(true)
+      expect(bike.tires.frozen?).to       eq(true)
+      expect(bike.tires.first.frozen?).to eq(true)
+    end
+
     it "should raise an exception if a required parameter is missing" do
       expect { ValueClassTest::Headlight.new }.to  raise_error(ArgumentError, "must provide a value for lumens")
+    end
+
+    it "should raise an exception if an unsupported parameter is passed" do
+      expect { ValueClassTest::Headlight.new(unknown: nil) }.to  raise_error(ArgumentError, "unknown attribute unknown")
     end
 
     it "allow for quick declaration using default options" do

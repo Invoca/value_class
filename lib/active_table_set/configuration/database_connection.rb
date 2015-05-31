@@ -22,7 +22,6 @@ module ActiveTableSet
 
       DEFAULT = DatabaseConnection.new(
           host:            "localhost",
-          timeout:         2,
           connect_timeout: 5,
           pool_size:       5,
           adapter:        "mysql2",
@@ -31,9 +30,8 @@ module ActiveTableSet
           reconnect:      true
       )
 
-      # TODO - get rid of defaults
       def connection_specification(alternates:, timeout:, access_mode: :write, context: "")
-        ConnectionSpecification.new(
+        PoolKey.new(
             host:            find_value(:host, alternates, context),
             database:        find_value(:database, alternates, context),
             username:        find_value(access_mode == :write ? :read_write_username : :read_only_username, alternates, context),

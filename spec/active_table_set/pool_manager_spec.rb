@@ -6,7 +6,7 @@ describe ActiveTableSet::PoolManager do
     let(:username)  { "test_user" }
     let(:password)  { "test_password" }
     let(:timeout)   { 5 }
-    let(:db_config) { ActiveTableSet::Configuration::DatabaseConnection.new(read_write_username: username, read_write_password: password, host: ip, timeout: timeout) }
+    let(:db_config) { ActiveTableSet::Configuration::DatabaseConnection.new(read_write_username: username, read_write_password: password, host: ip) }
     let(:mgr)       { ActiveTableSet::PoolManager.new }
 
     it "creates a new pool if one with the requested key does not exist" do

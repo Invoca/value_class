@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ActiveTableSet::Configuration::DatabaseConnection do
   context "config" do
     it "can be constructed" do
-      key = ActiveTableSet::Configuration::DatabaseConnection.new(host: "some.ip", read_write_username: "test_user", read_write_password: "secure_pwd", timeout: 10)
+      key = ActiveTableSet::Configuration::DatabaseConnection.new(host: "some.ip", read_write_username: "test_user", read_write_password: "secure_pwd")
       expect(key.host).to     eq("some.ip")
       expect(key.read_write_username).to eq("test_user")
       expect(key.read_write_password).to eq("secure_pwd")

@@ -5,9 +5,10 @@ describe ActiveTableSet::Configuration::TestScenario do
   let(:username) { "test_user" }
   let(:password) { "test_password" }
   let(:timeout)  { 5 }
+
   context "allows construction" do
     it "can be constructed" do
-      test_scenario = ActiveTableSet::Configuration::TestScenario.new(scenario_name: 'main', host: ip, username: username, password: password, timeout: timeout)
+      test_scenario = ActiveTableSet::Configuration::TestScenario.new(scenario_name: 'main', host: ip)
 
       expect(test_scenario.scenario_name).to eq('main')
     end

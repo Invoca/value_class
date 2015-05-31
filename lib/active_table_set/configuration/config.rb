@@ -26,14 +26,14 @@ module ActiveTableSet
         )
       end
 
-      def connection_spec(using_params)
-        ts = @table_sets_by_name[using_params.table_set] or raise ArgumentError, "Unknown table set #{using_params.table_set}, available_table_sets: #{@table_sets_by_name.keys.sort.join(", ")}"
-        spec = ts.connection_spec(using_params, [self], environment)
+      def connection_spec(request)
+        ts = @table_sets_by_name[request.table_set] or raise ArgumentError, "Unknown table set #{request.table_set}, available_table_sets: #{@table_sets_by_name.keys.sort.join(", ")}"
+        spec = ts.connection_spec(request, [self], environment)
 
-        if using_params.test_scenario
-          scenario = @test_scenarios_by_name[using_params.test_scenario] or raise ArgumentError, "Unknown test_scenario #{using_params.test_scenario}, available test scenarios: #{@test_scenarios_by_name.keys.sort.join(", ")}"
+        if request.test_scenario
+          scenario = @test_scenarios_by_name[request.test_scenario] or raise ArgumentError, "Unknown test_scenario #{request.test_scenario}, available test scenarios: #{@test_scenarios_by_name.keys.sort.join(", ")}"
 
-          scenario.connection_spec(using_params, [self], environment, spec)
+          scenario.connection_spec(request, [self], environment, spec)
         else
           spec
         end
@@ -69,23 +69,6 @@ module ActiveTableSet
         result
       end
 
-      # TODO - remove
-      def specification(user: :read_write)
-        ActiveSupport::HashWithIndifferentAccess.new(
-            "database"        => database,
-            "connect_timeout" => connect_timeout,
-            "read_timeout"    => timeout,
-            "write_timeout"   => timeout,
-            "encoding"        => encoding,
-            "collation"       => collation,
-            "adapter"         => adapter,
-            "pool"            => pool_size,
-            "reconnect"       => reconnect,
-            "host"            => host,
-            "username"        => (user == :read_write ? read_write_username : read_only_username),
-            "password"        => (user == :read_write ? read_write_password : read_only_password),
-        )
-      end
     end
 
   end
