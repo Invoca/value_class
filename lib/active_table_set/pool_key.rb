@@ -6,8 +6,8 @@ module ActiveTableSet
 
 
     # TODO - need test
-    def name
-      "#{host}_#{database}_#{username}_#{read_timeout}"
+    def connector_name
+      "#{adapter}_connection"
     end
   end
 

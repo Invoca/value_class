@@ -16,6 +16,7 @@ module ActiveTableSet
       value_attr :encoding
       value_attr :reconnect
 
+      # TODO - move to db key
       def connector_name
         "#{adapter}_connection"
       end

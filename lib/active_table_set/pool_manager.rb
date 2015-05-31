@@ -20,7 +20,7 @@ module ActiveTableSet
 
     # TODO - insufficient tests
     def specification(config)
-      ActiveRecord::Base::ConnectionSpecification.new(config.to_hash, config.name)
+      ActiveRecord::Base::ConnectionSpecification.new(config.to_hash, config.connector_name)
     end
   end
 end
