@@ -9,8 +9,6 @@ module ActiveTableSet
       value_attr :read_only_username
       value_attr :read_only_password
       value_attr :database
-      # TODO - Get rid of this timeout - we don't use it.
-      value_attr :timeout
       value_attr :connect_timeout
       value_attr :pool_size
       value_attr :adapter

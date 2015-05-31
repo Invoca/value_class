@@ -7,7 +7,6 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
       expect(key.host).to     eq("some.ip")
       expect(key.read_write_username).to eq("test_user")
       expect(key.read_write_password).to eq("secure_pwd")
-      expect(key.timeout).to  eq(10)
     end
 
     it "has a connector_name" do
@@ -20,8 +19,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
           host: "some.ip",
           read_write_username: "test_user",
           read_write_password: "secure_pwd",
-          database: "my_database",
-          timeout: 10 )
+          database: "my_database")
 
       specification = connection.connection_specification(alternates: [], timeout: 30)
 
@@ -50,8 +48,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
           read_only_password: "secure_pwd",
           read_write_username: "not this one",
           read_write_password: "don't pick me",
-          database: "my_database",
-          timeout: 10 )
+          database: "my_database" )
 
       specification = connection.connection_specification(alternates: [], access_mode: :read, timeout: 10)
 
@@ -66,8 +63,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
           read_only_password: "secure_pwd",
           read_write_username: "not this one",
           read_write_password: "don't pick me",
-          database: "my_database",
-          timeout: 10 )
+          database: "my_database")
 
       specification = connection.connection_specification(alternates: [], timeout: 10)
       expect(specification.adapter).to eq("mysql2")
@@ -77,8 +73,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
       connection = ActiveTableSet::Configuration::DatabaseConnection.new(
           host: "some.ip",
           read_write_username: "test_user",
-          read_write_password: "secure_pwd",
-          timeout: 10 )
+          read_write_password: "secure_pwd" )
 
       alternate = ActiveTableSet::Configuration::DatabaseConnection.new(database: "my_database")
 
@@ -90,8 +85,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
       connection = ActiveTableSet::Configuration::DatabaseConnection.new(
           host: "some.ip",
           read_write_username: "test_user",
-          read_write_password: "secure_pwd",
-          timeout: 10 )
+          read_write_password: "secure_pwd")
 
       alternate1 = ActiveTableSet::Configuration::DatabaseConnection.new(database: "my_database")
       alternate2 = ActiveTableSet::Configuration::DatabaseConnection.new(database: "not_my_database")
@@ -104,8 +98,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
       connection = ActiveTableSet::Configuration::DatabaseConnection.new(
           host: "some.ip",
           read_write_username: "test_user",
-          read_write_password: "secure_pwd",
-          timeout: 10 )
+          read_write_password: "secure_pwd")
 
       expect { connection.connection_specification(alternates:[], context: "foo", timeout: 10) }.to raise_error(ArgumentError, "could not resolve database value for foo")
     end

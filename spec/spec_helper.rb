@@ -122,15 +122,15 @@ end
 
 module SpecHelper
   def leader
-    { :host => "127.0.0.8",  :read_write_username => "tester",  :read_write_password => "verysecure",  :timeout => 2, :database => "main" }
+    { :host => "127.0.0.8",  :read_write_username => "tester",  :read_write_password => "verysecure",  :database => "main" }
   end
 
   def follower1
-    { :host => "127.0.0.9",  :read_write_username => "tester1", :read_write_password => "verysecure1", :timeout => 2, :database => "replication1" }
+    { :host => "127.0.0.9",  :read_write_username => "tester1", :read_write_password => "verysecure1", :database => "replication1" }
   end
 
   def follower2
-    { :host => "127.0.0.10", :read_write_username => "tester2", :read_write_password => "verysecure2", :timeout => 2, :database => "replication2" }
+    { :host => "127.0.0.10", :read_write_username => "tester2", :read_write_password => "verysecure2", :database => "replication2" }
   end
 
   def partition_cfg
@@ -142,15 +142,15 @@ module SpecHelper
   end
 
   def beta_leader
-    { :host => "10.0.0.1",   :read_write_username => "beta",  :read_write_password => "verysecure",  :timeout => 2, :database => "main" }
+    { :host => "10.0.0.1",   :read_write_username => "beta",  :read_write_password => "verysecure",  :database => "main" }
   end
 
   def beta_follower1
-    { :host => "10.0.0.2",   :read_write_username => "beta1", :read_write_password => "verysecure1", :timeout => 2, :database => "replication1" }
+    { :host => "10.0.0.2",   :read_write_username => "beta1", :read_write_password => "verysecure1", :database => "replication1" }
   end
 
   def beta_follower2
-    { :host => "10.0.0.3",   :read_write_username => "beta2", :read_write_password => "verysecure2", :timeout => 2, :database => "replication2" }
+    { :host => "10.0.0.3",   :read_write_username => "beta2", :read_write_password => "verysecure2", :database => "replication2" }
   end
 
   def beta_partition_cfg
@@ -179,7 +179,6 @@ module SpecHelper
             leader.read_write_password  "verysecure"
             leader.read_only_username  "read_only_tester_part"
             leader.read_only_password  "verysecure_too_part"
-            leader.timeout   2
           end
         end
       end
@@ -212,7 +211,6 @@ module SpecHelper
             leader.read_write_password  "verysecure"
             leader.read_only_username  "read_only_tester_part"
             leader.read_only_password  "verysecure_too_part"
-            leader.timeout   2
             leader.database  "main"
           end
 
@@ -222,7 +220,6 @@ module SpecHelper
             follower.read_write_password  "verysecure1"
             follower.read_only_username  "read_only_tester_follower"
             follower.read_only_password  "verysecure_too_follower"
-            follower.timeout   2
             follower.database  "replication1"
           end
 
@@ -230,7 +227,6 @@ module SpecHelper
             follower.host      "10.0.0.3"
             follower.read_write_username  "tester2"
             follower.read_write_password  "verysecure2"
-            follower.timeout   2
             follower.database  "replication2"
           end
         end
@@ -249,7 +245,6 @@ module SpecHelper
             leader.host      "11.0.1.1"
             leader.read_write_username  "tester"
             leader.read_write_password  "verysecure"
-            leader.timeout   2
             leader.database  "main"
           end
 
@@ -257,7 +252,6 @@ module SpecHelper
             follower.host      "11.0.1.2"
             follower.read_write_username  "tester1"
             follower.read_write_password  "verysecure1"
-            follower.timeout   2
             follower.database  "replication1"
           end
 
@@ -265,7 +259,6 @@ module SpecHelper
             follower.host      "11.0.1.3"
             follower.read_write_username  "tester2"
             follower.read_write_password  "verysecure2"
-            follower.timeout   2
             follower.database  "replication2"
           end
         end
@@ -277,7 +270,6 @@ module SpecHelper
             leader.host      "11.0.2.1"
             leader.read_write_username  "tester"
             leader.read_write_password  "verysecure"
-            leader.timeout   2
             leader.database  "main"
           end
         end
@@ -288,7 +280,6 @@ module SpecHelper
         db.host      "12.0.0.1"
         db.read_write_username  "tester1"
         db.read_write_password  "verysecure1"
-        db.timeout   2
         db.database  "replication1"
       end
 
@@ -297,7 +288,6 @@ module SpecHelper
         db.host      "12.0.0.2"
         db.read_write_username  "tester1"
         db.read_write_password  "verysecure1"
-        db.timeout   2
         db.database  "replication1"
       end
     end

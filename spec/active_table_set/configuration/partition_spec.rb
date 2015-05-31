@@ -12,7 +12,6 @@ describe ActiveTableSet::Configuration::Partition do
       expect(leader.host).to     eq("127.0.0.8")
       expect(leader.read_write_username).to eq("tester")
       expect(leader.read_write_password).to eq("verysecure")
-      expect(leader.timeout).to  eq(2)
     end
 
     it "provides an array of followers" do
@@ -40,7 +39,6 @@ describe ActiveTableSet::Configuration::Partition do
           leader.host = "127.0.0.8"
           leader.read_write_username = "tester"
           leader.read_write_password = "verysecure"
-          leader.timeout  = 2
           leader.database ="main"
         end
 
@@ -48,7 +46,6 @@ describe ActiveTableSet::Configuration::Partition do
           follower.host = "127.0.0.9"
           follower.read_write_username = "tester1"
           follower.read_write_password = "verysecure1"
-          follower.timeout  = 2
           follower.database ="replication1"
         end
 
@@ -56,7 +53,6 @@ describe ActiveTableSet::Configuration::Partition do
           follower.host = "127.0.0.10"
           follower.read_write_username = "tester2"
           follower.read_write_password = "verysecure2"
-          follower.timeout  = 2
           follower.database ="replication2"
         end
       end

@@ -20,7 +20,6 @@ describe ActiveTableSet::Configuration::Config do
             leader.host                 "127.0.0.8"
             leader.read_write_username  "tester"
             leader.read_write_password  "verysecure"
-            leader.timeout              2
             leader.database             "main"
           end
 
@@ -28,7 +27,6 @@ describe ActiveTableSet::Configuration::Config do
             follower.host                 "127.0.0.9"
             follower.read_write_username  "tester1"
             follower.read_write_password  "verysecure1"
-            follower.timeout              2
             follower.database             "replication1"
           end
 
@@ -36,7 +34,6 @@ describe ActiveTableSet::Configuration::Config do
             follower.host      "127.0.0.10"
             follower.read_write_username  "tester2"
             follower.read_write_password  "verysecure2"
-            follower.timeout   2
             follower.database  "replication2"
           end
         end
@@ -66,7 +63,6 @@ describe ActiveTableSet::Configuration::Config do
             leader.host      "127.0.0.8"
             leader.read_write_username  "tester"
             leader.read_write_password  "verysecure"
-            leader.timeout   2
             leader.database  "main"
           end
         end
@@ -77,7 +73,6 @@ describe ActiveTableSet::Configuration::Config do
         ts.host      "127.0.0.8"
         ts.read_write_username  "tester"
         ts.read_write_password  "verysecure"
-        ts.timeout   2
         ts.database  "main"
       end
 
@@ -86,7 +81,6 @@ describe ActiveTableSet::Configuration::Config do
         ts.host      "127.0.0.8"
         ts.read_write_username  "tester"
         ts.read_write_password  "verysecure"
-        ts.timeout   2
         ts.database  "main"
       end
     end
@@ -205,7 +199,6 @@ describe ActiveTableSet::Configuration::Config do
               leader.host      "127.0.0.8"
               leader.read_write_username  "tester"
               leader.read_write_password  "verysecure"
-              leader.timeout   2
               leader.database  "main"
             end
           end
@@ -216,7 +209,6 @@ describe ActiveTableSet::Configuration::Config do
           ts.host      "127.0.0.8"
           ts.read_write_username  "tester"
           ts.read_write_password  "verysecure"
-          ts.timeout   2
           ts.database  "main"
         end
 
@@ -224,7 +216,6 @@ describe ActiveTableSet::Configuration::Config do
           ts.scenario_name "adwords"
           ts.read_write_username  "tester"
           ts.read_write_password  "verysecure"
-          ts.timeout   2
           ts.database  "main"
         end
       end
