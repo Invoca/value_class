@@ -108,7 +108,7 @@ describe ActiveTableSet::Configuration::Config do
 
       con_spec = large_table_set.connection_spec(request)
 
-      expect(con_spec.specification.host).to eq("10.0.0.1")
+      expect(con_spec.pool_key.host).to eq("10.0.0.1")
     end
 
     it "finds sharded connections" do
@@ -121,7 +121,7 @@ describe ActiveTableSet::Configuration::Config do
 
       con_spec = large_table_set.connection_spec(request)
 
-      expect(con_spec.specification.host).to eq("11.0.1.1")
+      expect(con_spec.pool_key.host).to eq("11.0.1.1")
     end
 
 
@@ -146,7 +146,7 @@ describe ActiveTableSet::Configuration::Config do
 
       con_spec = large_table_set.connection_spec(request)
 
-      expect(con_spec.specification.host).to eq("12.0.0.1")
+      expect(con_spec.pool_key.host).to eq("12.0.0.1")
     end
 
     it "raises if the test scenario is not found" do

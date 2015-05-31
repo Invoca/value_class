@@ -69,8 +69,8 @@ describe ActiveTableSet::Configuration::TableSet do
 
       con_spec = table_set.connection_spec(request, [], "foo")
 
-      expect(con_spec.specification.host).to eq(table_set.partitions.first.leader.host)
-      expect(con_spec.specification.username).to eq(table_set.partitions.first.leader.read_only_username)
+      expect(con_spec.pool_key.host).to eq(table_set.partitions.first.leader.host)
+      expect(con_spec.pool_key.username).to eq(table_set.partitions.first.leader.read_only_username)
     end
 
     it "passes along itself as an alternate database context, and forwards the access mode, access_policy and context" do
@@ -79,7 +79,7 @@ describe ActiveTableSet::Configuration::TableSet do
 
       con_spec = table_set.connection_spec(request, [], "foo")
 
-      expect(con_spec.specification.database).to eq(table_set.database)
+      expect(con_spec.pool_key.database).to eq(table_set.database)
       expect(con_spec.access_policy).to eq(table_set.access_policy)
       expect(con_spec.connection_name).to eq("foo_common_balanced")
     end
@@ -91,8 +91,8 @@ describe ActiveTableSet::Configuration::TableSet do
 
         con_spec = table_set.connection_spec(request, [], "foo")
 
-        expect(con_spec.specification.host).to     eq(table_set.partitions.first.leader.host)
-        expect(con_spec.specification.username).to eq(table_set.partitions.first.leader.read_write_username)
+        expect(con_spec.pool_key.host).to     eq(table_set.partitions.first.leader.host)
+        expect(con_spec.pool_key.username).to eq(table_set.partitions.first.leader.read_write_username)
       end
 
       it "when using a multiple partitions, requires the partition key" do

@@ -28,8 +28,7 @@ module ActiveTableSet
   # The user settings mapped to internal structures...
 
   # This the internal setting.  (Need failover spec?)
-  # TODO - rename specification pool key.
-  ConnectionSpec = ValueClass.struct(:specification, :access_policy, :connection_name)
+  ConnectionSpec = ValueClass.struct(:pool_key, :access_policy, :connection_name)
 
   # This is the active record interface for a pool.
   # TODO - move it back to its own class.

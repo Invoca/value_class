@@ -90,8 +90,8 @@ describe ActiveTableSet::Configuration::Partition do
 
       con_spec = part.connection_spec(request, [], "foo", "access_policy")
 
-      expect(con_spec.specification.host).to eq(part.leader.host)
-      expect(con_spec.specification.username).to eq(part.leader.read_write_username)
+      expect(con_spec.pool_key.host).to eq(part.leader.host)
+      expect(con_spec.pool_key.username).to eq(part.leader.read_write_username)
     end
 
     it "passes through the timeout, access policy and connection_name" do
@@ -112,8 +112,8 @@ describe ActiveTableSet::Configuration::Partition do
 
       con_spec = part.connection_spec(request, [], "foo", "access_policy")
 
-      expect(con_spec.specification.host).to eq(part.leader.host)
-      expect(con_spec.specification.username).to eq(part.leader.read_only_username)
+      expect(con_spec.pool_key.host).to eq(part.leader.host)
+      expect(con_spec.pool_key.username).to eq(part.leader.read_only_username)
     end
 
     it "provides a chosen database config for balanced read access (when leader is chosen)" do
@@ -124,8 +124,8 @@ describe ActiveTableSet::Configuration::Partition do
 
       con_spec = part.connection_spec(request, [], "foo", "access_policy")
 
-      expect(con_spec.specification.host).to eq(part.leader.host)
-      expect(con_spec.specification.username).to eq(part.leader.read_only_username)
+      expect(con_spec.pool_key.host).to eq(part.leader.host)
+      expect(con_spec.pool_key.username).to eq(part.leader.read_only_username)
     end
 
     it "provides a chosen database config for balanced read access (when follower is chosen)" do
@@ -136,8 +136,8 @@ describe ActiveTableSet::Configuration::Partition do
 
       con_spec = part.connection_spec(request, [], "foo", "access_policy")
 
-      expect(con_spec.specification.host).to eq(part.followers.first.host)
-      expect(con_spec.specification.username).to eq(part.followers.first.read_only_username)
+      expect(con_spec.pool_key.host).to eq(part.followers.first.host)
+      expect(con_spec.pool_key.username).to eq(part.followers.first.read_only_username)
     end
 
     it "provides a chosen database config for balanced access (when no followers)" do
@@ -148,8 +148,8 @@ describe ActiveTableSet::Configuration::Partition do
 
       con_spec = part.connection_spec(request, [], "foo", "access_policy")
 
-      expect(con_spec.specification.host).to eq(part.leader.host)
-      expect(con_spec.specification.username).to eq(part.leader.read_only_username)
+      expect(con_spec.pool_key.host).to eq(part.leader.host)
+      expect(con_spec.pool_key.username).to eq(part.leader.read_only_username)
     end
 
     it "raises if connection key requested with unknown access_mode" do

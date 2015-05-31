@@ -31,8 +31,8 @@ describe ActiveTableSet::Configuration::TestScenario do
 
       con_spec = test_scenario.connection_spec(request, [], "foo", prev_con_spec)
 
-      expect(con_spec.specification.host).to eq(test_scenario.host)
-      expect(con_spec.specification.username).to eq(test_scenario.read_write_username)
+      expect(con_spec.pool_key.host).to eq(test_scenario.host)
+      expect(con_spec.pool_key.username).to eq(test_scenario.read_write_username)
     end
   end
 

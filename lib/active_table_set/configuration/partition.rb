@@ -27,7 +27,8 @@ module ActiveTableSet
               raise ArgumentError, "unknown access_mode #{request.access_mode}"
             end
 
-        specification = selected_config.connection_specification(
+        # Now I need to change connection_specification back to pool key
+        pook_key = selected_config.connection_specification(
             alternates: [self] + database_connections,
             context: context,
             access_mode: request.access_mode,
@@ -35,7 +36,7 @@ module ActiveTableSet
         )
 
         ConnectionSpec.new(
-           specification:   specification,
+           pool_key:        pook_key,
            access_policy:   access_policy,
            connection_name: context
         )

@@ -44,7 +44,7 @@ module ActiveTableSet
 
         default_config = connection_spec(default)
 
-        result[environment] = default_config.specification.to_hash
+        result[environment] = default_config.pool_key.to_hash
 
         table_sets.each do |ts|
           ts.partitions.each_with_index do |part, index|

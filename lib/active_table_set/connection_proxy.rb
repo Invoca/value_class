@@ -102,7 +102,7 @@ module ActiveTableSet
           timeout: timeout
       )
 
-       @config.connection_spec(using_spec).specification
+       @config.connection_spec(using_spec).pool_key
     end
 
     # TODO - deprecated in favor of setting the timeout on a connection when passed out from the pool.

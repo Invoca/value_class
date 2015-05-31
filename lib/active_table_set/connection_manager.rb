@@ -84,7 +84,7 @@ module ActiveTableSet
 
     def establish_connection
       self._connection = "foo"
-      self._pool = @pool_manager.get_pool(key: connection_spec.specification)
+      self._pool = @pool_manager.get_pool(key: connection_spec.pool_key)
 
       connection = _pool.connection
       # TODO - test the connection
