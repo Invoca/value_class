@@ -99,7 +99,7 @@ describe ActiveTableSet::Configuration::Config do
 
   context "connection_spec" do
     it "finds common connections" do
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(
+      using_spec = ActiveTableSet::Configuration::Request.new(
           table_set: :common,
           access_mode: :write,
           partition_key: nil,
@@ -112,7 +112,7 @@ describe ActiveTableSet::Configuration::Config do
     end
 
     it "finds sharded connections" do
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(
+      using_spec = ActiveTableSet::Configuration::Request.new(
           table_set: :sharded,
           access_mode: :write,
           partition_key: "alpha",
@@ -126,7 +126,7 @@ describe ActiveTableSet::Configuration::Config do
 
 
     it "raises if the table set is not found" do
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(
+      using_spec = ActiveTableSet::Configuration::Request.new(
           table_set: :not_found,
           access_mode: :write,
           partition_key: "alpha",

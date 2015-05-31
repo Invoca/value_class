@@ -94,7 +94,7 @@ module ActiveTableSet
     ## DATABASE MANAGEMENT ##
 
     def database_config(table_set:, access_mode: :write, partition_key: nil, timeout: 50)
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(
+      using_spec = ActiveTableSet::Configuration::Request.new(
           table_set: table_set,
           access_mode: access_mode,
           partition_key: partition_key,

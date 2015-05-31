@@ -3,7 +3,7 @@ require 'value_class'
 
 require 'active_table_set/configuration/database_connection'
 require 'active_table_set/configuration/access_policy'
-require 'active_table_set/configuration/using_spec'
+require 'active_table_set/configuration/request'
 require 'active_table_set/configuration/test_scenario'
 require 'active_table_set/configuration/partition'
 require 'active_table_set/configuration/table_set'

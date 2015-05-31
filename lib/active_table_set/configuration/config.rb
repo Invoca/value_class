@@ -9,7 +9,7 @@ module ActiveTableSet
       value_attr      :environment
 
 # TODO - rename to default
-      value_attr      :default_connection,   class_name: 'ActiveTableSet::Configuration::UsingSpec', required: true
+      value_attr      :default_connection,   class_name: 'ActiveTableSet::Configuration::Request', required: true
       value_list_attr :table_sets,           class_name: 'ActiveTableSet::Configuration::TableSet', insert_method: :table_set
       value_list_attr :test_scenarios,       class_name: 'ActiveTableSet::Configuration::TestScenario', insert_method: :test_scenario
 
@@ -22,7 +22,7 @@ module ActiveTableSet
         @table_sets_by_name     = table_sets.inject({}) { |memo, ts| memo[ts.name] = ts; memo }
         @test_scenarios_by_name = test_scenarios.inject({}) { |memo, ts| memo[ts.scenario_name] = ts; memo }
 
-        @default_request = ActiveTableSet::Configuration::UsingSpec.new(
+        @default_request = ActiveTableSet::Configuration::Request.new(
             table_set:     default_connection.table_set || table_sets.first.name,
             access_mode:   default_connection.access_mode || :write,
             partition_key: default_connection.partition_key,

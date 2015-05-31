@@ -86,7 +86,7 @@ describe ActiveTableSet::Configuration::Partition do
   context "connection_spec" do
     it "provides a connection to the leader using the read write user when in write mode" do
       part = large_table_set.table_sets.first.partitions.first
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :write, timeout: 100)
+      using_spec = ActiveTableSet::Configuration::Request.new(table_set: :foo, access_mode: :write, timeout: 100)
 
       con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
 
@@ -96,7 +96,7 @@ describe ActiveTableSet::Configuration::Partition do
 
     it "passes through the timeout, access policy and connection_name" do
       part = large_table_set.table_sets.first.partitions.first
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :write, timeout: 100)
+      using_spec = ActiveTableSet::Configuration::Request.new(table_set: :foo, access_mode: :write, timeout: 100)
 
       con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
 
@@ -109,7 +109,7 @@ describe ActiveTableSet::Configuration::Partition do
     # TODO - this is wrong.  Read access should prefer to avoid the leader.
     it "provides a leader connection key for read access" do
       part = large_table_set.table_sets.first.partitions.first
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :read, timeout: 100)
+      using_spec = ActiveTableSet::Configuration::Request.new(table_set: :foo, access_mode: :read, timeout: 100)
 
       con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
 
@@ -121,7 +121,7 @@ describe ActiveTableSet::Configuration::Partition do
       allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(0)
 
       part = large_table_set.table_sets.first.partitions.first
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :balanced, timeout: 100)
+      using_spec = ActiveTableSet::Configuration::Request.new(table_set: :foo, access_mode: :balanced, timeout: 100)
 
       con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
 
@@ -133,7 +133,7 @@ describe ActiveTableSet::Configuration::Partition do
       allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
 
       part = large_table_set.table_sets.first.partitions.first
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :balanced, timeout: 100)
+      using_spec = ActiveTableSet::Configuration::Request.new(table_set: :foo, access_mode: :balanced, timeout: 100)
 
       con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
 
@@ -145,7 +145,7 @@ describe ActiveTableSet::Configuration::Partition do
       allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
 
       part = large_table_set.table_sets.first.partitions.first.clone_config { |clone| clone.followers = [] }
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :balanced, timeout: 100)
+      using_spec = ActiveTableSet::Configuration::Request.new(table_set: :foo, access_mode: :balanced, timeout: 100)
 
       con_spec = part.connection_spec(using_spec, [], "foo", "access_policy")
 
@@ -155,7 +155,7 @@ describe ActiveTableSet::Configuration::Partition do
 
     it "raises if connection key requested with unknown access_mode" do
       part = large_table_set.table_sets.first.partitions.first
-      using_spec = ActiveTableSet::Configuration::UsingSpec.new(table_set: :foo, access_mode: :something_weird, timeout: 100)
+      using_spec = ActiveTableSet::Configuration::Request.new(table_set: :foo, access_mode: :something_weird, timeout: 100)
 
       expect { part.connection_spec(using_spec, [], "foo", "access_policy") }.to raise_error(ArgumentError, "unknown access_mode something_weird")
     end

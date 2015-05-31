@@ -3,7 +3,7 @@
 # This is basically the user requested table set configuration.
 module ActiveTableSet
   module Configuration
-    class UsingSpec
+    class Request
       include ValueClass::Constructable
       value_attr :table_set,   required: true
       value_attr :access_mode, default: :write
