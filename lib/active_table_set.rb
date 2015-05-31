@@ -29,7 +29,6 @@ require 'rails'
 
 module ActiveTableSet
   class << self
-    # TODO - integrate with connection manager
     def config
       @config = ActiveTableSet::Configuration::Config.config { |conf| yield conf }
     end

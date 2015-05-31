@@ -1,5 +1,18 @@
 require 'spec_helper'
 
+module ActiveTableSet
+  class PoolManager
+    def destroy_pool(key:)
+      @pools.delete(key)
+    end
+
+    def pool_count
+      @pools.length
+    end
+  end
+end
+
+
 describe ActiveTableSet::PoolManager do
   context "pool creation" do
     let(:ip)        { "127.0.0.1" }

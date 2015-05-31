@@ -84,7 +84,9 @@ module ActiveTableSet
       self._connection = "foo"
       self._pool = @pool_manager.get_pool(key: connection_spec.pool_key)
 
-      connection = _pool.connection
+      # TODO - need test for this case.
+      # TODO - quarantine
+      connection = (_pool && _pool.connection) or raise ActiveRecord::ConnectionNotEstablished
 
       unless connection.respond_to?(:using)
         connection.class.send(:include, ActiveTableSet::Extensions::ConvenientDelegation)
@@ -98,7 +100,6 @@ module ActiveTableSet
       end
 
       # TODO - test the connection
-      # TODO - add access policy
       self._connection = connection
     end
 

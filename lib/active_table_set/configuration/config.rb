@@ -1,5 +1,6 @@
 # TODO -- (Later) Specify named timeout values, disallow arbitrary values  For example :web, 110 seconds,  :bulk = 15 minutes... :ringswitch_event_processor - 1 second.   :ringswitch_deferred - 15 seconds
-# TODO -- (later) Add description for all config parameters.
+# TODO -- (last) Add description for all config parameters.
+# TODO -- (last) Update readme
 
 module ActiveTableSet
   module Configuration
