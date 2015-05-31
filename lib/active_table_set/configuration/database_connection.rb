@@ -9,6 +9,7 @@ module ActiveTableSet
       value_attr :read_only_username
       value_attr :read_only_password
       value_attr :database
+      # TODO - Get rid of this timeout - we don't use it.
       value_attr :timeout
       value_attr :connect_timeout
       value_attr :pool_size
@@ -32,15 +33,16 @@ module ActiveTableSet
           reconnect:      true
       )
 
-      def connection_specification(alternates:, access_mode: :write, context: "")
+      # TODO - get rid of defaults
+      def connection_specification(alternates:, timeout:, access_mode: :write, context: "")
         ConnectionSpecification.new(
             host:            find_value(:host, alternates, context),
             database:        find_value(:database, alternates, context),
             username:        find_value(access_mode == :write ? :read_write_username : :read_only_username, alternates, context),
             password:        find_value(access_mode == :write ? :read_write_password : :read_only_password, alternates, context),
             connect_timeout: find_value(:connect_timeout, alternates, context),
-            read_timeout:    find_value(:timeout, alternates, context),
-            write_timeout:   find_value(:timeout, alternates, context),
+            read_timeout:    timeout,
+            write_timeout:   timeout,
             encoding:        find_value(:encoding, alternates, context),
             collation:       find_value(:collation, alternates, context),
             adapter:         find_value(:adapter, alternates, context),

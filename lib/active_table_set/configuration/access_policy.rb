@@ -2,24 +2,10 @@ module ActiveTableSet
   module Configuration
     class AccessPolicy
       include ValueClass::Constructable
-
-      value_description "describes the read write rules for tables using using the mysql wildcard format"
-
-      value_attr :allow_read,
-                 description: "Which tables can be read, defaults to '%'",
-                 default: '%'
-
-      value_attr :allow_write,
-                 description: "Which tables can be written, defaults to '%'",
-                 default: '%'
-
-      value_attr :disallow_read,
-                 description: "Which tables can not be read, defaults to ''",
-                 default: ''
-
-      value_attr :disallow_write,
-                 description: "Which tables can not be written, defaults to ''",
-                 default: ''
+      value_attr :allow_read,     default: '%'
+      value_attr :allow_write,    default: '%'
+      value_attr :disallow_read,  default: ''
+      value_attr :disallow_write, default: ''
 
       def initialize(config = {})
         super

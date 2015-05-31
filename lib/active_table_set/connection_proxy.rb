@@ -8,15 +8,11 @@ require 'active_record/connection_adapters/mysql2_adapter'
 # 2. Has a PoolManager. It passes pool keys to the pool manager and gets connections back.
 # 3. Maintains variables to track which thread is active so that connections are not shared between threads.
 
-# TODO -- move query timeouts out of the database key.   Do not keep separate pools for these, set connection when checked out.
 # TODO -- wire up default connection
 # TODO -- wire up enforce access policy
 # TODO -- Get rid of delegation from connection proxy.  Instead, extend the class to add the syntax we want.
 # TODO -- Wireup test scenarios
-
-# TODO - break usernames out of database config.
-# TODO - need read_write_user and read_only_user as separate config.
-# TODO - need to be able to specify the following at
+# TODO -- Wire up timeouts
 
 
 module ActiveTableSet
@@ -49,6 +45,7 @@ module ActiveTableSet
             @config.default_connection.partition_key,
             @config.default_connection.timeout )
       end
+      # TODO - Don't change connection unless the key changes...
       obtain_connection(thread_database_config)
     end
 

@@ -15,7 +15,7 @@ module ActiveTableSet
         @chosen_follower = available_database_configs[selected_index]
       end
 
-      # TODO - using_params or using_spec
+      # TODO - using_params or using_spec?
       def connection_spec(using_params, database_connections, connection_name_prefix, access_policy)
         context = "#{connection_name_prefix}_#{using_params.access_mode}"
         selected_config =
@@ -31,7 +31,8 @@ module ActiveTableSet
         specification = selected_config.connection_specification(
             alternates: [self] + database_connections,
             context: context,
-            access_mode: using_params.access_mode
+            access_mode: using_params.access_mode,
+            timeout: using_params.timeout
         )
 
         ConnectionSpec.new(

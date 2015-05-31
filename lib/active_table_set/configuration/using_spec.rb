@@ -1,3 +1,6 @@
+# TODO - Request or ConfigurationRequest
+#
+# This is basically the user requested table set configuration.
 module ActiveTableSet
   module Configuration
     class UsingSpec

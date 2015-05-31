@@ -142,6 +142,7 @@ describe ActiveTableSet::Configuration::Config do
       expect { large_table_set.connection_spec(using_spec) }.to raise_error(ArgumentError, "Unknown table set not_found, available_table_sets: common, sharded")
     end
 
+    # TODO
     # it "returns the test scenario if it is overridden" do
     #   db_config = large_table_set.database_config(
     #       table_set: :sharded,
@@ -167,16 +168,16 @@ describe ActiveTableSet::Configuration::Config do
       database_configurations = large_table_set.database_configuration
 
       expected = {
-          "test"                          => {"host"=>"10.0.0.1", "database"=>"main",         "username"=>"tester",  "password"=>"verysecure",  "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
-          "test_common_leader"            => {"host"=>"10.0.0.1", "database"=>"main",         "username"=>"tester",  "password"=>"verysecure",  "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
-          "test_common_follower_0"        => {"host"=>"10.0.0.2", "database"=>"replication1", "username"=>"tester1", "password"=>"verysecure1", "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
-          "test_common_follower_1"        => {"host"=>"10.0.0.3", "database"=>"replication2", "username"=>"tester2", "password"=>"verysecure2", "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
-          "test_sharded_alpha_leader"     => {"host"=>"11.0.1.1", "database"=>"main",         "username"=>"tester",  "password"=>"verysecure",  "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
-          "test_sharded_alpha_follower_0" => {"host"=>"11.0.1.2", "database"=>"replication1", "username"=>"tester1", "password"=>"verysecure1", "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
-          "test_sharded_alpha_follower_1" => {"host"=>"11.0.1.3", "database"=>"replication2", "username"=>"tester2", "password"=>"verysecure2", "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
-          "test_sharded_beta_leader"      => {"host"=>"11.0.2.1", "database"=>"main",         "username"=>"tester",  "password"=>"verysecure",  "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
-          "test_test_scenario_fixture"    => {"host"=>"12.0.0.2", "database"=>"replication1", "username"=>"tester1", "password"=>"verysecure1", "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
-          "test_test_scenario_legacy"     => {"host"=>"12.0.0.1", "database"=>"replication1", "username"=>"tester1", "password"=>"verysecure1", "connect_timeout"=>5, "read_timeout"=>2, "write_timeout"=>2, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true}
+          "test"                          => {"host"=>"10.0.0.1", "database"=>"main",         "username"=>"tester",  "password"=>"verysecure",  "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
+          "test_common_leader"            => {"host"=>"10.0.0.1", "database"=>"main",         "username"=>"tester",  "password"=>"verysecure",  "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
+          "test_common_follower_0"        => {"host"=>"10.0.0.2", "database"=>"replication1", "username"=>"tester1", "password"=>"verysecure1", "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
+          "test_common_follower_1"        => {"host"=>"10.0.0.3", "database"=>"replication2", "username"=>"tester2", "password"=>"verysecure2", "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
+          "test_sharded_alpha_leader"     => {"host"=>"11.0.1.1", "database"=>"main",         "username"=>"tester",  "password"=>"verysecure",  "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
+          "test_sharded_alpha_follower_0" => {"host"=>"11.0.1.2", "database"=>"replication1", "username"=>"tester1", "password"=>"verysecure1", "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
+          "test_sharded_alpha_follower_1" => {"host"=>"11.0.1.3", "database"=>"replication2", "username"=>"tester2", "password"=>"verysecure2", "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
+          "test_sharded_beta_leader"      => {"host"=>"11.0.2.1", "database"=>"main",         "username"=>"tester",  "password"=>"verysecure",  "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
+          "test_test_scenario_fixture"    => {"host"=>"12.0.0.2", "database"=>"replication1", "username"=>"tester1", "password"=>"verysecure1", "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true},
+          "test_test_scenario_legacy"     => {"host"=>"12.0.0.1", "database"=>"replication1", "username"=>"tester1", "password"=>"verysecure1", "connect_timeout"=>5, "read_timeout"=>110, "write_timeout"=>110, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"mysql2", "pool"=>5, "reconnect"=>true}
       }
       expect(database_configurations).to eq(expected)
     end

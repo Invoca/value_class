@@ -7,15 +7,28 @@ module ActiveTableSet
       include ValueClass::Constructable
       value_attr      :enforce_access_policy, default: false
       value_attr      :environment
+
+# TODO - rename to default
       value_attr      :default_connection,   class_name: 'ActiveTableSet::Configuration::UsingSpec', required: true
       value_list_attr :table_sets,           class_name: 'ActiveTableSet::Configuration::TableSet', insert_method: :table_set
       value_list_attr :test_scenarios,       class_name: 'ActiveTableSet::Configuration::TestScenario', insert_method: :test_scenario
+
+# TODO - tests around this attribute (I am adding this in response to other borken tests)
+      attr_reader :default_request
 
       def initialize(options={})
         super
         table_sets.any? or raise ArgumentError, "no table sets defined"
         @table_sets_by_name     = table_sets.inject({}) { |memo, ts| memo[ts.name] = ts; memo }
         @test_scenarios_by_name = test_scenarios.inject({}) { |memo, ts| memo[ts.scenario_name] = ts; memo }
+
+        @default_request = ActiveTableSet::Configuration::UsingSpec.new(
+            table_set:     default_connection.table_set || table_sets.first.name,
+            access_mode:   default_connection.access_mode || :write,
+            partition_key: default_connection.partition_key,
+            timeout: default_connection.timeout || 110, # TODO - use first named timeout
+            test_scenario: default_connection.test_scenario
+        )
       end
 
       def connection_spec(using_params)
@@ -31,12 +44,7 @@ module ActiveTableSet
       def database_configuration
         result = {}
 
-        default_config = connection_spec(UsingSpec.new(
-            table_set: default_connection.table_set,
-            access_mode: default_connection.access_mode,
-            partition_key: default_connection.partition_key,
-            test_scenario: nil
-        ))
+        default_config = connection_spec(default_request)
 
         result[environment] = default_config.specification.to_hash
 
@@ -49,16 +57,16 @@ module ActiveTableSet
                   "#{environment}_#{ts.name}"
                 end
 
-            result["#{prefix}_leader"] = part.leader.connection_specification(alternates:[ts,part,self]).to_hash
+            result["#{prefix}_leader"] = part.leader.connection_specification(alternates:[ts,part,self], timeout: default_request.timeout).to_hash
 
             part.followers.each_with_index do |follower, index|
-              result["#{prefix}_follower_#{index}"] = follower.connection_specification(alternates:[ts,part,self]).to_hash
+              result["#{prefix}_follower_#{index}"] = follower.connection_specification(alternates:[ts,part,self], timeout: default_request.timeout).to_hash
             end
           end
         end
 
         test_scenarios.each do |ts|
-          result["#{environment}_test_scenario_#{ts.scenario_name}"] = ts.connection_specification(alternates:[self]).to_hash
+          result["#{environment}_test_scenario_#{ts.scenario_name}"] = ts.connection_specification(alternates:[self], timeout: default_request.timeout).to_hash
         end
         result
       end

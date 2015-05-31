@@ -59,23 +59,20 @@ describe ActiveTableSet::ConnectionProxy do
 
       proxy.using(table_set: :common, access_mode: :write, timeout: 55) do
         expect(proxy.connection.config.host).to eq("10.0.0.1")
-        # TODO - needs to be set on the connection
-        # expect(proxy.connection.config.read_timeout).to eq(55)
-        # expect(proxy.connection.config.write_timeout).to eq(55)
+        expect(proxy.connection.config.read_timeout).to eq(55)
+        expect(proxy.connection.config.write_timeout).to eq(55)
       end
 
       proxy.using(table_set: :common, access_mode: :balanced, timeout: 5) do
         expect(proxy.connection.config.host).to eq("10.0.0.2")
-        # TODO - needs to be set on the connection
-        # expect(proxy.connection.config.read_timeout).to eq(5)
-        # expect(proxy.connection.config.write_timeout).to eq(5)
+        expect(proxy.connection.config.read_timeout).to eq(5)
+        expect(proxy.connection.config.write_timeout).to eq(5)
       end
 
       proxy.using(table_set: :common, access_mode: :read, timeout: 5) do
         expect(proxy.connection.config.host).to eq("10.0.0.1")
-        # TODO - needs to be set on the connection
-        # expect(proxy.connection.config.read_timeout).to eq(5)
-        # expect(proxy.connection.config.write_timeout).to eq(5)
+        expect(proxy.connection.config.read_timeout).to eq(5)
+        expect(proxy.connection.config.write_timeout).to eq(5)
       end
     end
   end
@@ -101,6 +98,8 @@ describe ActiveTableSet::ConnectionProxy do
     end
 
     it "uses new pool if new key does not match current key" do
+      # TODO - we no longer use different connections for different timeouts.
+
       # pool_dbl_1 = double("pool_dbl_1")
       # expect(pool_dbl_1).to receive(:connection).and_return( "connection1" )
       # expect(pool_dbl_1).to receive(:release_connection) { true }
@@ -110,8 +109,6 @@ describe ActiveTableSet::ConnectionProxy do
       # expect(pool_dbl_2).to receive(:release_connection) { true }
       #
       # expect(mgr).to receive(:create_pool).twice.and_return(pool_dbl_1, pool_dbl_2)
-
-      # TODO - we no longer use different connections for different timeouts.
       # proxy.using(table_set: :common, access_mode: :read, timeout: 5) do
       #   pool1 = proxy.send(:pool, proxy.send(:thread_database_config))
       #   proxy.using(table_set: :common, access_mode: :read, timeout: 10) do
