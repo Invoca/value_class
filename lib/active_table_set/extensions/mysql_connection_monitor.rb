@@ -1,3 +1,4 @@
+# Need better name
 module ActiveTableSet
   module Extensions
     module MysqlConnectionMonitor

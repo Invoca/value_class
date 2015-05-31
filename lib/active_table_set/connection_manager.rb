@@ -85,6 +85,18 @@ module ActiveTableSet
       self._pool = @pool_manager.get_pool(key: connection_spec.pool_key)
 
       connection = _pool.connection
+
+      unless connection.respond_to?(:using)
+        connection.class.send(:include, ActiveTableSet::Extensions::ConvenientDelegation)
+      end
+
+      if @config.enforce_access_policy
+        if !connection.respond_to?(:access_policy)
+          ActiveTableSet::Extensions::MysqlConnectionMonitor.install(connection)
+        end
+        connection.access_policy = connection_spec.access_policy
+      end
+
       # TODO - test the connection
       # TODO - add access policy
       self._connection = connection

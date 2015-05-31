@@ -6,7 +6,7 @@ module ActiveTableSet
 
       module ClassMethods
         def connection
-          @@connection_proxy ||= ActiveTableSet.connection_proxy
+          @@connection_proxy ||= ActiveTableSet.connection
         end
       end
 

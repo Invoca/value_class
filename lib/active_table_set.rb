@@ -15,10 +15,10 @@ require 'active_table_set/configuration/config'
 require 'active_table_set/extensions/connection_override'
 require 'active_table_set/extensions/database_configuration_override'
 require 'active_table_set/extensions/mysql_connection_monitor'
+require 'active_table_set/extensions/convenient_delegation'
 
 require 'active_table_set/version'
 require 'active_table_set/pool_manager'
-require 'active_table_set/connection_proxy'
 require 'active_table_set/connection_manager'
 require 'active_table_set/query_parser'
 require 'active_support/core_ext'
@@ -29,6 +29,7 @@ require 'rails'
 
 module ActiveTableSet
   class << self
+    # TODO - integrate with connection manager
     def config
       @config = ActiveTableSet::Configuration::Config.config { |conf| yield conf }
     end
@@ -40,11 +41,22 @@ module ActiveTableSet
       ActiveRecord::Base.send(:prepend, ActiveTableSet::Extensions::ConnectionOverride)
       Rails::Application::Configuration.send(:prepend, ActiveTableSet::Extensions::DatabaseConfigurationOverride)
 
-      @proxy = ActiveTableSet::ConnectionProxy.new(config: @config)
+      @manager = ActiveTableSet::ConnectionManager.new(config: @config, pool_manager: ActiveTableSet::PoolManager.new)
     end
 
-    def connection_proxy
-      @proxy
+    def connection
+      @manager or raise "You must call enable first"
+      @manager.connection
+    end
+
+    def using(table_set: nil, access_mode: nil, partition_key: nil, timeout: nil, &blk)
+      @manager or raise "You must call enable first"
+      @manager.using(table_set: table_set, access_mode: access_mode, partition_key: partition_key, timeout: timeout, &blk)
+    end
+
+    def use_test_scenario(test_scenario)
+      @manager or raise "You must call enable first"
+      @manager.use_test_scenario(test_scenario)
     end
 
     def database_configuration

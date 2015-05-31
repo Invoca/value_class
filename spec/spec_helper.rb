@@ -1,6 +1,7 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'active_table_set'
+require 'active_record/connection_adapters/mysql2_adapter'
 require 'pry'
 
 module Rails

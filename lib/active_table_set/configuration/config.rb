@@ -55,16 +55,16 @@ module ActiveTableSet
                   "#{environment}_#{ts.name}"
                 end
 
-            result["#{prefix}_leader"] = part.leader.connection_specification(alternates:[ts,part,self], timeout: default.timeout).to_hash
+            result["#{prefix}_leader"] = part.leader.pool_key(alternates:[ts,part,self], timeout: default.timeout).to_hash
 
             part.followers.each_with_index do |follower, index|
-              result["#{prefix}_follower_#{index}"] = follower.connection_specification(alternates:[ts,part,self], timeout: default.timeout).to_hash
+              result["#{prefix}_follower_#{index}"] = follower.pool_key(alternates:[ts,part,self], timeout: default.timeout).to_hash
             end
           end
         end
 
         test_scenarios.each do |ts|
-          result["#{environment}_test_scenario_#{ts.scenario_name}"] = ts.connection_specification(alternates:[self], timeout: default.timeout).to_hash
+          result["#{environment}_test_scenario_#{ts.scenario_name}"] = ts.pool_key(alternates:[self], timeout: default.timeout).to_hash
         end
         result
       end

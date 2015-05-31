@@ -7,7 +7,7 @@ module ActiveTableSet
       def connection_spec(request, database_connections, connection_name_prefix, previous_spec)
         context = "#{connection_name_prefix}_#{scenario_name}"
 
-        pool_key = connection_specification(
+        pool_key = pool_key(
           alternates:  database_connections,
           context:     context,
           access_mode: :write,

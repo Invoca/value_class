@@ -4,7 +4,11 @@ module ActiveTableSet
   class << self
     def clear_for_testing
       @config = nil
-      @proxy  = nil
+      @manager  = nil
+    end
+
+    def add_stub_manager(stub)
+      @manager = stub
     end
   end
 end
@@ -52,7 +56,7 @@ describe ActiveTableSet do
     expect { ActiveTableSet.enable }.to raise_error(StandardError, "You must specify a configuration before enabling ActiveTableSet")
   end
 
-  it "has an enable method that installs extensions and constructs the proxy" do
+  it "has an enable method that installs extensions and constructs the manager" do
     ActiveTableSet.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
@@ -82,8 +86,9 @@ describe ActiveTableSet do
 
     ActiveTableSet.enable
 
-    proxy = ActiveTableSet.connection_proxy
-    expect(proxy.class).to eq(ActiveTableSet::ConnectionProxy)
+    manager = ActiveTableSet.instance_eval('@manager')
+
+    expect(manager.class).to eq(ActiveTableSet::ConnectionManager)
   end
 
   it "has a database_config method that delegates to the connection" do
@@ -118,4 +123,41 @@ describe ActiveTableSet do
 
     expect(db_config).to eq("configuration")
   end
+
+  context "using" do
+    it "raises if not configured" do
+      expect { ActiveTableSet.using {} }.to raise_error(StandardError, "You must call enable first")
+    end
+
+    it "delegates the using method" do
+      mgr_dbl = double("stub_proxy")
+
+      @called_block = false
+
+      ActiveTableSet.add_stub_manager(mgr_dbl)
+      expect(mgr_dbl).to receive(:using).with(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t).and_yield
+      ActiveTableSet.using(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t) do
+        @called_block = true
+      end
+
+      expect(@called_block).to eq(true)
+    end
+  end
+
+  context "use_test_scenario" do
+    it "raises if not configured" do
+      expect { ActiveTableSet.use_test_scenario(:foo) }.to raise_error(StandardError, "You must call enable first")
+    end
+
+    it "delegates the using method" do
+      mgr_dbl = double("stub_proxy")
+
+      @called_block = false
+
+      ActiveTableSet.add_stub_manager(mgr_dbl)
+      expect(mgr_dbl).to receive(:use_test_scenario).with(:foo)
+      ActiveTableSet.use_test_scenario(:foo)
+    end
+  end
+
 end

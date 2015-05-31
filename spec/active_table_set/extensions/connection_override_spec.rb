@@ -32,8 +32,10 @@ describe ActiveTableSet::Extensions::ConnectionOverride do
       end
 
       ActiveTableSet.enable
+      manager = ActiveTableSet.instance_eval('@manager')
+      expect(manager).to receive(:connection) { "manager"}
       connection = TestDummy.connection
-      expect(connection.is_a?(ActiveTableSet::ConnectionProxy)).to eq(true)
+      expect(connection).to eq("manager")
     end
   end
 end

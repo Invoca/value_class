@@ -30,8 +30,7 @@ module ActiveTableSet
           reconnect:      true
       )
 
-      # TODO - rename to pool key
-      def connection_specification(alternates:, timeout:, access_mode: :write, context: "")
+      def pool_key(alternates:, timeout:, access_mode: :write, context: "")
         PoolKey.new(
             host:            find_value(:host, alternates, context),
             database:        find_value(:database, alternates, context),

@@ -75,6 +75,26 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_manager.connection.config.password).to eq("verysecure")
       end
 
+      it "adds the using method to the connection class" do
+        connection = connection_manager.connection
+        expect(connection.respond_to?(:using)).to eq(true)
+
+        @called_block = false
+        expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t).and_yield
+        connection.using(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t) do
+          @called_block = true
+        end
+
+        expect(@called_block).to eq(true)
+      end
+
+      it "adds the access policy to the class" do
+        connection = connection_manager.connection
+        expect(connection.respond_to?(:access_policy)).to eq(true)
+
+        expect(connection.access_policy.disallow_read).to eq("cf_%")
+      end
+
       it "does not change the connection if the parameters are the same" do
         connection_object_id = connection_manager.connection.object_id
 
