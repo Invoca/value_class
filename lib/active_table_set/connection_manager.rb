@@ -17,11 +17,11 @@ module ActiveTableSet
       if new_request == request
         yield
       else
+        # TODO - if in a test mode and the test scenario did not change, change the access rules
         yield_with_new_connection(new_request, &blk)
       end
     end
 
-    # TODO - If we flip back and forth between test scenarios, I suspect we are going to want to come back to the same connection
     def use_test_scenario(test_scenario_name)
       _connection or raise "unexpected - no existing connection"
       _request    or raise "unexpected - no existing request"
@@ -55,8 +55,6 @@ module ActiveTableSet
       self._request ||= @config.default
     end
 
-    # TODO - think this through, if I connect to a, then to b, then back to a, do I get the same connection as when I first connected to a?
-    # Do the same thing as alternate_db
     def yield_with_new_connection(new_request)
       _connection or raise "unexpected - no existing connection"
       _request    or raise "unexpected - no existing request"

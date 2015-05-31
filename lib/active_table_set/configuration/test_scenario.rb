@@ -14,10 +14,9 @@ module ActiveTableSet
           timeout:     timeout
         )
 
-        ConnectionSpec.new(
+        ConnectionAttributes.new(
           pool_key:        pool_key,
-          access_policy:   previous_spec.access_policy,
-          connection_name: context
+          access_policy:   previous_spec.access_policy
         )
       end
 

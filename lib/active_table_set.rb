@@ -1,6 +1,9 @@
 require 'active_record'
 require 'value_class'
 
+require 'active_table_set/pool_key'
+require 'active_table_set/connection_attributes'
+
 require 'active_table_set/configuration/database_connection'
 require 'active_table_set/configuration/access_policy'
 require 'active_table_set/configuration/request'
@@ -25,15 +28,6 @@ require 'rails'
 # TODO - robocup this whole gem
 
 module ActiveTableSet
-  # The user settings mapped to internal structures...
-
-  # This the internal setting.  (Need failover spec?)
-  ConnectionSpec = ValueClass.struct(:pool_key, :access_policy, :connection_name)
-
-  # This is the active record interface for a pool.
-  # TODO - move it back to its own class.
-  PoolKey = ValueClass.struct(:host, :database, :username, :password, :connect_timeout, :read_timeout, :write_timeout, :encoding, :collation, :adapter, :pool, :reconnect)
-
   class << self
     def config
       @config = ActiveTableSet::Configuration::Config.config { |conf| yield conf }

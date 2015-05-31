@@ -81,7 +81,6 @@ describe ActiveTableSet::Configuration::TableSet do
 
       expect(con_spec.pool_key.database).to eq(table_set.database)
       expect(con_spec.access_policy).to eq(table_set.access_policy)
-      expect(con_spec.connection_name).to eq("foo_common_balanced")
     end
 
     context "with multiple partitions" do
