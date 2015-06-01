@@ -105,40 +105,40 @@ describe ActiveTableSet::ConnectionManager do
       end
     end
 
-    # TODO - need more work.
-    # context "use_test_scenario" do
-    #   it "overrides the connection" do
-    #     expect(connection_manager.connection.config.host).to eq("10.0.0.1")
-    #
-    #     connection_manager.use_test_scenario("legacy")
-    #
-    #     expect(connection_manager.connection.config.host).to eq("12.0.0.1")
-    #     connection_object_id = connection_manager.connection.object_id
-    #
-    #     connection_manager.using(table_set: :sharded, partition_key: "alpha") do
-    #       expect(connection_manager.connection.config.host).to eq("12.0.0.1")
-    #       expect(connection_manager.connection.object_id).to eq(connection_object_id)
-    #
-    #       connection_manager.using(table_set: :common) do
-    #         expect(connection_manager.connection.config.host).to eq("12.0.0.1")
-    #         expect(connection_manager.connection.object_id).to eq(connection_object_id)
-    #       end
-    #
-    #       expect(connection_manager.connection.config.host).to eq("12.0.0.1")
-    #       expect(connection_manager.connection.object_id).to eq(connection_object_id)
-    #     end
-    #
-    #     expect(connection_manager.connection.config.host).to eq("12.0.0.1")
-    #     expect(connection_manager.connection.object_id).to eq(connection_object_id)
-    #   end
-    # end
-    #
-    #
-    # it "returns a connection with using overrides on it"
-    # it "checks tests connections before handing them out"
-    # it "supports failback"
-    # it "supports different settings on different threads"
-    # it "handles exceptions from inside the yield block"
+    context "use_test_scenario" do
+      it "overrides the access policy, but not the connection" do
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
 
+        connection_manager.use_test_scenario("legacy")
+        connection_object_id = connection_manager.connection.object_id
+        expect(connection_manager.connection.access_policy.disallow_read).to eq("cf_%")
+
+        expect(connection_manager.connection.config.host).to eq("12.0.0.1")
+
+        connection_manager.using(table_set: :sharded, partition_key: "alpha") do
+          expect(connection_manager.connection.config.host).to eq("12.0.0.1")
+          expect(connection_manager.connection.object_id).to eq(connection_object_id)
+          expect(connection_manager.connection.access_policy.disallow_read).to eq("")
+
+          connection_manager.using(table_set: :common) do
+            expect(connection_manager.connection.config.host).to eq("12.0.0.1")
+            expect(connection_manager.connection.object_id).to eq(connection_object_id)
+            expect(connection_manager.connection.access_policy.disallow_read).to eq("cf_%")
+          end
+
+          expect(connection_manager.connection.config.host).to eq("12.0.0.1")
+          expect(connection_manager.connection.object_id).to eq(connection_object_id)
+          expect(connection_manager.connection.access_policy.disallow_read).to eq("")
+        end
+
+        expect(connection_manager.connection.config.host).to eq("12.0.0.1")
+        expect(connection_manager.connection.object_id).to eq(connection_object_id)
+        expect(connection_manager.connection.access_policy.disallow_read).to eq("cf_%")
+      end
+    end
+
+    # TODO - it "supports failback"
+    # TODO - it "supports different settings on different threads"
+    # TODO - it "handles exceptions from inside the yield block"
   end
 end

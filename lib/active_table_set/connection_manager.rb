@@ -1,9 +1,12 @@
+# TODO - quarantine
+
 module ActiveTableSet
   class ConnectionManager
 
     def initialize(config:, pool_manager: )
-      @config       = config
-      @pool_manager = pool_manager
+      @config           = config
+      @pool_manager     = pool_manager
+      @connection_specs = {}
     end
 
     def using(table_set: nil, access_mode: nil, partition_key: nil, timeout: nil, &blk)
@@ -17,8 +20,16 @@ module ActiveTableSet
       if new_request == request
         yield
       else
-        # TODO - if in a test mode and the test scenario did not change, change the access rules
-        yield_with_new_connection(new_request, &blk)
+        new_connection_spec     = connection_spec(new_request)
+        current_connection_spec = connection_spec(request)
+
+        if new_connection_spec == current_connection_spec
+          yield
+        elsif new_connection_spec.pool_key == current_connection_spec.pool_key
+          yield_with_new_access_policy(new_request, &blk)
+        else
+          yield_with_new_connection(new_request, &blk)
+        end
       end
     end
 
@@ -55,10 +66,22 @@ module ActiveTableSet
       self._request ||= @config.default
     end
 
+    def yield_with_new_access_policy(new_request)
+      old_request   = _request
+      self._request = new_request
+      set_connection_access_policy
+
+      yield
+
+    ensure
+      self._request = old_request
+      set_connection_access_policy
+    end
+
     def yield_with_new_connection(new_request)
       _connection or raise "unexpected - no existing connection"
-      _request    or raise "unexpected - no existing request"
       _pool       or raise "unexpected - no existing pool"
+
 
       old_request    = _request
       old_connection = _connection
@@ -82,36 +105,39 @@ module ActiveTableSet
 
     def establish_connection
       self._connection = "foo"
-      self._pool = @pool_manager.get_pool(key: connection_spec.pool_key)
+      self._pool       = @pool_manager.get_pool(key: connection_spec(request).pool_key)
 
       # TODO - need test for this case.
-      # TODO - quarantine
-      connection = (_pool && _pool.connection) or raise ActiveRecord::ConnectionNotEstablished
+      # The pool tests the connection when it is retrieved.
+      self._connection =  (_pool && _pool.connection) or raise ActiveRecord::ConnectionNotEstablished
 
+      set_connection_extension
+      set_connection_access_policy
+    end
+
+    def set_connection_extension
       unless connection.respond_to?(:using)
         connection.class.send(:include, ActiveTableSet::Extensions::ConvenientDelegation)
       end
+    end
 
+    def set_connection_access_policy
       if @config.enforce_access_policy
         if !connection.respond_to?(:access_policy)
           ActiveTableSet::Extensions::MysqlConnectionMonitor.install(connection)
         end
-        connection.access_policy = connection_spec.access_policy
+        connection.access_policy = connection_spec(request).access_policy
       end
-
-      # TODO - test the connection
-      self._connection = connection
     end
 
     def release_connection
       self._pool.release_connection
-      self._pool = nil
+      self._pool       = nil
       self._connection = nil
     end
 
-    def connection_spec
-      @config.connection_spec(request)
+    def connection_spec(request)
+      @connection_specs[request] ||= @config.connection_spec(request)
     end
-
   end
 end
