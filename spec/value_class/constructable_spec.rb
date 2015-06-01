@@ -97,6 +97,7 @@ describe ValueClass::Constructable do
       expect(bike.seat.color).to eq(:blue)
     end
 
+    # TODO - this is pretty lame so far
     it "supports generating a description" do
       expected_description  = <<-EOF.gsub(/^ {8}/, '')
         ConstructableSpec::Bicycle: For riding around town
@@ -152,6 +153,16 @@ describe ValueClass::Constructable do
             tire_config.diameter = 50
             tire_config.tred = :slicks
           end
+        end
+
+        expect(bike.tires.map(&:diameter)).to eq([40, 50])
+        expect(bike.tires.map(&:tred)).to eq([:mountain, :slicks])
+      end
+
+      it "should be able to use the add method to add with hashes" do
+        bike = ConstructableSpec::Bicycle.config do |bicycle|
+          bicycle.tire diameter: 40, tred: :mountain
+          bicycle.tire diameter: 50, tred: :slicks
         end
 
         expect(bike.tires.map(&:diameter)).to eq([40, 50])

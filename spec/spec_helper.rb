@@ -197,6 +197,9 @@ module SpecHelper
       conf.read_only_username  "read_only_tester"
       conf.read_only_password  "verysecure_too"
 
+      conf.timeout name: :web, timeout: 110.seconds
+      conf.timeout name: :batch, timeout: 30.minutes
+
       conf.table_set do |ts|
         ts.name = :common
 

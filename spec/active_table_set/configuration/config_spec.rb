@@ -124,7 +124,6 @@ describe ActiveTableSet::Configuration::Config do
       expect(con_spec.pool_key.host).to eq("11.0.1.1")
     end
 
-
     it "raises if the table set is not found" do
       request = ActiveTableSet::Configuration::Request.new(
           table_set: :not_found,
@@ -203,8 +202,57 @@ describe ActiveTableSet::Configuration::Config do
           end
         end
       end
+    end
+  end
 
+  context "named timeouts" do
+    it "allows timeouts to be specified by name" do
+      ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+        conf.enforce_access_policy true
+        conf.environment           'test'
+        conf.default  =  { table_set: :common }
+
+        conf.timeout name: :web, timeout: 15.seconds
+        conf.timeout do |t|
+          t.name :batch
+          t.timeout 30.minutes
+        end
+
+        conf.table_set do |ts|
+          ts.name = :common
+
+          ts.access_policy do |ap|
+            ap.disallow_read  'cf_%'
+            ap.disallow_write 'cf_%'
+          end
+
+          ts.partition do |part|
+            part.leader do |leader|
+              leader.host      "127.0.0.8"
+              leader.read_write_username  "tester"
+              leader.read_write_password  "verysecure"
+              leader.database  "main"
+            end
+          end
+        end
+      end
+
+      expect(ats_config.timeouts.size).to eq(2)
+      expect(ats_config.timeouts.first.name).to eq(:web)
     end
 
+    it "uses named timeouts when generating connection specs" do
+      request = ActiveTableSet::Configuration::Request.new(
+        table_set: :common,
+        access_mode: :write,
+        partition_key: nil,
+        test_scenario: nil,
+        timeout: :web )
+
+      con_spec = large_table_set.connection_spec(request)
+
+      expect(con_spec.pool_key.read_timeout).to eq(110)
+      expect(con_spec.pool_key.write_timeout).to eq(110)
+    end
   end
 end

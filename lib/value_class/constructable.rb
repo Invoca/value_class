@@ -74,7 +74,7 @@ module ValueClass
                     if blk
                       @#{attribute.name} << #{class_name}.config { |config| yield config }
                     else
-                      @#{attribute.name} << value.map { |v| #{class_name}.new(v) }
+                      @#{attribute.name} << #{class_name}.new(value)
                     end
                     @#{attribute.name}
                   end

@@ -1,4 +1,3 @@
-# TODO -- (Later) Specify named timeout values, disallow arbitrary values  For example :web, 110 seconds,  :bulk = 15 minutes... :ringswitch_event_processor - 1 second.   :ringswitch_deferred - 15 seconds
 # TODO -- (last) Add description for all config parameters.
 # TODO -- (last) Update readme
 
@@ -12,22 +11,26 @@ module ActiveTableSet
       value_attr      :default,        class_name: 'ActiveTableSet::Configuration::Request', required: true
       value_list_attr :table_sets,     class_name: 'ActiveTableSet::Configuration::TableSet', insert_method: :table_set
       value_list_attr :test_scenarios, class_name: 'ActiveTableSet::Configuration::TestScenario', insert_method: :test_scenario
+      value_list_attr :timeouts,       class_name: 'ActiveTableSet::Configuration::NamedTimeout', insert_method: :timeout
 
       def initialize(options={})
         super
         table_sets.any? or raise ArgumentError, "no table sets defined"
-        @table_sets_by_name     = table_sets.inject({}) { |memo, ts| memo[ts.name] = ts; memo }
+        @table_sets_by_name     = table_sets.inject({})     { |memo, ts| memo[ts.name] = ts; memo }
         @test_scenarios_by_name = test_scenarios.inject({}) { |memo, ts| memo[ts.scenario_name] = ts; memo }
+        @timeouts_by_name       = timeouts.inject({})       { |memo, to| memo[to.name] = to; memo }
 
         # Fill in any empty values for default
         @default = @default.merge(
             table_set:     table_sets.first.name,
             access_mode:   :write,
-            timeout:       110 # TODO - use first named timeout
+            timeout:       (timeouts.first && timeouts.first.timeout) || 110
         )
       end
 
-      def connection_spec(request)
+      def connection_spec(initial_request)
+        request = convert_timeouts(initial_request)
+
         ts = @table_sets_by_name[request.table_set] or raise ArgumentError, "Unknown table set #{request.table_set}, available_table_sets: #{@table_sets_by_name.keys.sort.join(", ")}"
         spec = ts.connection_spec(request, [self], environment)
 
@@ -70,6 +73,13 @@ module ActiveTableSet
         result
       end
 
+      def convert_timeouts(initial_request)
+        if @timeouts_by_name[initial_request.timeout]
+          initial_request.merge(timeout: @timeouts_by_name[initial_request.timeout].timeout)
+        else
+          initial_request
+        end
+      end
     end
 
   end
