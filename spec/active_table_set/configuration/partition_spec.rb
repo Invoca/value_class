@@ -104,7 +104,7 @@ describe ActiveTableSet::Configuration::Partition do
     end
 
 
-    # TODO - this is wrong.  Read access should prefer to avoid the leader.
+    # TODO: this is wrong.  Read access should prefer to avoid the leader.
     it "provides a leader connection key for read access" do
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access_mode: :read, timeout: 100)

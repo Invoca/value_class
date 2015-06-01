@@ -16,7 +16,7 @@ module ValueClass
     end
   end
 
-  # TODO - These need to be added to attr_comparible
+  # TODO: These need to be added to attr_comparible
   def eql?(other)
     self == other
   end
@@ -53,7 +53,7 @@ module ValueClass
   end
 
   module ClassMethods
-    def value_description(value=nil)
+    def value_description(value = nil)
       if value
         @value_description = value
       end

@@ -1,12 +1,10 @@
-_ = ValueClass;
-
 module ValueClass
   module Constructable
     extend ActiveSupport::Concern
 
     include ValueClass
 
-    def clone_config(&block)
+    def clone_config
       config = self.class.config_class.new
       self.class.value_attributes.each do |attr|
         current_value = send(attr.name)
@@ -22,11 +20,9 @@ module ValueClass
       self.class.new(config)
     end
 
-
     module ClassMethods
-
       # Constructs an instance using the configuration created in the passed in block.
-      def config(&block)
+      def config
         config = config_class.new
         value_attributes.each do |attr|
           if attr.default
@@ -39,14 +35,14 @@ module ValueClass
 
       def config_class
         unless @config_class
-          @config_class= Class.new
+          @config_class = Class.new
 
           value_attributes.each do |attribute|
             # Define assignment operator
             @config_class.send(:attr_writer, attribute.name)
 
             # Define accessor (which also allows assignment from blocks
-            if class_name = attribute.options[:class_name]
+            if (class_name = attribute.options[:class_name])
               config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
                 def #{attribute.name}(&blk)
                   if blk
@@ -92,7 +88,6 @@ module ValueClass
         end
         @config_class
       end
-
     end
   end
 end

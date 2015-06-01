@@ -97,7 +97,7 @@ describe ValueClass::Constructable do
       expect(bike.seat.color).to eq(:blue)
     end
 
-    # TODO - this is pretty lame so far
+    # TODO: this is pretty lame so far
     it "supports generating a description" do
       expected_description  = <<-EOF.gsub(/^ {8}/, '')
         ConstructableSpec::Bicycle: For riding around town

@@ -1,5 +1,5 @@
-# TODO -- (last) Add description for all config parameters.
-# TODO -- (last) Update readme
+# TODO: (last) Add description for all config parameters.
+# TODO: (last) Update readme
 
 module ActiveTableSet
   module Configuration

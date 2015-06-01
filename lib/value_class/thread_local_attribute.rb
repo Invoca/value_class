@@ -41,6 +41,5 @@ module ValueClass
         Thread.current.thread_variable_set(_thread_local_key(object, name), value)
       end
     end
-
   end
 end

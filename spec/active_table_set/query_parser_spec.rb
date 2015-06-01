@@ -93,5 +93,9 @@ describe ActiveTableSet::QueryParser do
         end
       end
     end
+
+    it "should raise for unexpected queries" do
+     expect { ActiveTableSet::QueryParser.new("not a sql command") }.to raise_error(RuntimeError, "unexpected query: not a sql command" )
+    end
   end
 end

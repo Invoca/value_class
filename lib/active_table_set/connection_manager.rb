@@ -1,5 +1,5 @@
-# TODO - quarantine
-# TODO - failback
+# TODO: quarantine
+# TODO: failback
 
 module ActiveTableSet
   class ConnectionManager

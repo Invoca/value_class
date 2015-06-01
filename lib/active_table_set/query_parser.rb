@@ -25,7 +25,7 @@ module ActiveTableSet
     DELETE_QUERY = /\A\s*delete\s/i
     DELETE_TARGET_MATCH = /\A\s*delete.*from\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    OTHER_SQL_COMMAND_QUERY = /\A\s*(?:begin|commit|end|release|savepoint)\s/i
+    OTHER_SQL_COMMAND_QUERY = /\A\s*(?:begin|commit|end|release|savepoint|rollback)/i
 
     JOIN_MATCH = /(?:left\souter)?\sjoin\s[`]?([0-9,a-z,A-Z$_.]+)[`]?/im
 
@@ -39,10 +39,10 @@ module ActiveTableSet
         parse_update_query
       when query =~ DELETE_QUERY
         parse_delete_query
-      when query = OTHER_SQL_COMMAND_QUERY
+      when query =~ OTHER_SQL_COMMAND_QUERY
         @operation = :other
       else
-        raise "unexpected query #{query}"
+        raise "unexpected query: #{query}"
       end
     end
 

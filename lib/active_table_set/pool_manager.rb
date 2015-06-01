@@ -13,12 +13,12 @@ module ActiveTableSet
       @pools[key] ||= create_pool(key)
     end
 
-    # TODO - insufficient tests
+    # TODO: insufficient tests
     def create_pool(config)
       ActiveRecord::ConnectionAdapters::ConnectionPool.new(specification(config))
     end
 
-    # TODO - insufficient tests
+    # TODO: insufficient tests
     def specification(config)
       ActiveRecord::Base::ConnectionSpecification.new(config.to_hash, config.connector_name)
     end
