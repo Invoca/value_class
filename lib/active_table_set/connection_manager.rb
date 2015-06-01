@@ -1,4 +1,5 @@
 # TODO - quarantine
+# TODO - failback
 
 module ActiveTableSet
   class ConnectionManager
@@ -39,7 +40,6 @@ module ActiveTableSet
 
       new_request = request.merge(test_scenario: test_scenario_name)
 
-      # TODO - this should not get new connections if the keys are different, but it will update the request.
       if new_request != request
         release_connection
         self._request = new_request
@@ -107,9 +107,8 @@ module ActiveTableSet
       self._connection = "foo"
       self._pool       = @pool_manager.get_pool(key: connection_spec(request).pool_key)
 
-      # TODO - need test for this case.
       # The pool tests the connection when it is retrieved.
-      self._connection =  (_pool && _pool.connection) or raise ActiveRecord::ConnectionNotEstablished
+      self._connection = (_pool && _pool.connection) or raise ActiveRecord::ConnectionNotEstablished
 
       set_connection_extension
       set_connection_access_policy
@@ -131,7 +130,9 @@ module ActiveTableSet
     end
 
     def release_connection
-      self._pool.release_connection
+      # We can end up with a nil pool if we cannot establish a connection.
+      _pool && _pool.release_connection
+
       self._pool       = nil
       self._connection = nil
     end

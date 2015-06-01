@@ -9,11 +9,6 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
       expect(key.read_write_password).to eq("secure_pwd")
     end
 
-    it "has a connector_name" do
-      name = ActiveTableSet::Configuration::DatabaseConnection.new(adapter: "mysql2").connector_name
-      expect(name).to eq("mysql2_connection")
-    end
-
     it "can generate a connection specification" do
       connection = ActiveTableSet::Configuration::DatabaseConnection.new(
           host: "some.ip",

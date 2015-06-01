@@ -88,6 +88,62 @@ describe ActiveTableSet::ConnectionManager do
         expect(@called_block).to eq(true)
       end
 
+      it "resets connections if exceptions happen" do
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+
+        connection_manager.using(table_set: :sharded, partition_key: "alpha") do
+          expect(connection_manager.connection.config.host).to eq("11.0.1.1")
+
+          begin
+            connection_manager.using(table_set: :common) do
+              raise ArgumentError, "boom"
+            end
+            fail "Exception did not propagate"
+          rescue ArgumentError
+          end
+
+          expect(connection_manager.connection.config.host).to eq("11.0.1.1")
+        end
+
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+      end
+
+      it "resets even multiple levels of nesting if exceptions occur" do
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+
+        begin
+          connection_manager.using(table_set: :sharded, partition_key: "alpha") do
+            expect(connection_manager.connection.config.host).to eq("11.0.1.1")
+            connection_manager.using(table_set: :common) do
+              raise ArgumentError, "boom"
+            end
+
+            fail "Exception did not propagate"
+          end
+        rescue ArgumentError
+        end
+
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+      end
+
+      it "raises connection not established if getting a connection from a pool fails" do
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+
+        begin
+          connection_manager.using(table_set: :sharded, partition_key: "alpha") do
+            pool_manager = connection_manager.instance_eval("@pool_manager")
+            expect(pool_manager).to receive(:get_pool) { nil }
+            connection_manager.using(table_set: :sharded, partition_key: "beta") do
+              fail "did not receive exception"
+            end
+          end
+          fail "did not receieve exception"
+        rescue ActiveRecord::ConnectionNotEstablished
+        end
+
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+      end
+
       it "adds the access policy to the class" do
         connection = connection_manager.connection
         expect(connection.respond_to?(:access_policy)).to eq(true)
@@ -137,8 +193,30 @@ describe ActiveTableSet::ConnectionManager do
       end
     end
 
-    # TODO - it "supports failback"
-    # TODO - it "supports different settings on different threads"
-    # TODO - it "handles exceptions from inside the yield block"
+    it "supports different settings for different threads" do
+      @thread_initial_host = nil
+      @thread_shard_host = nil
+      @thread_nested_host = nil
+
+      expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+      connection_manager.using(table_set: :sharded, partition_key: "alpha") do
+        expect(connection_manager.connection.config.host).to eq("11.0.1.1")
+
+        t = Thread.new do
+          @thread_initial_host = connection_manager.connection.config.host
+          connection_manager.using(table_set: :sharded, partition_key: "beta") do
+            @thread_shard_host = connection_manager.connection.config.host
+          end
+        end
+        t.join
+
+        expect(connection_manager.connection.config.host).to eq("11.0.1.1")
+      end
+
+      expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+
+      expect(@thread_initial_host).to eq("10.0.0.1")
+      expect(@thread_shard_host).to   eq("11.0.2.1")
+    end
   end
 end

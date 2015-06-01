@@ -11,6 +11,11 @@ describe ActiveTableSet::PoolKey do
       expect(pk).to eq(pk3)
       expect(pk).not_to eq(pk2)
     end
+
+    it "generates a name based on the connection spec" do
+      pk = ActiveTableSet::PoolKey.new(adapter: "sqlite")
+      expect(pk.connector_name).to eq("sqlite_connection")
+    end
   end
 end
 

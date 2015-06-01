@@ -5,7 +5,6 @@ module ActiveTableSet
     :write_timeout, :encoding, :collation, :adapter, :pool, :reconnect)
 
 
-    # TODO - need test
     def connector_name
       "#{adapter}_connection"
     end
