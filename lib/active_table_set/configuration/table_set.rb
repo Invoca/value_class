@@ -1,7 +1,6 @@
-# TODO - (future) should be able to directly declare leader and followers, only mention partitions if partitioned.
 module ActiveTableSet
   module Configuration
-    class TableSet  < DatabaseConnection
+    class TableSet < DatabaseConnection
       value_attr      :name
       value_attr      :access_policy,  class_name: 'ActiveTableSet::Configuration::AccessPolicy', default: {}
       value_list_attr :partitions,     class_name: 'ActiveTableSet::Configuration::Partition', insert_method: :partition
@@ -26,9 +25,9 @@ module ActiveTableSet
         target_partition =
           if partitioned?
             partition_key = request.partition_key
-            partition_key or raise ArgumentError, "Table set #{name} is partioned, you must provide a partition key. Available partitions: #{partition_keys.join(", ")}"
+            partition_key or raise ArgumentError, "Table set #{name} is partioned, you must provide a partition key. Available partitions: #{partition_keys.join(', ')}"
 
-            (selected_partition = @partitions_by_key[partition_key]) or raise ArgumentError, "Partition #{partition_key} not found in table set #{name}. Available partitions: #{partition_keys.join(", ")}"
+            (selected_partition = @partitions_by_key[partition_key]) or raise ArgumentError, "Partition #{partition_key} not found in table set #{name}. Available partitions: #{partition_keys.join(', ')}"
 
             selected_partition
           else

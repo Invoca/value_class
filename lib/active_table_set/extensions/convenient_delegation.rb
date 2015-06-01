@@ -8,4 +8,3 @@ module ActiveTableSet
     end
   end
 end
-

@@ -76,6 +76,5 @@ describe ValueClass::ThreadLocalAttribute do
 
     expect(auto.body_color).to eq(:red)
     expect(@thread_color).to eq(:blue)
-
   end
 end

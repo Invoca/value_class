@@ -5,7 +5,7 @@ module ActiveTableSet
     include ActiveRecord::ConnectionAdapters
 
     def initialize
-      @pools = Hash.new
+      @pools = {}
     end
 
     def get_pool(key:)

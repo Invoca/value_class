@@ -25,10 +25,10 @@ module ActiveTableSet
           end
 
         self.class.new(
-          table_set:     other.table_set     || table_set,
-          access_mode:   other.access_mode   || access_mode,
+          table_set:     other.table_set || table_set,
+          access_mode:   other.access_mode || access_mode,
           partition_key: new_partition_key,
-          timeout:       other.timeout       || timeout,
+          timeout:       other.timeout || timeout,
           test_scenario: other.test_scenario || test_scenario
         )
       end

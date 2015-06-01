@@ -26,15 +26,15 @@ module ActiveTableSet
 
       def errors(write_tables:, read_tables:)
         [
-            allowed_access_errors(@allow_read_pattern, read_tables, 'read'),
-            allowed_access_errors(@allow_write_pattern, write_tables, 'write'),
-            disallowed_access_errors(@disallow_read_pattern, read_tables, 'read'),
-            disallowed_access_errors(@disallow_write_pattern, write_tables, 'write'),
+          allowed_access_errors(@allow_read_pattern, read_tables, 'read'),
+          allowed_access_errors(@allow_write_pattern, write_tables, 'write'),
+          disallowed_access_errors(@disallow_read_pattern, read_tables, 'read'),
+          disallowed_access_errors(@disallow_write_pattern, write_tables, 'write')
         ].flatten.compact
       end
 
-
       private
+
       def allowed_access_errors(pattern, tables, mode)
         tables.map do |table|
           unless pattern.any? { |pattern| table =~ pattern }
@@ -53,7 +53,7 @@ module ActiveTableSet
 
       def parse_pattern(pattern)
         pattern.split(",").reject(&:blank?).map do |sub_pattern|
-          Regexp.compile("\\A#{sub_pattern.gsub("%",".*")}\\z")
+          Regexp.compile("\\A#{sub_pattern.gsub('%', '.*')}\\z")
         end
       end
     end

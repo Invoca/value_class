@@ -49,7 +49,7 @@ module ActiveTableSet
     def parse_select_query
       @operation = :select
       if query =~ SELECT_FROM_MATCH
-        @read_tables << $1
+        @read_tables << Regexp.last_match(1)
       end
       parse_joins
     end
@@ -57,7 +57,7 @@ module ActiveTableSet
     def parse_insert_query
       @operation = :insert
       if query =~ INSERT_TARGET_MATCH
-        @write_tables << $1
+        @write_tables << Regexp.last_match(1)
       end
       parse_joins
     end
@@ -65,7 +65,7 @@ module ActiveTableSet
     def parse_update_query
       @operation = :update
       if query =~ UPDATE_TARGET_MATCH
-        @write_tables << $1
+        @write_tables << Regexp.last_match(1)
       end
       parse_joins
     end
@@ -73,7 +73,7 @@ module ActiveTableSet
     def parse_delete_query
       @operation = :delete
       if query =~ DELETE_TARGET_MATCH
-        @write_tables << $1
+        @write_tables << Regexp.last_match(1)
       end
       parse_joins
     end

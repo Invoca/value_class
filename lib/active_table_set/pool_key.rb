@@ -4,11 +4,8 @@ module ActiveTableSet
     :host, :database, :username, :password, :connect_timeout, :read_timeout,
     :write_timeout, :encoding, :collation, :adapter, :pool, :reconnect)
 
-
     def connector_name
       "#{adapter}_connection"
     end
   end
-
 end
-

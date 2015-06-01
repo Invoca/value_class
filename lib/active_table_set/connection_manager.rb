@@ -4,7 +4,7 @@
 module ActiveTableSet
   class ConnectionManager
 
-    def initialize(config:, pool_manager: )
+    def initialize(config:, pool_manager:)
       @config           = config
       @pool_manager     = pool_manager
       @connection_specs = {}
@@ -36,7 +36,7 @@ module ActiveTableSet
 
     def use_test_scenario(test_scenario_name)
       _connection or raise "unexpected - no existing connection"
-      _request    or raise "unexpected - no existing request"
+      _request or raise "unexpected - no existing request"
 
       new_request = request.merge(test_scenario: test_scenario_name)
 
@@ -51,9 +51,8 @@ module ActiveTableSet
       unless _connection
         establish_connection
       end
-      self._connection
+      _connection
     end
-
 
     private
 
@@ -80,8 +79,7 @@ module ActiveTableSet
 
     def yield_with_new_connection(new_request)
       _connection or raise "unexpected - no existing connection"
-      _pool       or raise "unexpected - no existing pool"
-
+      _pool or raise "unexpected - no existing pool"
 
       old_request    = _request
       old_connection = _connection
@@ -104,7 +102,6 @@ module ActiveTableSet
     end
 
     def establish_connection
-      self._connection = "foo"
       self._pool       = @pool_manager.get_pool(key: connection_spec(request).pool_key)
 
       # The pool tests the connection when it is retrieved.
@@ -122,7 +119,7 @@ module ActiveTableSet
 
     def set_connection_access_policy
       if @config.enforce_access_policy
-        if !connection.respond_to?(:access_policy)
+        unless connection.respond_to?(:access_policy)
           ActiveTableSet::Extensions::MysqlConnectionMonitor.install(connection)
         end
         connection.access_policy = connection_spec(request).access_policy

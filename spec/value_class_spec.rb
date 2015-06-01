@@ -52,7 +52,6 @@ module ValueClassTest
   QuickerGears = ValueClass.struct(:first_gear, :second_gear, :third_gear, default: 200)
 end
 
-
 describe ValueClass do
   context "configurable" do
     it "supports generating a description" do
@@ -69,7 +68,6 @@ describe ValueClass do
       expect(ValueClassTest::Bicycle.config_help).to eq(expected_description)
     end
 
-
     it "be able to construct the class with a hash" do
       bike = ValueClassTest::Bicycle.new(speeds: 10, color: :gold)
       expect(bike.color).to eq(:gold)
@@ -77,7 +75,7 @@ describe ValueClass do
 
     context "lists" do
       it "be able to construct the class with a hash" do
-        bike = ValueClassTest::Bicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}] )
+        bike = ValueClassTest::Bicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain }, { diameter: 50, tred: :slicks }])
 
         expect(bike.tires.map(&:diameter)).to eq([40, 50])
         expect(bike.tires.map(&:tred)).to eq([:mountain, :slicks])
@@ -85,7 +83,7 @@ describe ValueClass do
     end
 
     it "should freeze all attributes" do
-      bike = ValueClassTest::Bicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}] )
+      bike = ValueClassTest::Bicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain }, { diameter: 50, tred: :slicks }])
 
       expect(bike.speeds.frozen?).to      eq(true)
       expect(bike.color.frozen?).to       eq(true)
@@ -144,17 +142,17 @@ describe ValueClass do
 
     context "to_hash" do
       it "allows creation of a hash from the instance" do
-        bike = ValueClassTest::MountainBicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}], shocks: true )
+        bike = ValueClassTest::MountainBicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain }, { diameter: 50, tred: :slicks }], shocks: true)
         expected = {
-            "speeds" => 10,
-            "color"  => :gold,
-            "riders" => [],
-            "seat"   => nil,
-            "tires"  => [
-                { "diameter" => 40, "tred" => :mountain},
-                { "diameter" => 50, "tred" => :slicks}
-            ],
-            "shocks" => true
+          "speeds" => 10,
+          "color"  => :gold,
+          "riders" => [],
+          "seat"   => nil,
+          "tires"  => [
+            { "diameter" => 40, "tred" => :mountain },
+            { "diameter" => 50, "tred" => :slicks }
+          ],
+          "shocks" => true
         }
 
         expect(bike.to_hash).to eq(expected)
@@ -163,7 +161,7 @@ describe ValueClass do
 
     context "inheritance" do
       it "allows value objects to be inherited from each other" do
-        bike = ValueClassTest::MountainBicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}], shocks: true )
+        bike = ValueClassTest::MountainBicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain }, { diameter: 50, tred: :slicks }], shocks: true)
 
         expect(bike.tires.map(&:diameter)).to eq([40, 50])
         expect(bike.tires.map(&:tred)).to eq([:mountain, :slicks])

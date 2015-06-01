@@ -3,4 +3,3 @@ module ActiveTableSet
     NamedTimeout = ValueClass.struct(:name, :timeout, required: true)
   end
 end
-

@@ -4,7 +4,7 @@ module ActiveTableSet
       value_attr :scenario_name, required: true
       value_attr :timeout,       required: true, default: 110
 
-      def connection_spec(request, database_connections, connection_name_prefix, previous_spec)
+      def connection_spec(_request, database_connections, connection_name_prefix, previous_spec)
         context = "#{connection_name_prefix}_#{scenario_name}"
 
         pool_key = pool_key(

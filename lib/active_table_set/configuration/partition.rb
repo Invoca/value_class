@@ -5,7 +5,7 @@ module ActiveTableSet
       value_attr      :leader,    class_name: 'ActiveTableSet::Configuration::DatabaseConnection'
       value_list_attr :followers, class_name: 'ActiveTableSet::Configuration::DatabaseConnection', insert_method: 'follower'
 
-      def initialize(options={})
+      def initialize(options = {})
         super
         leader or raise ArgumentError, "must provide a leader"
 
@@ -29,20 +29,20 @@ module ActiveTableSet
 
         # Now I need to change pool_key back to pool key
         pook_key = selected_config.pool_key(
-            alternates: [self] + database_connections,
-            context: context,
-            access_mode: request.access_mode,
-            timeout: request.timeout
+          alternates: [self] + database_connections,
+          context: context,
+          access_mode: request.access_mode,
+          timeout: request.timeout
         )
 
         ConnectionAttributes.new(
-           pool_key:        pook_key,
-           access_policy:   access_policy
+          pool_key:        pook_key,
+          access_policy:   access_policy
         )
       end
 
       def self.pid
-        $$
+        $PROCESS_ID
       end
     end
   end

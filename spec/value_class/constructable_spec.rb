@@ -112,7 +112,6 @@ describe ValueClass::Constructable do
       expect(ConstructableSpec::Bicycle.config_help).to eq(expected_description)
     end
 
-
     it "supports specifying a default attribute" do
       bike = ConstructableSpec::Bicycle.config { |_| }
 
@@ -170,7 +169,7 @@ describe ValueClass::Constructable do
       end
 
       it "be able to construct the class with a hash" do
-        bike = ConstructableSpec::Bicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}] )
+        bike = ConstructableSpec::Bicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain }, { diameter: 50, tred: :slicks }])
 
         expect(bike.tires.map(&:diameter)).to eq([40, 50])
         expect(bike.tires.map(&:tred)).to eq([:mountain, :slicks])
@@ -178,21 +177,18 @@ describe ValueClass::Constructable do
 
       it "be able to assign a hash to the attribute during config" do
         bike = ConstructableSpec::Bicycle.config do |bicycle|
-          bicycle.tires = [{ diameter: 40, tred: :mountain}, {diameter: 50, tred: :slicks}]
+          bicycle.tires = [{ diameter: 40, tred: :mountain }, { diameter: 50, tred: :slicks }]
         end
 
         expect(bike.tires.map(&:diameter)).to eq([40, 50])
         expect(bike.tires.map(&:tred)).to eq([:mountain, :slicks])
       end
-
     end
   end
 
   context "validations" do
     it "should raise an exception if a required parameter is missing" do
       expect { ConstructableSpec::Headlight.new }.to  raise_error(ArgumentError, "must provide a value for lumens")
-
     end
   end
 end
-
