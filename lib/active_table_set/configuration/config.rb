@@ -68,7 +68,7 @@ module ActiveTableSet
         end
 
         test_scenarios.each do |ts|
-          result["#{environment}_test_scenario_#{ts.scenario_name}"] = ts.pool_key(alternates: [self], timeout: default.timeout).to_hash
+          result[ts.scenario_name] = ts.pool_key(alternates: [self], timeout: default.timeout).to_hash
         end
         result
       end
