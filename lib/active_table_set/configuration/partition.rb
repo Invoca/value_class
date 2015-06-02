@@ -42,7 +42,7 @@ module ActiveTableSet
       end
 
       def self.pid
-        $PROCESS_ID
+        $$
       end
     end
   end
