@@ -3,7 +3,7 @@ module ActiveTableSet
     class Request
       include ValueClass::Constructable
       value_attr :table_set
-      value_attr :access_mode
+      value_attr :access, limit: [:leader, :follower, :balanced]
       value_attr :partition_key
       value_attr :timeout
       value_attr :test_scenario
@@ -26,7 +26,7 @@ module ActiveTableSet
 
         self.class.new(
           table_set:     other.table_set || table_set,
-          access_mode:   other.access_mode || access_mode,
+          access:        other.access || access,
           partition_key: new_partition_key,
           timeout:       other.timeout || timeout,
           test_scenario: other.test_scenario || test_scenario

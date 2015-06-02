@@ -16,22 +16,22 @@ module ActiveTableSet
       end
 
       def connection_spec(request, database_connections, connection_name_prefix, access_policy)
-        context = "#{connection_name_prefix}_#{request.access_mode}"
+        context = "#{connection_name_prefix}_#{request.access}"
         selected_config =
-            case request.access_mode
-            when :write, :read
+            case request.access
+            when :leader, :follower
               leader
             when :balanced
               @chosen_follower
             else
-              raise ArgumentError, "unknown access_mode #{request.access_mode}"
+              raise "We should not get here because access checks limit values.  What happened?"
             end
 
         # Now I need to change pool_key back to pool key
         pook_key = selected_config.pool_key(
           alternates: [self] + database_connections,
           context: context,
-          access_mode: request.access_mode,
+          access: request.access,
           timeout: request.timeout
         )
 

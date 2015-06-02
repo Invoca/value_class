@@ -135,8 +135,8 @@ describe ActiveTableSet do
       @called_block = false
 
       ActiveTableSet.add_stub_manager(mgr_dbl)
-      expect(mgr_dbl).to receive(:using).with(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t).and_yield
-      ActiveTableSet.using(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t) do
+      expect(mgr_dbl).to receive(:using).with(table_set: :ts, access: :am, partition_key: :pk, timeout: :t).and_yield
+      ActiveTableSet.using(table_set: :ts, access: :am, partition_key: :pk, timeout: :t) do
         @called_block = true
       end
 

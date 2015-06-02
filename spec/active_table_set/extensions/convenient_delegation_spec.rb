@@ -17,8 +17,8 @@ describe ActiveTableSet::Extensions::ConvenientDelegation do
       inst = ConvenientDelegationSpec::TestInstanceDelegation.new
 
       @called_block = false
-      expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t).and_yield
-      inst.using(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t) do
+      expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access: :am, partition_key: :pk, timeout: :t).and_yield
+      inst.using(table_set: :ts, access: :am, partition_key: :pk, timeout: :t) do
         @called_block = true
       end
 
@@ -27,8 +27,8 @@ describe ActiveTableSet::Extensions::ConvenientDelegation do
 
     it "can delegate using to classes" do
       @called_block = false
-      expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t).and_yield
-      ConvenientDelegationSpec::TestClassDelegation.using(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t) do
+      expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access: :am, partition_key: :pk, timeout: :t).and_yield
+      ConvenientDelegationSpec::TestClassDelegation.using(table_set: :ts, access: :am, partition_key: :pk, timeout: :t) do
         @called_block = true
       end
 

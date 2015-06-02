@@ -101,7 +101,7 @@ describe ActiveTableSet::Configuration::Config do
     it "finds common connections" do
       request = ActiveTableSet::Configuration::Request.new(
           table_set: :common,
-          access_mode: :write,
+          access: :leader,
           partition_key: nil,
           test_scenario: nil,
           timeout: 100 )
@@ -114,7 +114,7 @@ describe ActiveTableSet::Configuration::Config do
     it "finds sharded connections" do
       request = ActiveTableSet::Configuration::Request.new(
           table_set: :sharded,
-          access_mode: :write,
+          access: :leader,
           partition_key: "alpha",
           test_scenario: nil,
           timeout: 100 )
@@ -127,7 +127,7 @@ describe ActiveTableSet::Configuration::Config do
     it "raises if the table set is not found" do
       request = ActiveTableSet::Configuration::Request.new(
           table_set: :not_found,
-          access_mode: :write,
+          access: :leader,
           partition_key: "alpha",
           test_scenario: nil,
           timeout: 100 )
@@ -138,7 +138,7 @@ describe ActiveTableSet::Configuration::Config do
     it "returns the test scenario if it is overridden" do
       request = ActiveTableSet::Configuration::Request.new(
         table_set: :common,
-        access_mode: :write,
+        access: :leader,
         partition_key: "alpha",
         test_scenario: "legacy",
         timeout: 100 )
@@ -151,7 +151,7 @@ describe ActiveTableSet::Configuration::Config do
     it "raises if the test scenario is not found" do
       request = ActiveTableSet::Configuration::Request.new(
         table_set: :common,
-        access_mode: :write,
+        access: :leader,
         partition_key: "alpha",
         test_scenario: "badname",
         timeout: 100 )
@@ -244,7 +244,7 @@ describe ActiveTableSet::Configuration::Config do
     it "uses named timeouts when generating connection specs" do
       request = ActiveTableSet::Configuration::Request.new(
         table_set: :common,
-        access_mode: :write,
+        access: :leader,
         partition_key: nil,
         test_scenario: nil,
         timeout: :web )

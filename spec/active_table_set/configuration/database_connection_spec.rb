@@ -45,7 +45,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
           read_write_password: "don't pick me",
           database: "my_database" )
 
-      specification = connection.pool_key(alternates: [], access_mode: :read, timeout: 10)
+      specification = connection.pool_key(alternates: [], access: :read, timeout: 10)
 
       expect(specification.username).to eq("test_user")
       expect(specification.password).to eq("secure_pwd")

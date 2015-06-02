@@ -1,6 +1,6 @@
 module ValueClass
   class Attribute
-    attr_reader :name, :options
+    attr_reader :name, :options, :limit
 
     OPTIONS = {
         description:   "A description of the attribute.",
@@ -8,6 +8,7 @@ module ValueClass
         class_name:    "The name of the value class for this attribute.  Allows for construction from a nested hash.",
         list_of_class: "Used to declare an attribute that is a list of a class.",
         required:      "If true, the parameter is required",
+        limit:         "The set of valid values",
         insert_method: "The name of the method to create to allow inserting into a list during progressive construction"
     }
 
@@ -15,8 +16,9 @@ module ValueClass
       if (invalid_options = options.keys - OPTIONS.keys).any?
         raise ArgumentError, "Unknown option(s): #{invalid_options.join(",")}"
       end
-      @name = name.freeze
+      @name = name.to_sym.freeze
       @options = options.freeze
+      @limit = options[:limit]
     end
 
     def description(prefix="")
@@ -47,6 +49,10 @@ module ValueClass
 
       if cast_value.nil? && options[:required]
         raise ArgumentError,  "must provide a value for #{name}"
+      end
+
+      if !cast_value.nil? && limit && !limit.include?(cast_value)
+        raise ArgumentError, "invalid value #{cast_value.inspect} for #{name}. allowed values #{limit.inspect}"
       end
 
       if cast_value.nil?

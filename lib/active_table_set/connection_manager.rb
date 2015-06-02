@@ -1,5 +1,7 @@
 # TODO: quarantine
 # TODO: failback
+# TODO: replace access: (write, read, balanced) with access: leader, follower, balanced
+# TODO: only allow named timeouts
 
 module ActiveTableSet
   class ConnectionManager
@@ -10,10 +12,10 @@ module ActiveTableSet
       @connection_specs = {}
     end
 
-    def using(table_set: nil, access_mode: nil, partition_key: nil, timeout: nil, &blk)
+    def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
       new_request = request.merge(
         table_set:     table_set,
-        access_mode:   access_mode,
+        access:   access,
         partition_key: partition_key,
         timeout:       timeout
       )

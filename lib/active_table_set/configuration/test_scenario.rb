@@ -10,7 +10,7 @@ module ActiveTableSet
         pool_key = pool_key(
           alternates:  database_connections,
           context:     context,
-          access_mode: :write,
+          access:      :leader,
           timeout:     timeout
         )
 

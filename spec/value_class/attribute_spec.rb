@@ -18,9 +18,15 @@ end
 describe ValueClass::Attribute do
   context "attribute" do
     it "can be constructed from options" do
+      attr = ValueClass::Attribute.new(:testAttr, description: "some description")
+
+      expect(attr.name).to eq(:testAttr)
+    end
+
+    it "casts names to symbols" do
       attr = ValueClass::Attribute.new("testAttr", description: "some description")
 
-      expect(attr.name).to eq("testAttr")
+      expect(attr.name).to eq(:testAttr)
     end
 
     it "does not allow arbitrary parameters" do
@@ -38,7 +44,7 @@ describe ValueClass::Attribute do
 
     it "can have a description" do
       attr = ValueClass::Attribute.new("testAttr", description: "some description")
-      expect(attr.name).to eq("testAttr")
+      expect(attr.name).to eq(:testAttr)
 
       expect(attr.description("     ")).to eq("     testAttr: some description")
     end
@@ -53,6 +59,11 @@ describe ValueClass::Attribute do
       attr = ValueClass::Attribute.new("testAttr", default: { cat: "felix" })
 
       expect(attr.default).to eq(cat: "felix")
+    end
+
+    it "can have a limit" do
+      attr = ValueClass::Attribute.new("testAttr", limit: ["cat", "dog", "bird"])
+      expect(attr.limit).to eq(["cat", "dog", "bird"])
     end
 
     context "get_value" do
@@ -93,6 +104,19 @@ describe ValueClass::Attribute do
 
           expect(value.last.wheels).to eq(18)
           expect(value.last.doors).to eq(2)
+        end
+      end
+
+      context "limit" do
+        it "allows values that match the limit" do
+          attr = ValueClass::Attribute.new(:testAttr, limit: ["cat", "dog", "bird"])
+          value = attr.get_value(testAttr: "cat")
+          expect(value).to eq("cat")
+        end
+
+        it "raises argument error if the value does not match" do
+          attr = ValueClass::Attribute.new(:testAttr, limit: ["cat", "dog", "bird"])
+          expect { attr.get_value(testAttr: "mouse") }.to raise_error(ArgumentError, 'invalid value "mouse" for testAttr. allowed values ["cat", "dog", "bird"]')
         end
       end
     end

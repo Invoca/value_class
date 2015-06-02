@@ -23,7 +23,7 @@ module ActiveTableSet
         # Fill in any empty values for default
         @default = @default.merge(
           table_set:     table_sets.first.name,
-          access_mode:   :write,
+          access:        :leader,
           timeout:       (timeouts.first && timeouts.first.timeout) || 110
         )
       end

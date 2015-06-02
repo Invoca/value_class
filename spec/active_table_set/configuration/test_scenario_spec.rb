@@ -19,7 +19,7 @@ describe ActiveTableSet::Configuration::TestScenario do
     it "generates a connection specification " do
       prev_request = ActiveTableSet::Configuration::Request.new(
         table_set: :common,
-        access_mode: :write,
+        access: :leader,
         partition_key: nil,
         test_scenario: nil,
         timeout: 100 )
@@ -28,7 +28,7 @@ describe ActiveTableSet::Configuration::TestScenario do
 
       test_scenario = large_table_set.test_scenarios.first
 
-      request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access_mode: :write, timeout: 100, test_scenario: test_scenario.scenario_name)
+      request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :leader, timeout: 100, test_scenario: test_scenario.scenario_name)
 
       con_spec = test_scenario.connection_spec(request, [], "foo", prev_con_spec)
 

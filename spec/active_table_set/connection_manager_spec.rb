@@ -65,7 +65,7 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_manager.connection.config.username).to eq("tester")
         expect(connection_manager.connection.config.password).to eq("verysecure")
 
-        connection_manager.using(access_mode: :balanced) do
+        connection_manager.using(access: :balanced) do
           expect(connection_manager.connection.config.host).to eq("10.0.0.2")
           expect(connection_manager.connection.config.username).to eq("read_only_tester_follower")
           expect(connection_manager.connection.config.password).to eq("verysecure_too_follower")
@@ -80,8 +80,8 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection.respond_to?(:using)).to eq(true)
 
         @called_block = false
-        expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t).and_yield
-        connection.using(table_set: :ts, access_mode: :am, partition_key: :pk, timeout: :t) do
+        expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access: :am, partition_key: :pk, timeout: :t).and_yield
+        connection.using(table_set: :ts, access: :am, partition_key: :pk, timeout: :t) do
           @called_block = true
         end
 
@@ -154,7 +154,7 @@ describe ActiveTableSet::ConnectionManager do
       it "does not change the connection if the parameters are the same" do
         connection_object_id = connection_manager.connection.object_id
 
-        connection_manager.using(access_mode: :write) do
+        connection_manager.using(access: :leader) do
           expect(connection_manager.connection.object_id).to eq(connection_object_id)
         end
         expect(connection_manager.connection.object_id).to eq(connection_object_id)
