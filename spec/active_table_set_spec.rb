@@ -81,7 +81,10 @@ describe ActiveTableSet do
       end
     end
 
-    expect(ActiveRecord::Base).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionOverride)
+    dbl = double("eigen_class")
+    expect(ActiveRecord::Base).to receive(:singleton_class) { dbl }
+    expect(dbl).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionOverride)
+
     expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
 
     ActiveTableSet.enable

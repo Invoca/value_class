@@ -36,7 +36,7 @@ module ActiveTableSet
       @config or raise "You must specify a configuration before enabling ActiveTableSet"
 
       # Install extensions
-      ActiveRecord::Base.send(:prepend, ActiveTableSet::Extensions::ConnectionOverride)
+      ActiveRecord::Base.singleton_class.send(:prepend, ActiveTableSet::Extensions::ConnectionOverride)
       Rails::Application::Configuration.send(:prepend, ActiveTableSet::Extensions::DatabaseConfigurationOverride)
 
       @manager = ActiveTableSet::ConnectionManager.new(config: @config, pool_manager: ActiveTableSet::PoolManager.new)
