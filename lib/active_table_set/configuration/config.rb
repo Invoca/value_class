@@ -48,40 +48,55 @@ module ActiveTableSet
         @database_configuration ||= _database_configuration
       end
 
+      private
+
+      ConfigStruct = Struct.new(:key, :value)
+
       def _database_configuration
-        result = {}
+        values_with_dups = [
+          default_database_config,
+          table_set_database_config,
+          test_scenario_database_config
+        ].flatten
 
-        default_config = connection_spec(default)
 
-        result[environment] = default_config.pool_key.to_hash
-
-        table_sets.each do |ts|
-          ts.partitions.each_with_index do |part, _index|
-            prefix =
-                if ts.partitioned?
-                  "#{environment}_#{ts.name}_#{part.partition_key}"
-                else
-                  "#{environment}_#{ts.name}"
-                end
-
-            add_to_hash_if_different(result, "#{prefix}_leader", part.leader.pool_key(alternates: [ts, part, self], timeout: default.timeout).to_hash)
-
-            part.followers.each_with_index do |follower, index|
-              add_to_hash_if_different(result, "#{prefix}_follower_#{index}", follower.pool_key(alternates: [ts, part, self], timeout: default.timeout).to_hash)
-            end
-          end
+        values_with_dups.inject({}) do |memo, config|
+          value = config.value.to_hash
+          memo[config.key] = value unless memo.values.include?(value)
+          memo
         end
-
-        test_scenarios.each do |ts|
-          add_to_hash_if_different(result, ts.scenario_name,  ts.pool_key(alternates: [self], timeout: default.timeout).to_hash)
-        end
-        result
       end
 
-      def add_to_hash_if_different(hash, key, value)
-        unless hash.values.include?(value)
-          hash[key] = value
+      def default_database_config
+        ConfigStruct.new(environment, connection_spec(default).pool_key)
+      end
+
+      def table_set_database_config
+        table_sets.map do |ts|
+          partition_database_config(ts)
         end
+      end
+
+      def partition_database_config(ts)
+        ts.partitions.map do |part|
+          prefix =
+            if ts.partitioned?
+              "#{environment}_#{ts.name}_#{part.partition_key}"
+            else
+              "#{environment}_#{ts.name}"
+            end
+
+          [ts_config(part.leader, "#{prefix}_leader", [ts, part, self])] +
+            part.followers.each_with_index.map { |follower, index| ts_config(follower, "#{prefix}_follower_#{index}", [ts, part, self]) }
+        end
+      end
+
+      def ts_config(db_config, key, alternates)
+        ConfigStruct.new(key, db_config.pool_key(alternates: alternates, timeout: default.timeout))
+      end
+
+      def test_scenario_database_config
+        test_scenarios.map { |ts| ts_config(ts, ts.scenario_name, [self]) }
       end
 
       def convert_timeouts(initial_request)
