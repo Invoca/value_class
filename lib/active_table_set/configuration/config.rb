@@ -1,5 +1,6 @@
 # TODO: (last) Add description for all config parameters.
 # TODO: (last) Update readme
+# TODO: When passing a symbol to a timeout, confirm it exists with a meaningful error.
 
 module ActiveTableSet
   module Configuration
@@ -44,6 +45,10 @@ module ActiveTableSet
       end
 
       def database_configuration
+        @database_configuration ||= _database_configuration
+      end
+
+      def _database_configuration
         result = {}
 
         default_config = connection_spec(default)
@@ -59,18 +64,24 @@ module ActiveTableSet
                   "#{environment}_#{ts.name}"
                 end
 
-            result["#{prefix}_leader"] = part.leader.pool_key(alternates: [ts, part, self], timeout: default.timeout).to_hash
+            add_to_hash_if_different(result, "#{prefix}_leader", part.leader.pool_key(alternates: [ts, part, self], timeout: default.timeout).to_hash)
 
             part.followers.each_with_index do |follower, index|
-              result["#{prefix}_follower_#{index}"] = follower.pool_key(alternates: [ts, part, self], timeout: default.timeout).to_hash
+              add_to_hash_if_different(result, "#{prefix}_follower_#{index}", follower.pool_key(alternates: [ts, part, self], timeout: default.timeout).to_hash)
             end
           end
         end
 
         test_scenarios.each do |ts|
-          result[ts.scenario_name] = ts.pool_key(alternates: [self], timeout: default.timeout).to_hash
+          add_to_hash_if_different(result, ts.scenario_name,  ts.pool_key(alternates: [self], timeout: default.timeout).to_hash)
         end
         result
+      end
+
+      def add_to_hash_if_different(hash, key, value)
+        unless hash.values.include?(value)
+          hash[key] = value
+        end
       end
 
       def convert_timeouts(initial_request)
