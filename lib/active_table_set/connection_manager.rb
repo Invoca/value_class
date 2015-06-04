@@ -1,6 +1,5 @@
 # TODO: quarantine
 # TODO: failback
-# TODO: replace access: (write, read, balanced) with access: leader, follower, balanced
 # TODO: only allow named timeouts
 
 module ActiveTableSet

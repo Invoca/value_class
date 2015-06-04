@@ -104,12 +104,21 @@ describe ActiveTableSet::Configuration::Partition do
     end
 
 
-    # TODO: this is wrong.  Read access should prefer to avoid the leader.
-    it "provides a leader connection key for read access" do
+    it "provides a follower connection key for read access" do
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :follower, timeout: 100)
 
       con_spec = part.connection_spec(request, [], "foo", "access_policy")
+
+      expect(con_spec.pool_key.host).to eq(part.followers.first.host)
+      expect(con_spec.pool_key.username).to eq(part.followers.first.read_only_username)
+    end
+
+    it "uses leader as follower if there are no followers" do
+      part = small_table_set.table_sets.first.partitions.first
+      request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :follower, timeout: 100)
+
+      con_spec = part.connection_spec(request, [small_table_set.table_sets.first], "foo", "access_policy")
 
       expect(con_spec.pool_key.host).to eq(part.leader.host)
       expect(con_spec.pool_key.username).to eq(part.leader.read_only_username)

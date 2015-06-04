@@ -9,20 +9,30 @@ module ActiveTableSet
         super
         leader or raise ArgumentError, "must provide a leader"
 
-        # Choose a follower based on the process id
+        # Balanced - choose a follower based on the process id
         available_database_configs = [leader] + followers
         selected_index = self.class.pid % (available_database_configs.count)
-        @chosen_follower = available_database_configs[selected_index]
+        @balanced_config = available_database_configs[selected_index]
+
+        # follower - use the first follower if there are any followers.
+        @follower_config =
+          if followers.any?
+            followers.first
+          else
+            leader
+          end
       end
 
       def connection_spec(request, database_connections, connection_name_prefix, access_policy)
         context = "#{connection_name_prefix}_#{request.access}"
         selected_config =
             case request.access
-            when :leader, :follower
+            when :leader
               leader
+            when :follower
+              @follower_config
             when :balanced
-              @chosen_follower
+              @balanced_config
             else
               raise "We should not get here because access checks limit values.  What happened?"
             end
