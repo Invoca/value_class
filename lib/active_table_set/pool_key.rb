@@ -1,39 +1,11 @@
-require 'attr_comparable'
-
 module ActiveTableSet
-  class PoolKey
-    include AttrComparable
+  # these match the active record connection attributes.
+  class PoolKey < ValueClass.struct(
+    :host, :database, :username, :password, :connect_timeout, :read_timeout,
+    :write_timeout, :encoding, :collation, :adapter, :pool, :reconnect)
 
-    attr_compare  :host, :username, :password, :timeout
-    attr_reader   :host, :username, :password, :timeout
-    attr_accessor :config
-
-    def initialize(host:, username:, password:, timeout:, config:)
-      @host     = host
-      @username = username
-      @password = password
-      @timeout  = timeout
-      @config   = config
-    end
-
-    def clone_with_new_timeout(timeout)
-      copy = self.clone
-      copy.config = self.config.clone
-      copy.reset_timeout(timeout)
-      copy
-    end
-
-    def reset_timeout(timeout)
-      @timeout = timeout
-      @config.timeout = timeout
-    end
-
-    def eql?(other_key)
-      self.==(other_key)
-    end
-
-    def hash
-      [host, username, password, timeout].hash
+    def connector_name
+      "#{adapter}_connection"
     end
   end
 end

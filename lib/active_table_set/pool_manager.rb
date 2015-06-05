@@ -5,31 +5,22 @@ module ActiveTableSet
     include ActiveRecord::ConnectionAdapters
 
     def initialize
-      @pools = Hash.new
+      @pools = {}
     end
 
     def get_pool(key:)
-      @pools[key] ||= create_pool(key.config)
+      key or raise "Must provide a DatabaseConfig in order to get a pool"
+      @pools[key] ||= create_pool(key)
     end
 
-    def destroy_pool(key:)
-      @pools.delete(key)
-    end
-
-    def pool_count
-      @pools.length
-    end
-
-    private
-
+    # TODO: insufficient tests
     def create_pool(config)
-      config or raise "Must provide a DatabaseConfig in order to create a ConnectionPool"
       ActiveRecord::ConnectionAdapters::ConnectionPool.new(specification(config))
     end
 
+    # TODO: insufficient tests
     def specification(config)
-      config or raise "Must provide a DatabaseConfig in order to create a ConnectionSpecification"
-      ActiveRecord::Base::ConnectionSpecification.new(config.specification, config.name)
+      ActiveRecord::Base::ConnectionSpecification.new(config.to_hash, config.connector_name)
     end
   end
 end

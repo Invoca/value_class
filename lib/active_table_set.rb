@@ -1,23 +1,65 @@
 require 'active_record'
-require 'active_record/connection_adapters/mysql2_adapter'
+require 'value_class'
 
-require "active_table_set/version"
-require 'active_table_set/table_set_config'
-require 'active_table_set/database_config'
-require 'active_table_set/partition_config'
-require 'active_table_set/pool_manager'
 require 'active_table_set/pool_key'
-require 'active_table_set/partition'
-require 'active_table_set/table_set'
-require 'active_table_set/connection_proxy'
-require 'active_table_set/connection_override'
-require 'active_table_set/database_configuration_override'
-require 'active_table_set/config_helpers'
-require 'active_table_set/default_config_loader'
+require 'active_table_set/connection_attributes'
 
-require 'yaml'
+require 'active_table_set/configuration/named_timeout'
+require 'active_table_set/configuration/database_connection'
+require 'active_table_set/configuration/access_policy'
+require 'active_table_set/configuration/request'
+require 'active_table_set/configuration/test_scenario'
+require 'active_table_set/configuration/partition'
+require 'active_table_set/configuration/table_set'
+require 'active_table_set/configuration/config'
+
+require 'active_table_set/extensions/connection_override'
+require 'active_table_set/extensions/database_configuration_override'
+require 'active_table_set/extensions/mysql_connection_monitor'
+require 'active_table_set/extensions/convenient_delegation'
+
+require 'active_table_set/version'
+require 'active_table_set/pool_manager'
+require 'active_table_set/connection_manager'
+require 'active_table_set/query_parser'
 require 'active_support/core_ext'
 require 'active_support/hash_with_indifferent_access'
+require 'rails'
 
 module ActiveTableSet
+  class << self
+    def config
+      @config = ActiveTableSet::Configuration::Config.config { |conf| yield conf }
+    end
+
+    def enable
+      @config or raise "You must specify a configuration before enabling ActiveTableSet"
+
+      # Install extensions
+      ActiveRecord::Base.singleton_class.send(:prepend, ActiveTableSet::Extensions::ConnectionOverride)
+      Rails::Application::Configuration.send(:prepend, ActiveTableSet::Extensions::DatabaseConfigurationOverride)
+
+      @manager = ActiveTableSet::ConnectionManager.new(config: @config, pool_manager: ActiveTableSet::PoolManager.new)
+    end
+
+    def connection
+      @manager or raise "You must call enable first"
+      @manager.connection
+    end
+
+    def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
+      @manager or raise "You must call enable first"
+      @manager.using(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout, &blk)
+    end
+
+    def use_test_scenario(test_scenario)
+      @manager or raise "You must call enable first"
+      @manager.use_test_scenario(test_scenario)
+    end
+
+    def database_configuration
+      @config or raise "You must specify a configuration before calling database_configuration"
+      @config.database_configuration
+    end
+  end
 end
