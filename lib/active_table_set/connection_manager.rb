@@ -41,7 +41,6 @@ module ActiveTableSet
       if new_request != request
         release_connection
         self._request = new_request
-        establish_connection
       end
     end
 
