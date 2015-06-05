@@ -163,4 +163,20 @@ describe ActiveTableSet do
     end
   end
 
+  context "lock_access" do
+    it "raises if not configured" do
+      expect { ActiveTableSet.lock_access(:foo) }.to raise_error(StandardError, "You must call enable first")
+    end
+
+    it "delegates the using method" do
+      mgr_dbl = double("stub_proxy")
+
+      @called_block = false
+
+      ActiveTableSet.add_stub_manager(mgr_dbl)
+      expect(mgr_dbl).to receive(:lock_access).with(:foo)
+      ActiveTableSet.lock_access(:foo)
+    end
+  end
+
 end

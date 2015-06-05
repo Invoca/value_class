@@ -43,23 +43,34 @@ module ActiveTableSet
     end
 
     def connection
-      @manager or raise "You must call enable first"
-      @manager.connection
+      manager.connection
     end
 
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
-      @manager or raise "You must call enable first"
-      @manager.using(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout, &blk)
+      manager.using(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout, &blk)
     end
 
     def use_test_scenario(test_scenario)
-      @manager or raise "You must call enable first"
-      @manager.use_test_scenario(test_scenario)
+      manager.use_test_scenario(test_scenario)
+    end
+
+    def lock_access(access, &blk)
+      manager.lock_access(access, &blk)
     end
 
     def database_configuration
-      @config or raise "You must specify a configuration before calling database_configuration"
-      @config.database_configuration
+      configuration.database_configuration
     end
+
+    def manager
+      @manager or raise "You must call enable first"
+      @manager
+    end
+
+    def configuration
+      @config or raise "You must specify a configuration"
+      @config
+    end
+
   end
 end
