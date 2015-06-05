@@ -197,6 +197,10 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_manager.connection.object_id).to eq(connection_object_id)
         expect(connection_manager.connection.access_policy.disallow_read).to eq("cf_%")
       end
+
+      it "can be called before a connection is made" do
+        connection_manager.use_test_scenario("legacy")
+      end
     end
 
     context "access_lock" do

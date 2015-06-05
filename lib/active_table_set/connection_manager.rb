@@ -36,9 +36,6 @@ module ActiveTableSet
     end
 
     def use_test_scenario(test_scenario_name)
-      _connection or raise "unexpected - no existing connection"
-      _request or raise "unexpected - no existing request"
-
       new_request = request.merge(test_scenario: test_scenario_name)
 
       if new_request != request
