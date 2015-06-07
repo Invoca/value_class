@@ -88,6 +88,12 @@ describe ActiveTableSet::ConnectionManager do
         expect(@called_block).to eq(true)
       end
 
+      it "allows using to be called before a connection is established" do
+        connection_manager.using(access: :balanced) do
+          expect(connection_manager.connection.config.host).to eq("10.0.0.2")
+        end
+      end
+
       it "resets connections if exceptions happen" do
         expect(connection_manager.connection.config.host).to eq("10.0.0.1")
 
@@ -191,7 +197,48 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_manager.connection.object_id).to eq(connection_object_id)
         expect(connection_manager.connection.access_policy.disallow_read).to eq("cf_%")
       end
+
+      it "can be called before a connection is made" do
+        connection_manager.use_test_scenario("legacy")
+      end
     end
+
+    context "access_lock" do
+      it "silently overrides other access modes" do
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+
+        connection_manager.lock_access(:leader) do
+          expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+          connection_manager.using(access: :balanced) do
+            expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+            connection_manager.using(access: :follower) do
+              expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+            end
+          end
+        end
+
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+        connection_manager.using(access: :balanced) do
+          expect(connection_manager.connection.config.host).to eq("10.0.0.2")
+
+          connection_manager.using(access: :follower) do
+            expect(connection_manager.connection.config.host).to eq("10.0.0.2")
+          end
+        end
+      end
+
+      it "changes the connection back if it is set differently" do
+        expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+        connection_manager.using(access: :balanced) do
+          expect(connection_manager.connection.config.host).to eq("10.0.0.2")
+          connection_manager.lock_access(:leader) do
+            expect(connection_manager.connection.config.host).to eq("10.0.0.1")
+          end
+          expect(connection_manager.connection.config.host).to eq("10.0.0.2")
+        end
+      end
+    end
+
 
     it "supports different settings for different threads" do
       @thread_initial_host = nil

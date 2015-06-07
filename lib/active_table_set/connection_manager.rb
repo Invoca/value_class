@@ -14,7 +14,7 @@ module ActiveTableSet
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
       new_request = request.merge(
         table_set:     table_set,
-        access:   access,
+        access:        _access_lock || access,
         partition_key: partition_key,
         timeout:       timeout
       )
@@ -36,15 +36,21 @@ module ActiveTableSet
     end
 
     def use_test_scenario(test_scenario_name)
-      _connection or raise "unexpected - no existing connection"
-      _request or raise "unexpected - no existing request"
-
       new_request = request.merge(test_scenario: test_scenario_name)
 
       if new_request != request
         release_connection
         self._request = new_request
-        establish_connection
+      end
+    end
+
+    def lock_access(access, &blk)
+      old_lock = _access_lock
+      self._access_lock = access
+      begin
+        using(access: access, &blk)
+      ensure
+        self._access_lock = old_lock
       end
     end
 
@@ -61,6 +67,7 @@ module ActiveTableSet
     thread_local_instance_attr :_connection
     thread_local_instance_attr :_request
     thread_local_instance_attr :_pool
+    thread_local_instance_attr :_access_lock
 
     def request
       self._request ||= @config.default
@@ -79,9 +86,6 @@ module ActiveTableSet
     end
 
     def yield_with_new_connection(new_request)
-      _connection or raise "unexpected - no existing connection"
-      _pool or raise "unexpected - no existing pool"
-
       old_request    = _request
       old_connection = _connection
       old_pool       = _pool

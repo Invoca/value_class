@@ -34,5 +34,16 @@ describe ActiveTableSet::Extensions::ConvenientDelegation do
 
       expect(@called_block).to eq(true)
     end
+
+    it "delegates the lock_access method" do
+      @called_block = false
+      expect(ActiveTableSet).to receive(:lock_access).with(:leader).and_yield
+
+      ConvenientDelegationSpec::TestClassDelegation.lock_access(:leader) do
+        @called_block = true
+      end
+
+      expect(@called_block).to eq(true)
+    end
   end
 end
