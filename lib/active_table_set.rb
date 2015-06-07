@@ -28,8 +28,8 @@ require 'rails'
 
 module ActiveTableSet
   class << self
-    def config
-      @config = ActiveTableSet::Configuration::Config.config { |conf| yield conf }
+    def config(&blk)
+      @config = ActiveTableSet::Configuration::Config.config(&blk)
     end
 
     def enable
@@ -64,12 +64,10 @@ module ActiveTableSet
 
     def manager
       @manager or raise "You must call enable first"
-      @manager
     end
 
     def configuration
       @config or raise "You must specify a configuration"
-      @config
     end
 
   end
