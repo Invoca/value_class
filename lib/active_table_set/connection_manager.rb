@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # TODO: quarantine
 # TODO: failback
 # TODO: only allow named timeouts

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 module ActiveTableSet
   module Extensions
     module DatabaseConfigurationOverride

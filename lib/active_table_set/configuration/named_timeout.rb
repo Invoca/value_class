@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 module ActiveTableSet
   module Configuration
     NamedTimeout = ValueClass.struct(:name, :timeout, required: true)

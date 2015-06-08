@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 module ActiveTableSet
   class QueryParser
     attr_reader :query, :read_tables, :write_tables, :operation

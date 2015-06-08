@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 module ValueClass
   module Constructable
     extend ActiveSupport::Concern

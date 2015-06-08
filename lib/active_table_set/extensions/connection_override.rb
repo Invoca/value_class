@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Overrides ActiveRecord::Base.connection and adds in several additional methods
 _ = ActiveTableSet
 module ActiveTableSet
