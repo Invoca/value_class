@@ -92,8 +92,7 @@ module ActiveRecord
     private
 
     def ats_connect(fixture)
-      new_database_name = (fixture.to_s == 'default' ? "common" : "test_#{fixture}")
-      ActiveRecord::Base.connection.set_table_set(table_set_name: new_database_name)
+      ActiveTableSet.use_test_scenario("test_#{fixture}")
       ActiveRecord::Base.connection
     end
 
