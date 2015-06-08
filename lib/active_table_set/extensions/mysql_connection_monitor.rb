@@ -1,4 +1,5 @@
-# Need better name
+# -*- coding: utf-8 -*-
+
 module ActiveTableSet
   module Extensions
     module MysqlConnectionMonitor

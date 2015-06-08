@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 module ActiveTableSet
   # these match the active record connection attributes.
   class PoolKey < ValueClass.struct(

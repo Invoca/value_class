@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 require 'active_record'
 require 'attr_comparable'
 require 'active_support/core_ext'

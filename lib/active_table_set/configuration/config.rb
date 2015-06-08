@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # TODO: (last) Add description for all config parameters.
 # TODO: (last) Update readme
 # TODO: When passing a symbol to a timeout, confirm it exists with a meaningful error.

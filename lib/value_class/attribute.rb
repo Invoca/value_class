@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 module ValueClass
   class Attribute
     attr_reader :name, :options, :limit

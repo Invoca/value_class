@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Adds convient access to the Acive Table Set methods.
 module ActiveTableSet
   module Extensions
