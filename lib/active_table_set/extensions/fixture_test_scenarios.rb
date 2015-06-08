@@ -98,7 +98,8 @@ module ActiveRecord
 
     def load_mysql_dump(dump_filename)
       raise "Cannot be used in production!" if Rails.env == 'production'
-      config = ActiveRecord::Base.connection.config
+      # TODO - better to get the config from ATS.
+      config = ActiveRecord::Base.connection.instance_eval('@config')
       dump_cmd = "mysql --user=#{Shellwords.shellescape(config[:username])} --password=#{Shellwords.shellescape(config[:password])} #{Shellwords.shellescape(config[:database])} < #{Shellwords.shellescape(dump_filename)}"
       system(dump_cmd) or raise("Loading mysql dump failed: #{dump_cmd.inspect} resulted in an error")
       nil
