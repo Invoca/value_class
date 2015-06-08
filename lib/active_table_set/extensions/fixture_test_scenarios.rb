@@ -75,7 +75,6 @@ module ActiveRecord
       ActiveRecord::Base.connection
     end
 
-
     def ats_fixture_connections
       [ActiveRecord::Base.connection]
     end
@@ -89,13 +88,8 @@ module ActiveRecord
       end
     end
 
-    private
-
-    def ats_connect(fixture)
-      ActiveTableSet.use_test_scenario("test_#{fixture}")
-      ActiveRecord::Base.connection
-    end
-
+    # TODO - This could be passed a connection.
+    # TODO - This should be a method on test_scenario
     def load_mysql_dump(dump_filename)
       raise "Cannot be used in production!" if Rails.env == 'production'
       # TODO - better to get the config from ATS.
