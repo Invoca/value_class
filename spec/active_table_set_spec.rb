@@ -53,7 +53,7 @@ describe ActiveTableSet do
   end
 
   it "raises an exception if you enable before you config" do
-    expect { ActiveTableSet.enable }.to raise_error(StandardError, "You must specify a configuration before enabling ActiveTableSet")
+    expect { ActiveTableSet.enable }.to raise_error(StandardError, "You must specify a configuration")
   end
 
   it "has an enable method that installs extensions and constructs the manager" do
@@ -86,6 +86,8 @@ describe ActiveTableSet do
     expect(dbl).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionOverride)
 
     expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
+
+    expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
 
     ActiveTableSet.enable
 

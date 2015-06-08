@@ -17,6 +17,7 @@ require 'active_table_set/extensions/connection_override'
 require 'active_table_set/extensions/database_configuration_override'
 require 'active_table_set/extensions/mysql_connection_monitor'
 require 'active_table_set/extensions/convenient_delegation'
+require 'active_table_set/extensions/fixture_test_scenarios'
 
 require 'active_table_set/version'
 require 'active_table_set/pool_manager'
@@ -33,13 +34,14 @@ module ActiveTableSet
     end
 
     def enable
-      @config or raise "You must specify a configuration before enabling ActiveTableSet"
+      configuration
 
       # Install extensions
       ActiveRecord::Base.singleton_class.send(:prepend, ActiveTableSet::Extensions::ConnectionOverride)
       Rails::Application::Configuration.send(:prepend, ActiveTableSet::Extensions::DatabaseConfigurationOverride)
+      ActiveRecord::TestFixtures.send(:prepend, ActiveRecord::TestFixturesExtension)
 
-      @manager = ActiveTableSet::ConnectionManager.new(config: @config, pool_manager: ActiveTableSet::PoolManager.new)
+      @manager = ActiveTableSet::ConnectionManager.new(config: configuration, pool_manager: ActiveTableSet::PoolManager.new)
     end
 
     def connection
