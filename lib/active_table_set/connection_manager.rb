@@ -16,7 +16,7 @@ module ActiveTableSet
       @connection_handler = connection_handler
       @connection_specs   = {}
 
-      #connection_handler.default_spec(current_specification)
+      connection_handler.default_spec(current_specification)
     end
 
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
