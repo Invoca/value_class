@@ -13,17 +13,22 @@ end
 class StubClient
   attr_reader :called_commands, :config
   attr_accessor :reconnect, :connect_timeout, :read_timeout, :write_timeout, :local_infile, :charset_name
-  attr_accessor :query_options
+  attr_accessor :query_options, :active
 
   def initialize(config = {})
     @config = config
-    @called_commands = []
     @query_options = Mysql2::Client.default_query_options.dup
-    @query_options.merge! config
+    @query_options.merge!(config)
+    @active = true
+    clear_commands
   end
 
   def record_command(command, args)
     @called_commands << [command, args]
+  end
+
+  def clear_commands
+    @called_commands = []
   end
 
   def query(sql, options = {})
@@ -44,6 +49,11 @@ class StubClient
 
   def connect(p1, p2, p3, p4, p5, p6, p7)
     record_command(:connect, [p1, p2, p3, p4, p5, p6, p7])
+  end
+
+  def active?
+    record_command(:active?, [])
+    active
   end
 
 
@@ -99,20 +109,29 @@ class StubConnectionPool
   end
 end
 
-class StubPoolManager
-  attr_accessor :responses
-  attr_reader :pool_requests
-  attr_accessor :stub_pool
+class StubConnectionHandler
+  prepend ActiveTableSet::Extensions::ConnectionHandlerExtension
 
-  def initialize
-    @pool_requests = []
-    @responses = []
+  attr_reader :connection_pools, :class_to_pool
+
+  def initialize(pools = {})
+    @connection_pools = pools
+    @class_to_pool    = {}
   end
 
-  def get_pool(key:)
-    @pool_requests << key
-    @stub_pool || StubConnectionPool.new(key)
+
+  def retrieve_connection_pool(klass)
+    @class_to_pool[klass.name]
   end
+
+  def retrieve_connection(klass)
+    StubClient.new(current_config)
+  end
+
+  def connection
+    retrieve_connection(ActiveRecord::Base)
+  end
+
 end
 
 

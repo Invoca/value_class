@@ -81,13 +81,12 @@ describe ActiveTableSet do
       end
     end
 
-    dbl = double("eigen_class")
-    expect(ActiveRecord::Base).to receive(:singleton_class) { dbl }
-    expect(dbl).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionOverride)
-
+    expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
     expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
 
     expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
+
+    expect(ActiveRecord::Base.connection_handler).to receive(:default_spec)
 
     ActiveTableSet.enable
 
@@ -178,6 +177,22 @@ describe ActiveTableSet do
       ActiveTableSet.add_stub_manager(mgr_dbl)
       expect(mgr_dbl).to receive(:lock_access).with(:foo)
       ActiveTableSet.lock_access(:foo)
+    end
+  end
+
+  context "access_policy" do
+    it "raises if not configured" do
+      expect { ActiveTableSet.access_policy }.to raise_error(StandardError, "You must call enable first")
+    end
+
+    it "delegates" do
+      mgr_dbl = double("stub_proxy")
+
+      @called_block = false
+
+      ActiveTableSet.add_stub_manager(mgr_dbl)
+      expect(mgr_dbl).to receive(:access_policy)
+      ActiveTableSet.access_policy
     end
   end
 

@@ -25,8 +25,6 @@ describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
         end
       end
     end
-
-    ActiveTableSet.enable
   end
 
   context "connection monitor" do
@@ -34,24 +32,25 @@ describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
 
     it "confirm you can monitor connections" do
       @connection = StubDbAdaptor.stub_db_connection()
-      ActiveTableSet::Extensions::MysqlConnectionMonitor.install(@connection)
+      @connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
 
-      expect(@connection.respond_to?(:access_policy)).to eq(true)
-      @connection.access_policy = no_advertisers
+      expect(@connection.respond_to?(:show_error_in_bars)).to eq(true)
     end
 
     it "does nothing if the access policy is empty" do
       @connection = StubDbAdaptor.stub_db_connection()
-      ActiveTableSet::Extensions::MysqlConnectionMonitor.install(@connection)
+      @connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
+
+      expect(ActiveTableSet).to receive(:access_policy) { nil }
 
       @connection.select_rows(load_sample_query(:multi_table_update))
     end
 
     it "does nothing if the query is allowed" do
       @connection = StubDbAdaptor.stub_db_connection()
-      ActiveTableSet::Extensions::MysqlConnectionMonitor.install(@connection)
+      @connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
 
-      @connection.access_policy = no_advertisers
+      expect(ActiveTableSet).to receive(:access_policy) { no_advertisers }
 
       @connection.select_rows(load_sample_query(:number_pool_select))
     end
@@ -59,9 +58,9 @@ describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
 
     it "reports useful error messages when an connection attempts to access " do
       @connection = StubDbAdaptor.stub_db_connection()
-      ActiveTableSet::Extensions::MysqlConnectionMonitor.install(@connection)
+      @connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
 
-      @connection.access_policy = no_advertisers
+      expect(ActiveTableSet).to receive(:access_policy) { no_advertisers }
 
       begin
         @connection.select_rows(load_sample_query(:multi_table_update))

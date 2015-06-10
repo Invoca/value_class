@@ -13,14 +13,13 @@ require 'active_table_set/configuration/partition'
 require 'active_table_set/configuration/table_set'
 require 'active_table_set/configuration/config'
 
-require 'active_table_set/extensions/connection_override'
+require 'active_table_set/extensions/connection_handler_extension'
 require 'active_table_set/extensions/database_configuration_override'
 require 'active_table_set/extensions/mysql_connection_monitor'
 require 'active_table_set/extensions/convenient_delegation'
 require 'active_table_set/extensions/fixture_test_scenarios'
 
 require 'active_table_set/version'
-require 'active_table_set/pool_manager'
 require 'active_table_set/connection_manager'
 require 'active_table_set/query_parser'
 require 'active_support/core_ext'
@@ -37,11 +36,14 @@ module ActiveTableSet
       configuration
 
       # Install extensions
-      ActiveRecord::Base.singleton_class.send(:prepend, ActiveTableSet::Extensions::ConnectionOverride)
-      Rails::Application::Configuration.send(:prepend, ActiveTableSet::Extensions::DatabaseConfigurationOverride)
-      ActiveRecord::TestFixtures.send(:prepend, ActiveRecord::TestFixturesExtension)
+      ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+      Rails::Application::Configuration.prepend(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
+      ActiveRecord::TestFixtures.prepend(ActiveRecord::TestFixturesExtension)
 
-      @manager = ActiveTableSet::ConnectionManager.new(config: configuration, pool_manager: ActiveTableSet::PoolManager.new)
+      # Establish the connection manager....
+      @manager = ActiveTableSet::ConnectionManager.new(
+        config:             configuration,
+        connection_handler: ActiveRecord::Base.connection_handler)
     end
 
     def connection
@@ -58,6 +60,10 @@ module ActiveTableSet
 
     def lock_access(access, &blk)
       manager.lock_access(access, &blk)
+    end
+
+    def access_policy
+      manager.access_policy
     end
 
     def database_configuration
