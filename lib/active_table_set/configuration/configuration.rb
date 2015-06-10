@@ -30,8 +30,7 @@ module ActiveTableSet
         @default = @default.merge(
           table_set:     table_sets.first.name,
           access:        :leader,
-          timeout:       (timeouts.first && timeouts.first.timeout) || 110,
-          test_scenario: default_test_scenario
+          timeout:       (timeouts.first && timeouts.first.timeout) || 110
         )
       end
 

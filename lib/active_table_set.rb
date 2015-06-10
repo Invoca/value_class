@@ -12,7 +12,7 @@ require 'active_table_set/configuration/request'
 require 'active_table_set/configuration/test_scenario'
 require 'active_table_set/configuration/partition'
 require 'active_table_set/configuration/table_set'
-require 'active_table_set/configuration/config'
+require 'active_table_set/configuration/configuration'
 
 require 'active_table_set/extensions/connection_handler_extension'
 require 'active_table_set/extensions/database_configuration_override'
