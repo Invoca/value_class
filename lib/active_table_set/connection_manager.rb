@@ -14,10 +14,6 @@ module ActiveTableSet
       @connection_specs   = {}
 
       connection_handler.default_spec(current_specification)
-
-      if @config.default_test_scenario
-        use_table_set(@config.default_test_scenario)
-      end
     end
 
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
