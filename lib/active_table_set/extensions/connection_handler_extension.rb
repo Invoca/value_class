@@ -22,15 +22,11 @@ module ActiveTableSet
           connection.class.send(:include, ActiveTableSet::Extensions::ConvenientDelegation)
         end
 
-        if include_connection_monitoring && connection.respond_to?(:show_error_in_bars)
-          connection.extend(ActiveTableSet::Extensions::ConvenientDelegation)
+        if include_connection_monitoring && !connection.respond_to?(:show_error_in_bars)
+          connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
         end
 
         connection
-      end
-
-      def pool_for_spec(spec)
-        @connection_pools[spec] ||= ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
       end
 
       def default_spec(spec)
@@ -42,10 +38,9 @@ module ActiveTableSet
         self.thread_connection_spec = spec
       end
 
-      def current_config
-        retrieve_connection_pool(ActiveRecord::Base).spec.config
+      def pool_for_spec(spec)
+        @connection_pools[spec] ||= ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
       end
-
     end
   end
 end

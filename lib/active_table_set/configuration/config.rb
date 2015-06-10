@@ -1,6 +1,7 @@
 # TODO: (last) Add description for all config parameters.
 # TODO: (last) Update readme
-# TODO: When passing a symbol to a timeout, confirm it exists with a meaningful error.
+
+# TODO: Allow class table sets...
 
 module ActiveTableSet
   module Configuration
@@ -14,6 +15,8 @@ module ActiveTableSet
       value_list_attr :test_scenarios, class_name: 'ActiveTableSet::Configuration::TestScenario', insert_method: :test_scenario
       value_list_attr :timeouts,       class_name: 'ActiveTableSet::Configuration::NamedTimeout', insert_method: :timeout
 
+      value_attr      :default_test_scenario
+
       def initialize(options = {})
         super
         table_sets.any? or raise ArgumentError, "no table sets defined"
@@ -21,11 +24,14 @@ module ActiveTableSet
         @test_scenarios_by_name = test_scenarios.inject({}) { |memo, ts| memo[ts.scenario_name] = ts; memo }
         @timeouts_by_name       = timeouts.inject({})       { |memo, to| memo[to.name] = to; memo }
 
+        !default_test_scenario || @test_scenarios_by_name[default_test_scenario] or raise ArgumentError, "default test scenario #{default_test_scenario} not found, availalable scenarios: #{@test_scenarios_by_name.keys.join(", ")}"
+
         # Fill in any empty values for default
         @default = @default.merge(
           table_set:     table_sets.first.name,
           access:        :leader,
-          timeout:       (timeouts.first && timeouts.first.timeout) || 110
+          timeout:       (timeouts.first && timeouts.first.timeout) || 110,
+          test_scenario: default_test_scenario
         )
       end
 
@@ -57,7 +63,7 @@ module ActiveTableSet
           default_database_config,
           table_set_database_config,
           test_scenario_database_config
-        ].flatten
+        ].flatten.compact
 
 
         values_with_dups.inject({}) do |memo, config|
@@ -99,6 +105,7 @@ module ActiveTableSet
         test_scenarios.map { |ts| ts_config(ts, ts.scenario_name, [self]) }
       end
 
+# TODO: When passing a symbol to a timeout, confirm it exists with a meaningful error.
       def convert_timeouts(initial_request)
         if @timeouts_by_name[initial_request.timeout]
           initial_request.merge(timeout: @timeouts_by_name[initial_request.timeout].timeout)

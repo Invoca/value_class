@@ -44,49 +44,97 @@ describe ActiveTableSet::Configuration::Config do
     expect(ats_config.enforce_access_policy).to eq(true)
   end
 
-  it "allows test scenarios to be specified" do
-    ats_config = ActiveTableSet::Configuration::Config.config do |conf|
-      conf.enforce_access_policy true
-      conf.environment           'test'
-      conf.default  =  { table_set: :common }
+  context "test scenarios" do
+    it "allows test scenarios to be specified" do
+      ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+        conf.enforce_access_policy true
+        conf.environment           'test'
+        conf.default  =  { table_set: :common }
 
-      conf.table_set do |ts|
-        ts.name = :common
+        conf.table_set do |ts|
+          ts.name = :common
 
-        ts.access_policy do |ap|
-          ap.disallow_read  'cf_%'
-          ap.disallow_write 'cf_%'
-        end
+          ts.access_policy do |ap|
+            ap.disallow_read  'cf_%'
+            ap.disallow_write 'cf_%'
+          end
 
-        ts.partition do |part|
-          part.leader do |leader|
-            leader.host      "127.0.0.8"
-            leader.read_write_username  "tester"
-            leader.read_write_password  "verysecure"
-            leader.database  "main"
+          ts.partition do |part|
+            part.leader do |leader|
+              leader.host      "127.0.0.8"
+              leader.read_write_username  "tester"
+              leader.read_write_password  "verysecure"
+              leader.database  "main"
+            end
           end
         end
+
+        conf.test_scenario do |ts|
+          ts.scenario_name "legacy"
+          ts.host      "127.0.0.9"
+          ts.read_write_username  "tester"
+          ts.read_write_password  "verysecure"
+          ts.database  "main"
+        end
+
+        conf.test_scenario do |ts|
+          ts.scenario_name "adwords"
+          ts.host      "127.0.0.10"
+          ts.read_write_username  "tester"
+          ts.read_write_password  "verysecure"
+          ts.database  "main"
+        end
+
+        conf.default_test_scenario = "adwords"
       end
 
-      conf.test_scenario do |ts|
-        ts.scenario_name "legacy"
-        ts.host      "127.0.0.8"
-        ts.read_write_username  "tester"
-        ts.read_write_password  "verysecure"
-        ts.database  "main"
-      end
+      expect(ats_config.test_scenarios.size).to eq(2)
+      expect(ats_config.test_scenarios.first.scenario_name).to eq("legacy")
 
-      conf.test_scenario do |ts|
-        ts.scenario_name "adwords"
-        ts.host      "127.0.0.8"
-        ts.read_write_username  "tester"
-        ts.read_write_password  "verysecure"
-        ts.database  "main"
-      end
+      # The default test should be the defaul scenario
+      expect(ats_config.database_configuration.values.first["host"]).to eq("127.0.0.10")
     end
 
-    expect(ats_config.test_scenarios.size).to eq(2)
-    expect(ats_config.test_scenarios.first.scenario_name).to eq("legacy")
+    it "raises an error if the default test scenario is not specified" do
+      expect do
+        ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+          conf.enforce_access_policy true
+          conf.environment           'test'
+          conf.default  =  { table_set: :common }
+
+          conf.table_set do |ts|
+            ts.name = :common
+
+            ts.partition do |part|
+              part.leader do |leader|
+                leader.host      "127.0.0.8"
+                leader.read_write_username  "tester"
+                leader.read_write_password  "verysecure"
+                leader.database  "main"
+              end
+            end
+          end
+
+          conf.test_scenario do |ts|
+            ts.scenario_name "legacy"
+            ts.host      "127.0.0.9"
+            ts.read_write_username  "tester"
+            ts.read_write_password  "verysecure"
+            ts.database  "main"
+          end
+
+          conf.test_scenario do |ts|
+            ts.scenario_name "adwords"
+            ts.host      "127.0.0.10"
+            ts.read_write_username  "tester"
+            ts.read_write_password  "verysecure"
+            ts.database  "main"
+          end
+
+          conf.default_test_scenario = "notthere"
+        end
+      end.to raise_error(ArgumentError, "default test scenario notthere not found, availalable scenarios: legacy, adwords")
+    end
   end
 
   it "raises if no table set was specified" do
@@ -180,7 +228,7 @@ describe ActiveTableSet::Configuration::Config do
     end
   end
 
-  context "default" do
+  context "defaults" do
 
     it "uses the specified default when constructed" do
       ats_config = ActiveTableSet::Configuration::Config.config do |conf|
@@ -201,7 +249,9 @@ describe ActiveTableSet::Configuration::Config do
           end
         end
       end
+      expect(ats_config.default.table_set).to eq(:common)
     end
+
   end
 
   context "named timeouts" do

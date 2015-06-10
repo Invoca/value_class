@@ -1,3 +1,4 @@
+require 'rails'
 require 'active_record'
 require 'value_class'
 
@@ -19,12 +20,13 @@ require 'active_table_set/extensions/mysql_connection_monitor'
 require 'active_table_set/extensions/convenient_delegation'
 require 'active_table_set/extensions/fixture_test_scenarios'
 
+require 'active_table_set/railties/enable_active_table_set'
+
 require 'active_table_set/version'
 require 'active_table_set/connection_manager'
 require 'active_table_set/query_parser'
 require 'active_support/core_ext'
 require 'active_support/hash_with_indifferent_access'
-require 'rails'
 
 module ActiveTableSet
   class << self
@@ -44,6 +46,8 @@ module ActiveTableSet
       @manager = ActiveTableSet::ConnectionManager.new(
         config:             configuration,
         connection_handler: ActiveRecord::Base.connection_handler)
+
+      # TODO - Set class connection overrides (new feature for delayed jobs table)
     end
 
     def connection
@@ -76,6 +80,10 @@ module ActiveTableSet
 
     def configuration
       @config or raise "You must specify a configuration"
+    end
+
+    def configured?
+      !!@config
     end
 
   end

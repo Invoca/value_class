@@ -196,4 +196,34 @@ describe ActiveTableSet do
     end
   end
 
+  it "reports not configured " do
+    expect(ActiveTableSet.configured?).to eq(false)
+
+    ActiveTableSet.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default  =  { table_set: :common }
+
+      conf.table_set do |ts|
+        ts.name = :common
+
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host                 "10.0.0.1"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.database             "main"
+          end
+        end
+      end
+    end
+
+    expect(ActiveTableSet.configured?).to eq(true)
+  end
+
 end

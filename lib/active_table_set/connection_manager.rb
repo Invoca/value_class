@@ -1,10 +1,7 @@
 # TODO: quarantine
 # TODO: failback
 # TODO: only allow named timeouts
-# TODO: How to override connection?
-#
-# TODO: Not sure about calling establish connection because it destroys previous connection
-#
+# TODO: Allow class table sets...
 #require 'mysql2'
 
 
@@ -108,14 +105,17 @@ module ActiveTableSet
 
     def current_specification
       con_spec = connection_spec(request).pool_key
-      ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(con_spec.to_hash, con_spec.connector_name)
+      if defined?(ActiveRecord::ConnectionAdapters::ConnectionSpecification)
+        spec_class = ActiveRecord::ConnectionAdapters::ConnectionSpecification
+      else
+        spec_class = ActiveRecord::Base::ConnectionSpecification
+      end
+      spec_class.new(con_spec.to_hash, con_spec.connector_name)
     end
 
     def release_connection
-      if _spec
-        pool = @connection_handler.pool_for_spec(_spec)
-        pool && pool.release_connection
-      end
+      pool = @connection_handler.pool_for_spec(current_specification)
+      pool && pool.release_connection
     end
 
     def connection_spec(request)

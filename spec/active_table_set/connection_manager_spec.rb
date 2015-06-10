@@ -227,6 +227,14 @@ describe ActiveTableSet::ConnectionManager do
       expect(@thread_shard_host).to   eq("11.0.2.1")
     end
 
-    it "disconnects from connections when done with them"
+    it "disconnects from connections when done with them" do
+      connection_manager
+
+      dbl = double("dbl")
+      allow(connection_handler).to receive(:pool_for_spec) { dbl }
+      expect(dbl).to receive(:release_connection)
+
+      connection_manager.using(table_set: :sharded, partition_key: "alpha") {}
+    end
   end
 end

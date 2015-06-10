@@ -132,6 +132,9 @@ class StubConnectionHandler
     retrieve_connection(ActiveRecord::Base)
   end
 
+  def current_config
+    retrieve_connection_pool(ActiveRecord::Base).spec.config
+  end
 end
 
 
