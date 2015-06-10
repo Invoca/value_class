@@ -90,9 +90,6 @@ describe ActiveTableSet::Configuration::Config do
 
       expect(ats_config.test_scenarios.size).to eq(2)
       expect(ats_config.test_scenarios.first.scenario_name).to eq("legacy")
-
-      # The default test should be the defaul scenario
-      expect(ats_config.database_configuration.values.first["host"]).to eq("127.0.0.10")
     end
 
     it "raises an error if the default test scenario is not specified" do
