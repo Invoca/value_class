@@ -1,14 +1,19 @@
 # TODO: quarantine
 # TODO: failback
 # TODO: only allow named timeouts
+# TODO: Allow class table sets...
+#require 'mysql2'
+
 
 module ActiveTableSet
   class ConnectionManager
 
-    def initialize(config:, pool_manager:)
-      @config           = config
-      @pool_manager     = pool_manager
-      @connection_specs = {}
+    def initialize(config:, connection_handler:)
+      @config             = config
+      @connection_handler = connection_handler
+      @connection_specs   = {}
+
+      connection_handler.default_spec(current_specification)
     end
 
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
@@ -41,6 +46,7 @@ module ActiveTableSet
       if new_request != request
         release_connection
         self._request = new_request
+        establish_connection
       end
     end
 
@@ -54,20 +60,16 @@ module ActiveTableSet
       end
     end
 
-    def connection
-      unless _connection
-        establish_connection
-      end
-      _connection
+    def access_policy
+      @config.enforce_access_policy && connection_spec(request).access_policy
     end
 
     private
 
     include ValueClass::ThreadLocalAttribute
-    thread_local_instance_attr :_connection
     thread_local_instance_attr :_request
-    thread_local_instance_attr :_pool
     thread_local_instance_attr :_access_lock
+    thread_local_instance_attr :_spec
 
     def request
       self._request ||= @config.default
@@ -76,23 +78,16 @@ module ActiveTableSet
     def yield_with_new_access_policy(new_request)
       old_request   = _request
       self._request = new_request
-      set_connection_access_policy
 
       yield
 
     ensure
       self._request = old_request
-      set_connection_access_policy
     end
 
     def yield_with_new_connection(new_request)
-      old_request    = _request
-      old_connection = _connection
-      old_pool       = _pool
-
-      self._request    = new_request
-      self._connection = nil
-      self._pool       = nil
+      old_request   = _request
+      self._request = new_request
 
       establish_connection
 
@@ -100,43 +95,27 @@ module ActiveTableSet
 
     ensure
       release_connection
-
       self._request    = old_request
-      self._connection = old_connection
-      self._pool       = old_pool
+      establish_connection
     end
 
     def establish_connection
-      self._pool       = @pool_manager.get_pool(key: connection_spec(request).pool_key)
-
-      # The pool tests the connection when it is retrieved.
-      self._connection = (_pool && _pool.connection) or raise ActiveRecord::ConnectionNotEstablished
-
-      set_connection_extension
-      set_connection_access_policy
+      @connection_handler.current_spec = current_specification
     end
 
-    def set_connection_extension
-      unless connection.respond_to?(:using)
-        connection.class.send(:include, ActiveTableSet::Extensions::ConvenientDelegation)
+    def current_specification
+      con_spec = connection_spec(request).pool_key
+      if defined?(ActiveRecord::ConnectionAdapters::ConnectionSpecification)
+        spec_class = ActiveRecord::ConnectionAdapters::ConnectionSpecification
+      else
+        spec_class = ActiveRecord::Base::ConnectionSpecification
       end
-    end
-
-    def set_connection_access_policy
-      if @config.enforce_access_policy
-        unless connection.respond_to?(:access_policy)
-          ActiveTableSet::Extensions::MysqlConnectionMonitor.install(connection)
-        end
-        connection.access_policy = connection_spec(request).access_policy
-      end
+      spec_class.new(con_spec.to_hash, con_spec.connector_name)
     end
 
     def release_connection
-      # We can end up with a nil pool if we cannot establish a connection.
-      _pool && _pool.release_connection
-
-      self._pool       = nil
-      self._connection = nil
+      pool = @connection_handler.pool_for_spec(current_specification)
+      pool && pool.release_connection
     end
 
     def connection_spec(request)

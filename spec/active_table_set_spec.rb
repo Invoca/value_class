@@ -81,13 +81,12 @@ describe ActiveTableSet do
       end
     end
 
-    dbl = double("eigen_class")
-    expect(ActiveRecord::Base).to receive(:singleton_class) { dbl }
-    expect(dbl).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionOverride)
-
+    expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
     expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
 
     expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
+
+    expect(ActiveRecord::Base.connection_handler).to receive(:default_spec)
 
     ActiveTableSet.enable
 
@@ -179,6 +178,52 @@ describe ActiveTableSet do
       expect(mgr_dbl).to receive(:lock_access).with(:foo)
       ActiveTableSet.lock_access(:foo)
     end
+  end
+
+  context "access_policy" do
+    it "raises if not configured" do
+      expect { ActiveTableSet.access_policy }.to raise_error(StandardError, "You must call enable first")
+    end
+
+    it "delegates" do
+      mgr_dbl = double("stub_proxy")
+
+      @called_block = false
+
+      ActiveTableSet.add_stub_manager(mgr_dbl)
+      expect(mgr_dbl).to receive(:access_policy)
+      ActiveTableSet.access_policy
+    end
+  end
+
+  it "reports not configured " do
+    expect(ActiveTableSet.configured?).to eq(false)
+
+    ActiveTableSet.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default  =  { table_set: :common }
+
+      conf.table_set do |ts|
+        ts.name = :common
+
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host                 "10.0.0.1"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.database             "main"
+          end
+        end
+      end
+    end
+
+    expect(ActiveTableSet.configured?).to eq(true)
   end
 
 end
