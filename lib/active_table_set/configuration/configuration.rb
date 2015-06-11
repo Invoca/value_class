@@ -27,11 +27,11 @@ module ActiveTableSet
         !default_test_scenario || @test_scenarios_by_name[default_test_scenario] or raise ArgumentError, "default test scenario #{default_test_scenario} not found, availalable scenarios: #{@test_scenarios_by_name.keys.join(", ")}"
 
         # Fill in any empty values for default
-        @default = @default.merge(
+        @default = ActiveTableSet::Configuration::Request.new(
           table_set:     table_sets.first.name,
           access:        :leader,
           timeout:       (timeouts.first && timeouts.first.timeout) || 110
-        )
+        ).merge(@default)
       end
 
       def connection_spec(initial_request)

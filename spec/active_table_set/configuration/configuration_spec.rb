@@ -231,7 +231,7 @@ describe ActiveTableSet::Configuration::Config do
       ats_config = ActiveTableSet::Configuration::Config.config do |conf|
         conf.enforce_access_policy true
         conf.environment           'test'
-        conf.default  =  { table_set: :common }
+        conf.default  =  { table_set: :uncommon }
 
         conf.table_set do |ts|
           ts.name = :common
@@ -245,8 +245,21 @@ describe ActiveTableSet::Configuration::Config do
             end
           end
         end
+
+        conf.table_set do |ts|
+          ts.name = :uncommon
+
+          ts.partition do |part|
+            part.leader do |leader|
+              leader.host                 "127.0.0.8"
+              leader.read_write_username  "tester"
+              leader.read_write_password  "verysecure"
+              leader.database             "main"
+            end
+          end
+        end
       end
-      expect(ats_config.default.table_set).to eq(:common)
+      expect(ats_config.default.table_set).to eq(:uncommon)
     end
 
   end
