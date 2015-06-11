@@ -10,10 +10,11 @@ module ActiveTableSet
       value_attr      :enforce_access_policy, default: false
       value_attr      :environment
 
-      value_attr      :default,        class_name: 'ActiveTableSet::Configuration::Request', required: true
-      value_list_attr :table_sets,     class_name: 'ActiveTableSet::Configuration::TableSet', insert_method: :table_set
-      value_list_attr :test_scenarios, class_name: 'ActiveTableSet::Configuration::TestScenario', insert_method: :test_scenario
-      value_list_attr :timeouts,       class_name: 'ActiveTableSet::Configuration::NamedTimeout', insert_method: :timeout
+      value_attr      :default,          class_name: 'ActiveTableSet::Configuration::Request', required: true
+      value_list_attr :table_sets,       class_name: 'ActiveTableSet::Configuration::TableSet', insert_method: :table_set
+      value_list_attr :test_scenarios,   class_name: 'ActiveTableSet::Configuration::TestScenario', insert_method: :test_scenario
+      value_list_attr :timeouts,         class_name: 'ActiveTableSet::Configuration::NamedTimeout', insert_method: :timeout
+      value_list_attr :class_table_sets, class_name: 'ActiveTableSet::Configuration::ClassTableSet', insert_method: :class_table_set
 
       value_attr      :default_test_scenario
 

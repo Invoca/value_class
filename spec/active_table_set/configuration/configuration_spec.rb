@@ -314,4 +314,51 @@ describe ActiveTableSet::Configuration::Config do
       expect(con_spec.pool_key.write_timeout).to eq(110)
     end
   end
+
+  context "class table sets" do
+    it "Allows class table sets to be specified" do
+      ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+        conf.enforce_access_policy true
+        conf.environment           'test'
+        conf.default  =  { table_set: :common }
+
+
+        conf.class_table_set class_name: "advertiser", table_set: :uncommon
+        conf.class_table_set do |t|
+          t.class_name "affiliate"
+          t.table_set :uncommon
+        end
+
+        conf.table_set do |ts|
+          ts.name = :common
+
+          ts.partition do |part|
+            part.leader do |leader|
+              leader.host      "127.0.0.8"
+              leader.read_write_username  "tester"
+              leader.read_write_password  "verysecure"
+              leader.database  "main"
+            end
+          end
+        end
+        conf.table_set do |ts|
+          ts.name = :uncommon
+
+          ts.partition do |part|
+            part.leader do |leader|
+              leader.host                 "127.0.0.8"
+              leader.read_write_username  "tester"
+              leader.read_write_password  "verysecure"
+              leader.database             "main"
+            end
+          end
+        end
+      end
+
+      expect(ats_config.class_table_sets.size).to eq(2)
+      expect(ats_config.class_table_sets.first.class_name).to eq("advertiser")
+    end
+
+
+  end
 end

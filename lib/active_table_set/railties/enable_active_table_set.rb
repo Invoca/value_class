@@ -13,6 +13,8 @@ module ActiveTableSet
         ActiveSupport.on_load(:active_record) do
           if ActiveTableSet.configured? && ActiveTableSet.configuration.default_test_scenario
             ActiveTableSet.use_test_scenario(ActiveTableSet.configuration.default_test_scenario)
+
+            # TODO: Set class table sets.
           end
         end
       end

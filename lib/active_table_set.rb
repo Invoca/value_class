@@ -6,6 +6,7 @@ require 'active_table_set/pool_key'
 require 'active_table_set/connection_attributes'
 
 require 'active_table_set/configuration/named_timeout'
+require 'active_table_set/configuration/class_table_set'
 require 'active_table_set/configuration/database_connection'
 require 'active_table_set/configuration/access_policy'
 require 'active_table_set/configuration/request'
