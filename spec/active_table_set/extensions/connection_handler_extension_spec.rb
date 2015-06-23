@@ -56,20 +56,21 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
     end
 
     it "adds the access policy to the connection if connection monitoring is required" do
-      connection_handler.include_connection_monitoring = true
+      expect(ActiveTableSet).to receive(:enforce_access_policy?) { true }
       connection_handler.default_spec(default_spec)
       connection = connection_handler.connection
       expect(connection.respond_to?(:show_error_in_bars)).to eq(true)
     end
 
     it "does not add the access policy to the connection if connection monitoring is not required" do
-      connection_handler.include_connection_monitoring = false
+      expect(ActiveTableSet).to receive(:enforce_access_policy?) { false }
       connection_handler.default_spec(default_spec)
       connection = connection_handler.connection
       expect(connection.respond_to?(:show_error_in_bars)).to eq(false)
     end
 
     it "adds the using method to the connection class" do
+      expect(ActiveTableSet).to receive(:enforce_access_policy?) { false }
       connection_handler.default_spec(default_spec)
       connection = connection_handler.connection
 

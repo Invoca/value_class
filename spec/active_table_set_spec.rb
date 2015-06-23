@@ -93,6 +93,8 @@ describe ActiveTableSet do
     manager = ActiveTableSet.instance_eval('@manager')
 
     expect(manager.class).to eq(ActiveTableSet::ConnectionManager)
+
+    expect(ActiveTableSet.enforce_access_policy?).to eq(true)
   end
 
   it "has a database_config method that delegates to the connection" do

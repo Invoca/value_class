@@ -4,7 +4,6 @@ module ActiveTableSet
       def self.prepended(klass)
         klass.send(:include, ValueClass::ThreadLocalAttribute)
         klass.thread_local_instance_attr :thread_connection_spec
-        klass.send(:attr_accessor, :include_connection_monitoring)
       end
 
       # Overwrites the connection handler method.
@@ -22,7 +21,7 @@ module ActiveTableSet
           connection.class.send(:include, ActiveTableSet::Extensions::ConvenientDelegation)
         end
 
-        if include_connection_monitoring && !connection.respond_to?(:show_error_in_bars)
+        if ActiveTableSet.enforce_access_policy? && !connection.respond_to?(:show_error_in_bars)
           connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
         end
 
