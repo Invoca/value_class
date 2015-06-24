@@ -38,7 +38,7 @@ module ActiveTableSet
       end
 
       def pool_for_spec(spec)
-        @connection_pools[spec] ||= ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
+        @connection_pools[spec.config.dup] ||= ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup)
       end
     end
   end
