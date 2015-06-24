@@ -83,6 +83,10 @@ module ActiveTableSet
       @config or raise "You must specify a configuration"
     end
 
+    def enforce_access_policy?
+      configuration.enforce_access_policy
+    end
+
     def configured?
       !!@config
     end

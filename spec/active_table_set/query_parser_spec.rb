@@ -82,7 +82,9 @@ describe ActiveTableSet::QueryParser do
           'RELEASE SAVEPOINT active_record_1',
           'BEGIN',
           'COMMIT',
-          'ROLLBACK'
+          'ROLLBACK',
+          'SHOW FULL FIELDS FROM `outbound_integration_costs`',
+          'SHOW TABLES LIKE'
       ].each do |command|
         it "parse misc sql command #{command}" do
           qp = ActiveTableSet::QueryParser.new(command)

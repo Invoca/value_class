@@ -4,7 +4,7 @@ module ActiveTableSet
     module MysqlConnectionMonitor
       class ActiveTableSet::AccessNotAllowed < ArgumentError; end
 
-      def execute(query, name)
+      def execute(query, name = nil)
         if access_policy = ActiveTableSet.access_policy
           qp = ActiveTableSet::QueryParser.new(query)
 
