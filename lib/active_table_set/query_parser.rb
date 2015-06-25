@@ -25,6 +25,12 @@ module ActiveTableSet
     DELETE_QUERY = /\A\s*delete\s/i
     DELETE_TARGET_MATCH = /\A\s*delete.*from\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
+    DROP_QUERY = /\A\s*drop\s*table\s/i
+    DROP_TARGET_MATCH = /\A\s*drop\s*table\s*(?:if\s+exists)?\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+
+    CREATE_QUERY = /\A\s*create\s*table\s/i
+    CREATE_TARGET_MATCH = /\A\s*create\s*table\s*(?:if\s+exists)?\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+
     OTHER_SQL_COMMAND_QUERY = /\A\s*(?:begin|commit|end|release|savepoint|rollback|show)/i
 
     JOIN_MATCH = /(?:left\souter)?\sjoin\s[`]?([0-9,a-z,A-Z$_.]+)[`]?/im
@@ -39,6 +45,10 @@ module ActiveTableSet
         parse_update_query
       when query =~ DELETE_QUERY
         parse_delete_query
+      when query =~ DROP_QUERY
+        parse_drop_query
+      when query =~ CREATE_QUERY
+        parse_create_query
       when query =~ OTHER_SQL_COMMAND_QUERY
         @operation = :other
       else
@@ -76,6 +86,20 @@ module ActiveTableSet
         @write_tables << Regexp.last_match(1)
       end
       parse_joins
+    end
+
+    def parse_drop_query
+      @operation = :drop
+      if query =~ DROP_TARGET_MATCH
+        @write_tables << Regexp.last_match(1)
+      end
+    end
+
+    def parse_create_query
+      @operation = :create
+      if query =~ CREATE_TARGET_MATCH
+        @write_tables << Regexp.last_match(1)
+      end
     end
 
     def parse_joins

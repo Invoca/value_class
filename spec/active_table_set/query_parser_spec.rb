@@ -76,6 +76,39 @@ describe ActiveTableSet::QueryParser do
       end
     end
 
+    context "drop" do
+      {
+        table_drop: [["cf_rep_advertiser_campaigns_update_recent_call_counts_2s"],[]]
+      }.each do |query_file, values|
+
+        it "parses #{query_file}" do
+          write_tables, read_tables = values
+          qp = ActiveTableSet::QueryParser.new(load_sample_query(query_file))
+
+          expect(qp.operation).to eq(:drop)
+          expect(qp.read_tables).to eq(read_tables)
+          expect(qp.write_tables).to eq(write_tables)
+        end
+      end
+    end
+
+    context "create_table" do
+      {
+        create_table: [["access_tokens"],[]]
+      }.each do |query_file, values|
+
+        it "parses #{query_file}" do
+          write_tables, read_tables = values
+          qp = ActiveTableSet::QueryParser.new(load_sample_query(query_file))
+
+          expect(qp.operation).to eq(:create)
+          expect(qp.read_tables).to eq(read_tables)
+          expect(qp.write_tables).to eq(write_tables)
+        end
+      end
+    end
+
+
     context "other sql commands" do
       [
           'SAVEPOINT active_record_1',
