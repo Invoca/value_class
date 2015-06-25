@@ -4,16 +4,18 @@ require 'active_table_set'
 require 'active_record/connection_adapters/mysql2_adapter'
 require 'pry'
 
+
 module Rails
   def self.env
     'test'
   end
 end
 
-class StubClient
+class StubClient < ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter
   attr_reader :called_commands, :config
   attr_accessor :reconnect, :connect_timeout, :read_timeout, :write_timeout, :local_infile, :charset_name
   attr_accessor :query_options, :active
+  attr_accessor :pool
 
   def initialize(config = {})
     @config = config
@@ -56,6 +58,9 @@ class StubClient
     active
   end
 
+  def lease
+  end
+
 
   DEFAULT = { args: 0, default_return: nil }
 
@@ -68,6 +73,14 @@ class StubClient
     define_method method do
       record_command(method, [])
     end
+  end
+end
+
+_ = ActiveRecord::Base
+
+class ActiveRecord::Base
+  def self.create_stub_client(config)
+    StubClient.new(config)
   end
 end
 
@@ -102,7 +115,7 @@ class StubConnectionPool
   end
 
   def connection
-    stub_client || StubClient.new(@config)
+    self.stub_client ||= StubClient.new(@config)
   end
 
   def release_connection
@@ -127,6 +140,15 @@ class StubConnectionHandler
   def retrieve_connection(klass)
     StubClient.new(current_config)
   end
+
+  def retrieve_connection(klass) #:nodoc:
+    pool = retrieve_connection_pool(klass)
+    raise ConnectionNotEstablished, "No connection pool for #{klass}" unless pool
+    conn = pool.connection
+    raise ConnectionNotEstablished, "No connection for #{klass} in connection pool" unless conn
+    conn
+  end
+
 
   def connection
     retrieve_connection(ActiveRecord::Base)
