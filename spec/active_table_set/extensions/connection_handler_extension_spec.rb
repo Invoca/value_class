@@ -24,7 +24,7 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         read_write_username: "test_user",
         read_write_password: "secure_pwd",
         database: "my_database").to_hash,
-      'some_method' )
+      'create_stub_client' )
   end
 
   let(:alternate_spec) do
@@ -117,6 +117,17 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         expect(connection_handler.connection_pools.count).to eq(1)
       end
 
+      it "returns the same connection when accessing the same pool" do
+        allow(ActiveTableSet).to receive(:enforce_access_policy?) { false }
+
+        connection_handler.default_spec(default_spec)
+        connection1 = connection_handler.connection
+
+        connection_handler.current_spec = default_spec
+        connection2 = connection_handler.connection
+
+        expect(connection1.object_id).to eq(connection2.object_id)
+      end
     end
   end
 end
