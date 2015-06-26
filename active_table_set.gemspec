@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{ActiveTableSet provides multi-database support through table-set based pool management and access rights enforcement.}
   spec.description   = %q{ActiveTableSet provides multi-database support through table-set based pool management and access rights enforcement.}
-  spec.homepage      = "github.com/invoca/active-table-set"
+  spec.homepage      = "https://github.com/invoca/active-table-set"
   spec.license       = ""
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
