@@ -4,6 +4,67 @@ require 'active_table_set'
 require 'active_record/connection_adapters/mysql2_adapter'
 require 'pry'
 
+###############################################################
+#
+# Time stubbing
+#
+###############################################################
+class Time
+  cattr_reader :now_override
+
+  class << self
+    def now_override= override_time
+      if ActiveSupport::TimeWithZone === override_time
+        override_time = override_time#.localtime
+      else
+        override_time.nil? || Time === override_time or raise "override_time should be a Time object, but was a #{override_time.class.name}"
+      end
+      @@now_override = override_time
+    end
+
+    unless defined? @@_old_now_defined
+      alias old_now now
+      @@_old_now_defined = true
+    end
+  end
+
+  def self.now
+    now_override ? now_override.dup : old_now
+  end
+end
+
+
+###############################################################
+#
+# Log stubbing
+#
+###############################################################
+require "exception_handling"
+
+class TestLog
+  def self.stream
+    @log_stream ||= StringIO.new
+  end
+
+  def self.logged_lines
+    @log_stream.rewind
+    lines = @log_stream.readlines
+    clear_log
+    lines.map { |l| l.strip }.reject { |l| l == "" }.compact
+  end
+
+  def self.clear_log
+    @log_stream.reopen
+  end
+end
+
+# required
+ExceptionHandling.server_name             = "test"
+ExceptionHandling.sender_address          = %("Exceptions" <exceptions@example.com>)
+ExceptionHandling.exception_recipients    = ['exceptions@example.com']
+ExceptionHandling.logger                  = Logger.new(TestLog.stream)
+
+
 
 module Rails
   def self.env
@@ -11,6 +72,11 @@ module Rails
   end
 end
 
+###############################################################
+#
+# Database stubbing
+#
+###############################################################
 class StubClient < ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter
   attr_reader :called_commands, :config
   attr_accessor :reconnect, :connect_timeout, :read_timeout, :write_timeout, :local_infile, :charset_name
@@ -77,12 +143,21 @@ class StubClient < ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter
 end
 
 _ = ActiveRecord::Base
-
 class ActiveRecord::Base
-  def self.create_stub_client(config)
-    StubClient.new(config)
+  def self.set_next_client_exception(exception, message)
+    @next_client_exception = [exception, message]
+  end
+
+  def self.stub_client_connection(config)
+    if exception = @next_client_exception
+      @next_client_exception = nil
+      raise exception.first, exception.last
+    else
+      StubClient.new(config)
+    end
   end
 end
+
 
 class StubDbAdaptor < ActiveRecord::ConnectionAdapters::Mysql2Adapter
   SAMPLE_CONFIG = {
@@ -240,6 +315,7 @@ module SpecHelper
 
       conf.read_only_username  "read_only_tester"
       conf.read_only_password  "verysecure_too"
+      conf.adapter             "stub_client"
 
       conf.timeout name: :web, timeout: 110.seconds
       conf.timeout name: :batch, timeout: 30.minutes

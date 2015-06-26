@@ -7,5 +7,14 @@ module ActiveTableSet
     def connector_name
       "#{adapter}_connection"
     end
+
+    def connection_spec
+      if defined?(ActiveRecord::ConnectionAdapters::ConnectionSpecification)
+        spec_class = ActiveRecord::ConnectionAdapters::ConnectionSpecification
+      else
+        spec_class = ActiveRecord::Base::ConnectionSpecification
+      end
+      spec_class.new(to_hash, connector_name)
+    end
   end
 end
