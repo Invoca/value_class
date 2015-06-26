@@ -8,6 +8,7 @@ describe ActiveTableSet::ConnectionManager do
   end
 
   context "with a stubbed pool manager" do
+    let(:connection_pool)    { StubConnectionPool.new }
     let(:connection_handler) { StubConnectionHandler.new }
     let(:connection_manager) do
       allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
@@ -232,9 +233,43 @@ describe ActiveTableSet::ConnectionManager do
 
       dbl = double("dbl")
       allow(connection_handler).to receive(:pool_for_spec) { dbl }
+      expect(dbl).to receive(:connection).twice
       expect(dbl).to receive(:release_connection)
 
       connection_manager.using(table_set: :sharded, partition_key: "alpha") {}
+    end
+
+    context "failover and quarantine" do
+      it "log errors and fail back to initial connection when a connection failure occurs" do
+        TestLog.clear_log
+
+        connection_manager
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+        Time.now_override = Time.now
+
+        # First connection fails, log an exception and revert to previous setting
+        ActiveRecord::Base.set_next_client_exception(ArgumentError, "badaboom")
+        connection_manager.using(access: :balanced) do
+          expect(TestLog.logged_lines.first).to match(/badaboom/)
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        end
+
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+        # Connect again, should not try to connect - quarantined!
+        connection_manager.using(access: :balanced) do
+          expect(TestLog.logged_lines.first).to eq(nil)
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        end
+
+        # Connect again, after the quarantine
+        Time.now_override = Time.now + 120
+        connection_manager.using(access: :balanced) do
+          expect(TestLog.logged_lines.first).to eq(nil)
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.2")
+        end
+      end
     end
   end
 end

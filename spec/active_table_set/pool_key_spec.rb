@@ -16,6 +16,13 @@ describe ActiveTableSet::PoolKey do
       pk = ActiveTableSet::PoolKey.new(adapter: "sqlite")
       expect(pk.connector_name).to eq("sqlite_connection")
     end
+
+    it "generates a connection spec" do
+      pk = ActiveTableSet::PoolKey.new(adapter: "sqlite")
+      spec = pk.connection_spec
+      expect(spec.config).to eq(pk.to_hash)
+      expect(spec.adapter_method).to eq(pk.connector_name)
+    end
   end
 end
 

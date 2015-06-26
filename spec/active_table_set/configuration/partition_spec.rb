@@ -112,6 +112,7 @@ describe ActiveTableSet::Configuration::Partition do
 
       expect(con_spec.pool_key.host).to eq(part.followers.first.host)
       expect(con_spec.pool_key.username).to eq(part.followers.first.read_only_username)
+      expect(con_spec.failover_pool_key).to eq(nil)
     end
 
     it "uses leader as follower if there are no followers" do
@@ -134,6 +135,7 @@ describe ActiveTableSet::Configuration::Partition do
 
       expect(con_spec.pool_key.host).to eq(part.leader.host)
       expect(con_spec.pool_key.username).to eq(part.leader.read_only_username)
+      expect(con_spec.failover_pool_key).to eq(nil)
     end
 
     it "provides a chosen database config for balanced read access (when follower is chosen)" do
@@ -146,6 +148,9 @@ describe ActiveTableSet::Configuration::Partition do
 
       expect(con_spec.pool_key.host).to eq(part.followers.first.host)
       expect(con_spec.pool_key.username).to eq(part.followers.first.read_only_username)
+
+      # When follower is chosen, fail back to leader host.
+      expect(con_spec.failover_pool_key.host).to eq(part.leader.host)
     end
 
     it "provides a chosen database config for balanced access (when no followers)" do
