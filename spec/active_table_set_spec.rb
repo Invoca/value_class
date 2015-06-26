@@ -189,12 +189,23 @@ describe ActiveTableSet do
 
     it "delegates" do
       mgr_dbl = double("stub_proxy")
+      ActiveTableSet.add_stub_manager(mgr_dbl)
+      expect(mgr_dbl).to receive(:access_policy)
+      ActiveTableSet.access_policy
+    end
+
+    it "allows test methods access" do
+      mgr_dbl = double("stub_proxy")
 
       @called_block = false
 
       ActiveTableSet.add_stub_manager(mgr_dbl)
-      expect(mgr_dbl).to receive(:access_policy)
-      ActiveTableSet.access_policy
+      expect(mgr_dbl).to receive(:allow_test_access).and_yield
+      ActiveTableSet.allow_test_access do
+        @called_block = true
+      end
+
+      expect(@called_block).to eq(true)
     end
   end
 

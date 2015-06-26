@@ -47,8 +47,6 @@ module ActiveTableSet
       @manager = ActiveTableSet::ConnectionManager.new(
         config:             configuration,
         connection_handler: ActiveRecord::Base.connection_handler)
-
-      # TODO - Set class connection overrides (new feature for delayed jobs table)
     end
 
     def connection
@@ -70,6 +68,11 @@ module ActiveTableSet
     def access_policy
       manager.access_policy
     end
+
+    def allow_test_access(&blk)
+      manager.allow_test_access(&blk)
+    end
+
 
     def database_configuration
       configuration.database_configuration
