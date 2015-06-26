@@ -12,21 +12,9 @@ module ActiveTableSet
         # Balanced - choose a follower based on the process id
         available_database_configs = [leader] + followers
         selected_index = self.class.pid % (available_database_configs.count)
-        @balanced_config = available_database_configs[selected_index]
-        @balanced_config_failover =
-          if selected_index > 0
-            leader
-          else
-            nil
-          end
-
-        # follower - use the first follower if there are any followers.
-        @follower_config =
-          if followers.any?
-            followers.first
-          else
-            leader
-          end
+        @balanced_config          = available_database_configs[selected_index]
+        @balanced_config_failover = selected_index > 0 ? leader          : nil
+        @follower_config          = followers.any?     ? followers.first : leader
       end
 
       def connection_spec(request, database_connections, connection_name_prefix, access_policy)
