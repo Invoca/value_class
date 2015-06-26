@@ -61,7 +61,17 @@ module ActiveTableSet
     end
 
     def access_policy
-      @config.enforce_access_policy && connection_spec(request).access_policy
+      unless _access_policy_disabled
+        @config.enforce_access_policy && connection_spec(request).access_policy
+      end
+    end
+
+    def allow_test_access
+      old_access_policy_setting = _access_policy_disabled
+      self._access_policy_disabled = true
+      yield
+    ensure
+      self._access_policy_disabled = old_access_policy_setting
     end
 
     private
@@ -70,6 +80,7 @@ module ActiveTableSet
     thread_local_instance_attr :_request
     thread_local_instance_attr :_access_lock
     thread_local_instance_attr :_spec
+    thread_local_instance_attr :_access_policy_disabled
 
     def request
       self._request ||= @config.default

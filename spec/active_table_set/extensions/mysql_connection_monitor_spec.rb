@@ -30,6 +30,29 @@ describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
   context "connection monitor" do
     let(:no_advertisers) { ActiveTableSet::Configuration::AccessPolicy.new(disallow_read: 'adv%,aff%', disallow_write: 'adv%,aff%') }
 
+
+    let(:expected_error) {
+      <<-EOF.gsub(/^ {10}/, '')
+          Query denied by Active Table Set access_policy: (are you using the correct table set?)
+
+          Errors
+              Cannot read affiliates
+              Cannot write advertiser_affiliate_joins
+
+          Access Policy
+              allow_read: %
+              disallow_read: adv%,aff%
+              allow_write: %
+              disallow_write: adv%,aff%
+
+          Query
+                       update advertiser_affiliate_joins
+                         inner join affiliates on affiliates.id = advertiser_affiliate_joins.affiliate_id
+                         set advertiser_affiliate_joins.status_update_from = 'API'
+                         where affiliates.network_id = 1
+      EOF
+    }
+
     it "confirm you can monitor connections" do
       @connection = StubDbAdaptor.stub_db_connection()
       @connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
@@ -55,6 +78,21 @@ describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
       @connection.select_rows(load_sample_query(:number_pool_select))
     end
 
+    it "has a method to directly check a query" do
+      @connection = StubDbAdaptor.stub_db_connection()
+      @connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
+
+      expect(ActiveTableSet).to receive(:access_policy) { no_advertisers }
+
+      begin
+        @connection.check_query(load_sample_query(:multi_table_update))
+        fail 'did not raise an exception'
+      rescue => ex
+        expect(ex.class.name).to eq("ActiveTableSet::AccessNotAllowed")
+        expect(ex.message).to eq(expected_error)
+      end
+    end
+
 
     it "reports useful error messages when an connection attempts to access " do
       @connection = StubDbAdaptor.stub_db_connection()
@@ -67,30 +105,7 @@ describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
         fail 'did not raise an exception'
       rescue => ex
         expect(ex.class.name).to eq("ActiveTableSet::AccessNotAllowed")
-
-        expected_message  = <<-EOF.gsub(/^ {10}/, '')
-          Query denied by Active Table Set access_policy: (are you using the correct table set?)
-          ==============================   access_policy    ==============================
-          allow_read: %
-          disallow_read: adv%,aff%
-          allow_write: %
-          disallow_write: adv%,aff%
-          ================================================================================
-
-          ==============================       errors       ==============================
-          Cannot read affiliates
-          Cannot write advertiser_affiliate_joins
-          ================================================================================
-
-          ==============================        query       ==============================
-                   update advertiser_affiliate_joins
-                     inner join affiliates on affiliates.id = advertiser_affiliate_joins.affiliate_id
-                     set advertiser_affiliate_joins.status_update_from = 'API'
-                     where affiliates.network_id = 1
-          ================================================================================
-        EOF
-
-        expect(ex.message).to eq(expected_message)
+        expect(ex.message).to eq(expected_error)
       end
     end
 
