@@ -3,7 +3,7 @@
 # TODO: only allow named timeouts
 # TODO: Allow class table sets...
 #require 'mysql2'
-
+require 'process_flags'
 
 module ActiveTableSet
   class ConnectionManager
@@ -19,7 +19,7 @@ module ActiveTableSet
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
       new_request = request.merge(
         table_set:     table_set,
-        access:        _access_lock || access,
+        access:        process_flag_access || _access_lock || access,
         partition_key: partition_key,
         timeout:       timeout
       )
@@ -127,6 +127,10 @@ module ActiveTableSet
     def release_connection
       pool = @connection_handler.pool_for_spec(current_specification)
       pool && pool.release_connection
+    end
+
+    def process_flag_access
+      ProcessFlags.is_set?(:disable_alternate_databases) ? :leader : nil
     end
 
     def connection_spec(request)

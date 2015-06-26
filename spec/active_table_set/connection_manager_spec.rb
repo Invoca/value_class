@@ -203,6 +203,33 @@ describe ActiveTableSet::ConnectionManager do
       end
     end
 
+    context "disable_alternate_databases process flag" do
+      it "forces all access to the leader" do
+        connection_manager
+        allow(ProcessFlags).to receive(:is_set?).with(:disable_alternate_databases) { true }
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+        connection_manager.lock_access(:follower) do
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+          connection_manager.using(access: :balanced) do
+            expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+            connection_manager.using(access: :follower) do
+              expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+            end
+          end
+        end
+
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        connection_manager.using(access: :balanced) do
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+          connection_manager.using(access: :follower) do
+            expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+          end
+        end
+      end
+    end
+
 
     it "supports different settings for different threads" do
       connection_manager
