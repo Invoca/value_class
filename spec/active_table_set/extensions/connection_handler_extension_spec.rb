@@ -24,7 +24,7 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         read_write_username: "test_user",
         read_write_password: "secure_pwd",
         database: "my_database").to_hash,
-      'create_stub_client' )
+      'stub_client_connection' )
   end
 
   let(:alternate_spec) do

@@ -12,5 +12,10 @@ describe ActiveTableSet::ConnectionAttributes do
       expect(pk).not_to eq(pk2)
     end
   end
+
+  it "has an optional failover pool key" do
+    pk  = ActiveTableSet::ConnectionAttributes.new(pool_key: "localhost", failover_pool_key: "notlocal")
+    expect(pk.failover_pool_key).to eq("notlocal")
+  end
 end
 

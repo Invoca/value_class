@@ -1,17 +1,23 @@
-# TODO: quarantine
-# TODO: failback
 # TODO: only allow named timeouts
-# TODO: Allow class table sets...
-#require 'mysql2'
+# TODO: Allow class table sets... (Maybe. Would rather do something different for ringswitch delayed job connection)
+# TODO: Worried about release connection. (Does connection pool do this?)
+#        Need reference counted connections
+#          a => b => a => b
+#        Should only release when count goes to zero...
+
+require 'exception_handling'
 require 'process_flags'
 
 module ActiveTableSet
   class ConnectionManager
 
+    QUARANTINE_DURATION_SECONDS = 60
+
     def initialize(config:, connection_handler:)
       @config             = config
       @connection_handler = connection_handler
       @connection_specs   = {}
+      @quarantine_until   = {}
 
       connection_handler.default_spec(current_specification)
     end
@@ -79,7 +85,6 @@ module ActiveTableSet
     include ValueClass::ThreadLocalAttribute
     thread_local_instance_attr :_request
     thread_local_instance_attr :_access_lock
-    thread_local_instance_attr :_spec
     thread_local_instance_attr :_access_policy_disabled
 
     def request
@@ -106,22 +111,59 @@ module ActiveTableSet
 
     ensure
       release_connection
-      self._request    = old_request
+      self._request = old_request
       establish_connection
     end
 
     def establish_connection
-      @connection_handler.current_spec = current_specification
+      if failover_available?
+        if connection_quarantined?(current_specification)
+          @connection_handler.current_spec = failover_specification
+          test_connection
+        else
+          begin
+            @connection_handler.current_spec = current_specification
+            test_connection
+          rescue => ex
+            ExceptionHandling.log_error(ex, "Failure checking out alternate database connection")
+
+            quarantine_connection(current_specification)
+
+            @connection_handler.current_spec = failover_specification
+            test_connection
+          end
+        end
+      else
+        @connection_handler.current_spec = current_specification
+        test_connection
+      end
     end
 
     def current_specification
-      con_spec = connection_spec(request).pool_key
-      if defined?(ActiveRecord::ConnectionAdapters::ConnectionSpecification)
-        spec_class = ActiveRecord::ConnectionAdapters::ConnectionSpecification
-      else
-        spec_class = ActiveRecord::Base::ConnectionSpecification
+      connection_spec(request).pool_key.connection_spec
+    end
+
+    def failover_specification
+      if connection_spec(request).failover_pool_key
+        connection_spec(request).failover_pool_key.connection_spec
       end
-      spec_class.new(con_spec.to_hash, con_spec.connector_name)
+    end
+
+    def test_connection
+      @connection_handler.retrieve_connection_pool("ActiveRecord::Base").connection
+    end
+
+
+    def failover_available?
+      connection_spec(request).failover_pool_key
+    end
+
+    def quarantine_connection(specification)
+      @quarantine_until[specification.config] = Time.now + QUARANTINE_DURATION_SECONDS
+    end
+
+    def connection_quarantined?(specification)
+      @quarantine_until[specification.config] && @quarantine_until[specification.config] > Time.now
     end
 
     def release_connection
