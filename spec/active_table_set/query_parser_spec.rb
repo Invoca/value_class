@@ -117,6 +117,7 @@ describe ActiveTableSet::QueryParser do
           'COMMIT',
           'ROLLBACK',
           'SHOW FULL FIELDS FROM `outbound_integration_costs`',
+          'SET SQL_AUTO_IS_NULL=0, NAMES \'utf8\', @@wait_timeout = 2147483',
           'SHOW TABLES LIKE'
       ].each do |command|
         it "parse misc sql command #{command}" do
@@ -130,7 +131,7 @@ describe ActiveTableSet::QueryParser do
     end
 
     it "should raise for unexpected queries" do
-     expect { ActiveTableSet::QueryParser.new("not a sql command") }.to raise_error(RuntimeError, "unexpected query: not a sql command" )
+     expect { ActiveTableSet::QueryParser.new("not a sql command") }.to raise_error(RuntimeError, "ActiveTableSet::QueryParser.parse_query - unexpected query: not a sql command" )
     end
   end
 end

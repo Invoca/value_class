@@ -31,7 +31,7 @@ module ActiveTableSet
     CREATE_QUERY = /\A\s*create\s*table\s/i
     CREATE_TARGET_MATCH = /\A\s*create\s*table\s*(?:if\s+exists)?\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    OTHER_SQL_COMMAND_QUERY = /\A\s*(?:begin|commit|end|release|savepoint|rollback|show)/i
+    OTHER_SQL_COMMAND_QUERY = /\A\s*(?:begin|commit|end|release|savepoint|rollback|show|set)/i
 
     JOIN_MATCH = /(?:left\souter)?\sjoin\s[`]?([0-9,a-z,A-Z$_.]+)[`]?/im
 
@@ -52,7 +52,7 @@ module ActiveTableSet
       when query =~ OTHER_SQL_COMMAND_QUERY
         @operation = :other
       else
-        raise "unexpected query: #{query}"
+        raise "ActiveTableSet::QueryParser.parse_query - unexpected query: #{query}"
       end
     end
 
