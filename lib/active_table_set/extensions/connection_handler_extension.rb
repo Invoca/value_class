@@ -12,6 +12,13 @@ module ActiveTableSet
         (thread_connection_spec && pool_for_spec(thread_connection_spec)) || super
       end
 
+      # Disables the remove connection method on default
+      def remove_connection(klass)
+        if klass.name != 'ActiveRecord::Base'
+          super
+        end
+      end
+
       # Overwrites the connection handler method.
       # Extends the connection class if needed.
       def retrieve_connection(klass)

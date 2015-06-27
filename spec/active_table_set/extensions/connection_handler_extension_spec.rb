@@ -90,6 +90,13 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
       expect(connection_handler.pool_for_spec(default_spec).spec.config).to eq(default_spec.config)
     end
 
+    it "suppresses remove connection for active record base" do
+      connection_handler.remove_connection(ActiveRecord::Base)
+      connection_handler.remove_connection(ActiveTableSet)
+
+      expect(connection_handler.remove_calls).to eq(["ActiveTableSet"])
+    end
+
     context "pool leaking" do
       it "does not leak pools if a connection handler mutates the connection" do
         allow(ActiveTableSet).to receive(:enforce_access_policy?) { true }
