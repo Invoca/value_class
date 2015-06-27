@@ -26,6 +26,7 @@ describe ActiveTableSet::QueryParser do
           call_insert:               [["calls"],[]],
           warehouse_aggregate_insert:[["cf_advertiser_affiliate_date_aggregate_utcs"],[]],
           warehouse_fact_insert:     [["cf_call_facts_20110715"],[]],
+          insert_ignore:             [["cf_advertiser_date_aggregate_pts"], ["cf_advertiser_date_aggregate_pt_repairs"]]
       }.each do |query_file, values|
 
         it "parses #{query_file}" do

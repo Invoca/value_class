@@ -16,8 +16,8 @@ module ActiveTableSet
     SELECT_QUERY = /\A\s*select\s/i
     SELECT_FROM_MATCH = /FROM #{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    INSERT_QUERY = /\A\s*insert\sinto/i
-    INSERT_TARGET_MATCH = /\A\s*insert\sinto\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+    INSERT_QUERY = /\A\s*insert\s(?:ignore\s)?into/i
+    INSERT_TARGET_MATCH = /\A\s*insert\s(?:ignore\s)?into\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
     UPDATE_QUERY = /\A\s*update\s/i
     UPDATE_TARGET_MATCH = /\A\s*update\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
@@ -68,6 +68,9 @@ module ActiveTableSet
       @operation = :insert
       if query =~ INSERT_TARGET_MATCH
         @write_tables << Regexp.last_match(1)
+      end
+      if query =~ SELECT_FROM_MATCH
+        @read_tables << Regexp.last_match(1)
       end
       parse_joins
     end
