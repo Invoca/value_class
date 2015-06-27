@@ -109,6 +109,21 @@ describe ActiveTableSet::QueryParser do
       end
     end
 
+    context "truncate_table" do
+      {
+        truncate_table: [["cf_advertiser_date_aggregate_pt_repairs"],[]]
+      }.each do |query_file, values|
+
+        it "parses #{query_file}" do
+          write_tables, read_tables = values
+          qp = ActiveTableSet::QueryParser.new(load_sample_query(query_file))
+
+          expect(qp.operation).to eq(:truncate)
+          expect(qp.read_tables).to eq(read_tables)
+          expect(qp.write_tables).to eq(write_tables)
+        end
+      end
+    end
 
     context "other sql commands" do
       [

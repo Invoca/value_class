@@ -31,6 +31,9 @@ module ActiveTableSet
     CREATE_QUERY = /\A\s*create\s*table\s/i
     CREATE_TARGET_MATCH = /\A\s*create\s*table\s*(?:if\s+exists)?\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
+    TRUNCATE_QUERY = /\A\s*truncate\s*table\s/i
+    TRUNCATE_TARGET_MATCH = /\A\s*truncate\s*table\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+
     OTHER_SQL_COMMAND_QUERY = /\A\s*(?:begin|commit|end|release|savepoint|rollback|show|set)/i
 
     JOIN_MATCH = /(?:left\souter)?\sjoin\s[`]?([0-9,a-z,A-Z$_.]+)[`]?/im
@@ -49,6 +52,8 @@ module ActiveTableSet
         parse_drop_query
       when query =~ CREATE_QUERY
         parse_create_query
+      when query =~ TRUNCATE_QUERY
+        parse_truncate_query
       when query =~ OTHER_SQL_COMMAND_QUERY
         @operation = :other
       else
@@ -101,6 +106,13 @@ module ActiveTableSet
     def parse_create_query
       @operation = :create
       if query =~ CREATE_TARGET_MATCH
+        @write_tables << Regexp.last_match(1)
+      end
+    end
+
+    def parse_truncate_query
+      @operation = :truncate
+      if query =~ TRUNCATE_TARGET_MATCH
         @write_tables << Regexp.last_match(1)
       end
     end
