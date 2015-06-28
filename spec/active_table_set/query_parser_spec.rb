@@ -149,5 +149,14 @@ describe ActiveTableSet::QueryParser do
     it "should raise for unexpected queries" do
      expect { ActiveTableSet::QueryParser.new("not a sql command") }.to raise_error(RuntimeError, "ActiveTableSet::QueryParser.parse_query - unexpected query: not a sql command" )
     end
+
+    it "should handle queries that contain binary data" do
+      query = "          INSERT INTO simple_sessions ( session_id, marshaled_data, created_at, updated_at )\n          VALUES (\n            '346fb84574b37af67efce6034b3d7365',\n            '\u0004\b{\vI\\\"\u0010last_access\u0006:\u0006ETl+\aUC\x8FUI\\\"\u0010login_check\u0006;\\0Tl+\aUC\x8FUI\\\"\fuser_id\u0006;\\0Ti\u0006I\\\"\u0010username_id\u0006;\\0Ti\u0006I\\\"\u001Forganization_membership_id\u0006;\\0Ti\u0006I\\\"\u0015preferred_domain\u0006;\\0TI\\\"\u0017notvalidinvoca.net\u0006;\\0T',\n            '2015-06-28 00:44:06',\n            '2015-06-28 00:44:06'\n          )\n"
+      qp = ActiveTableSet::QueryParser.new(query)
+      expect(qp.operation).to eq(:insert)
+      expect(qp.write_tables).to eq(['simple_sessions'])
+      expect(qp.read_tables).to eq([])
+    end
+
   end
 end

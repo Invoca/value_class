@@ -3,7 +3,7 @@ module ActiveTableSet
     attr_reader :query, :read_tables, :write_tables, :operation
 
     def initialize(query)
-      @query = query
+      @query = query.dup.force_encoding("BINARY")
       @read_tables = []
       @write_tables = []
       parse_query
