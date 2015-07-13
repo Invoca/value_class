@@ -35,6 +35,11 @@ module ActiveTableSet
         connection
       end
 
+      # Overwrites the connection handler method so that the pool specification is normalized
+      def establish_connection(name, spec)
+        @class_to_pool[name] = pool_for_spec(spec)
+      end
+
       def default_spec(spec)
         @class_to_pool["ActiveRecord::Base"] = pool_for_spec(spec)
       end
@@ -45,7 +50,9 @@ module ActiveTableSet
       end
 
       def pool_for_spec(spec)
-        @connection_pools[spec.config.dup] ||= ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
+        normalized_config = spec.config.dup.stringify_keys # These are sometimes strings and sometimes symbols.
+        normalized_config.delete("flags")                  # The mysql2 adapter mutates the config to add this flag, which causes mayhem.
+        @connection_pools[normalized_config] ||= ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup)
       end
     end
   end

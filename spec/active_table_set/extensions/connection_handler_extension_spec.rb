@@ -136,5 +136,66 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         expect(connection1.object_id).to eq(connection2.object_id)
       end
     end
+
+    it "normalizes to string keys data before looking up the hash" do
+      allow(ActiveTableSet).to receive(:enforce_access_policy?) { true }
+      connection_handler.default_spec(default_spec)
+      expect(connection_handler.connection_pools.count).to eq(1)
+
+      # Need a new spec because it was mutated above...
+      database_config = ActiveTableSet::Configuration::DatabaseConnection.new(
+        host: "some.ip",
+        read_write_username: "test_user",
+        read_write_password: "secure_pwd",
+        database: "my_database").to_hash.symbolize_keys
+
+      default_spec_2 = spec_class.new(database_config, 'some_method')
+
+      connection_handler.current_spec = default_spec_2
+
+      connection2 = connection_handler.connection
+      expect(connection_handler.connection_pools.count).to eq(1)
+    end
+
+    it "ignores the flags param before looking up the hash" do
+      allow(ActiveTableSet).to receive(:enforce_access_policy?) { true }
+      connection_handler.default_spec(default_spec)
+      expect(connection_handler.connection_pools.count).to eq(1)
+
+      # Need a new spec because it was mutated above...
+      database_config = ActiveTableSet::Configuration::DatabaseConnection.new(
+        host: "some.ip",
+        read_write_username: "test_user",
+        read_write_password: "secure_pwd",
+        database: "my_database").to_hash
+      database_config["flags"] = 2
+
+      default_spec_2 = spec_class.new(database_config, 'some_method')
+
+      connection_handler.current_spec = default_spec_2
+
+      connection2 = connection_handler.connection
+      expect(connection_handler.connection_pools.count).to eq(1)
+    end
+
+    it "uses the normalization in establish_connection" do
+      allow(ActiveTableSet).to receive(:enforce_access_policy?) { true }
+      connection_handler.default_spec(default_spec)
+      expect(connection_handler.connection_pools.count).to eq(1)
+
+      # Need a new spec because it was mutated above...
+      database_config = ActiveTableSet::Configuration::DatabaseConnection.new(
+        host: "some.ip",
+        read_write_username: "test_user",
+        read_write_password: "secure_pwd",
+        database: "my_database").to_hash
+      database_config["flags"] = 2
+
+      default_spec_2 = spec_class.new(database_config, 'some_method')
+
+      connection_handler.establish_connection("ActiveRecord::Base", default_spec_2)
+      expect(connection_handler.connection_pools.count).to eq(1)
+    end
+
   end
 end
