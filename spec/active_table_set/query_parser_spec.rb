@@ -134,7 +134,8 @@ describe ActiveTableSet::QueryParser do
           'ROLLBACK',
           'SHOW FULL FIELDS FROM `outbound_integration_costs`',
           'SET SQL_AUTO_IS_NULL=0, NAMES \'utf8\', @@wait_timeout = 2147483',
-          'SHOW TABLES LIKE'
+          'SHOW TABLES LIKE',
+          'alter table access_tokens auto_increment = 1'
       ].each do |command|
         it "parse misc sql command #{command}" do
           qp = ActiveTableSet::QueryParser.new(command)

@@ -34,7 +34,7 @@ module ActiveTableSet
     TRUNCATE_QUERY = /\A\s*truncate\s*table\s/i
     TRUNCATE_TARGET_MATCH = /\A\s*truncate\s*table\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    OTHER_SQL_COMMAND_QUERY = /\A\s*(?:begin|commit|end|release|savepoint|rollback|show|set)/i
+    OTHER_SQL_COMMAND_QUERY = /\A\s*(?:begin|commit|end|release|savepoint|rollback|show|set|alter)/i
 
     JOIN_MATCH = /(?:left\souter)?\sjoin\s[`]?([0-9,a-z,A-Z$_.]+)[`]?/im
 
