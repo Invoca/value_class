@@ -88,6 +88,8 @@ describe ActiveTableSet do
 
     expect(ActiveRecord::Base.connection_handler).to receive(:default_spec)
 
+    expect(ActiveRecord::Migration).to receive(:prepend).with(ActiveTableSet::Extensions::MigrationExtension).never
+
     ActiveTableSet.enable
 
     manager = ActiveTableSet.instance_eval('@manager')
@@ -95,6 +97,51 @@ describe ActiveTableSet do
     expect(manager.class).to eq(ActiveTableSet::ConnectionManager)
 
     expect(ActiveTableSet.enforce_access_policy?).to eq(true)
+  end
+
+  it "adds a migration extension if a migration timeout is specified" do
+    ActiveTableSet.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default  =  { table_set: :common }
+      conf.migration_timeout = 100
+
+      conf.table_set do |ts|
+        ts.name = :common
+
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host                 "10.0.0.1"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.database             "main"
+          end
+        end
+      end
+    end
+
+    expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+    expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
+
+    expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
+
+    expect(ActiveRecord::Base.connection_handler).to receive(:default_spec)
+
+    expect(ActiveRecord::Migration).to receive(:prepend).with(ActiveTableSet::Extensions::MigrationExtension)
+
+    ActiveTableSet.enable
+
+    manager = ActiveTableSet.instance_eval('@manager')
+
+    expect(manager.class).to eq(ActiveTableSet::ConnectionManager)
+
+    expect(ActiveTableSet.enforce_access_policy?).to eq(true)
+
   end
 
   it "has a database_config method that delegates to the connection" do

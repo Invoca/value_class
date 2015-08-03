@@ -20,6 +20,7 @@ require 'active_table_set/extensions/database_configuration_override'
 require 'active_table_set/extensions/mysql_connection_monitor'
 require 'active_table_set/extensions/convenient_delegation'
 require 'active_table_set/extensions/fixture_test_scenarios'
+require 'active_table_set/extensions/migration_extension'
 
 require 'active_table_set/railties/enable_active_table_set'
 
@@ -42,6 +43,10 @@ module ActiveTableSet
       ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend(ActiveTableSet::Extensions::ConnectionHandlerExtension)
       Rails::Application::Configuration.prepend(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
       ActiveRecord::TestFixtures.prepend(ActiveRecord::TestFixturesExtension)
+
+      if configuration.migration_timeout
+        ActiveRecord::Migration.prepend(ActiveTableSet::Extensions::MigrationExtension)
+      end
 
       # Establish the connection manager....
       @manager = ActiveTableSet::ConnectionManager.new(
