@@ -361,7 +361,55 @@ describe ActiveTableSet::Configuration::Config do
       expect(ats_config.class_table_sets.size).to eq(2)
       expect(ats_config.class_table_sets.first.class_name).to eq("advertiser")
     end
+  end
 
+  context "migration timeouts" do
+    it "allows the timeout to be set" do
+      ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+        conf.enforce_access_policy true
+        conf.environment           'test'
+        conf.default  =  { table_set: :common }
 
+        conf.migration_timeout = 3.hours
+
+        conf.table_set do |ts|
+          ts.name = :common
+
+          ts.partition do |part|
+            part.leader do |leader|
+              leader.host      "127.0.0.8"
+              leader.read_write_username  "tester"
+              leader.read_write_password  "verysecure"
+              leader.database  "main"
+            end
+          end
+        end
+      end
+
+      expect(ats_config.migration_timeout).to eq(10800)
+    end
+
+    it "defaults to nil" do
+      ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+        conf.enforce_access_policy true
+        conf.environment           'test'
+        conf.default  =  { table_set: :common }
+
+        conf.table_set do |ts|
+          ts.name = :common
+
+          ts.partition do |part|
+            part.leader do |leader|
+              leader.host      "127.0.0.8"
+              leader.read_write_username  "tester"
+              leader.read_write_password  "verysecure"
+              leader.database  "main"
+            end
+          end
+        end
+      end
+
+      expect(ats_config.migration_timeout).to eq(nil)
+    end
   end
 end

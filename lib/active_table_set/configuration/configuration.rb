@@ -17,6 +17,7 @@ module ActiveTableSet
       value_list_attr :class_table_sets, class_name: 'ActiveTableSet::Configuration::ClassTableSet', insert_method: :class_table_set
 
       value_attr      :default_test_scenario
+      value_attr      :migration_timeout
 
       def initialize(options = {})
         super
