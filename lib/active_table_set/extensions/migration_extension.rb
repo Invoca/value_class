@@ -1,4 +1,3 @@
-require "pry"
 module ActiveTableSet
   module Extensions
     module MigrationExtension
