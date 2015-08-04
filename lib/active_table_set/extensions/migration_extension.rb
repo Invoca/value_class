@@ -13,6 +13,12 @@ module ActiveTableSet
           super
         end
       end
+
+      def connection
+        ActiveTableSet.using(timeout: ActiveTableSet.configuration.migration_timeout) do
+          super
+        end
+      end
     end
   end
 end
