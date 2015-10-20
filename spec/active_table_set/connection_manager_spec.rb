@@ -127,6 +127,20 @@ describe ActiveTableSet::ConnectionManager do
 
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
       end
+
+      it "resets if an exception occurs while resetting" do
+        connection_manager
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        received_exception = nil
+        allow(connection_manager).to receive(:release_connection) { raise "Raised an exception" }
+        begin
+          connection_manager.using(table_set: :sharded, partition_key: "alpha") {}
+        rescue Exception => ex
+          received_exception = ex
+        end
+        expect(received_exception.message).to eq("Raised an exception")
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+      end
     end
 
     context "use_test_scenario" do

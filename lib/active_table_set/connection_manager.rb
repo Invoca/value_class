@@ -110,9 +110,12 @@ module ActiveTableSet
       yield
 
     ensure
-      release_connection
-      self._request = old_request
-      establish_connection
+      begin
+        release_connection
+      ensure
+        self._request = old_request
+        establish_connection
+      end
     end
 
     def establish_connection
