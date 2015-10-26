@@ -18,10 +18,14 @@ module ActiveTableSet
 
         # Do not use the current parition key if changing table sets.
         new_partition_key =
-          if table_set == other.table_set
-            other.partition_key || partition_key
+          if other.table_set
+            if table_set == other.table_set
+              other.partition_key || partition_key
+            else
+              other.partition_key
+            end
           else
-            other.partition_key
+            partition_key
           end
 
         self.class.new(
