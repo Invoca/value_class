@@ -70,6 +70,24 @@ describe ActiveTableSet::Configuration::Request do
         expect(merged.timeout).to eq(110)
         expect(merged.test_scenario).to eq(nil)
       end
+
+      it "merges with a partition key" do
+        orig = ActiveTableSet::Configuration::Request.new(
+          table_set: :common,
+          access: :leader,
+          partition_key: "2",
+          timeout: 10,
+          test_scenario: nil
+        )
+
+        merged = orig.merge(timeout: 110)
+
+        expect(merged.table_set).to eq(:common)
+        expect(merged.access).to eq(:leader)
+        expect(merged.partition_key).to eq("2")
+        expect(merged.timeout).to eq(110)
+        expect(merged.test_scenario).to eq(nil)
+      end
     end
   end
 end
