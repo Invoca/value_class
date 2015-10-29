@@ -25,7 +25,7 @@ module ActiveTableSet
         connection = super
 
         unless connection.respond_to?(:using)
-          connection.class.send(:include, ActiveTableSet::Extensions::ConvenientDelegation)
+          connection.class.send(:include, ActiveTableSet::Extensions::ConnectionExtension)
         end
 
         if ActiveTableSet.enforce_access_policy? && !connection.respond_to?(:show_error_in_bars)

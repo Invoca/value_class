@@ -18,7 +18,7 @@ require 'active_table_set/configuration/configuration'
 require 'active_table_set/extensions/connection_handler_extension'
 require 'active_table_set/extensions/database_configuration_override'
 require 'active_table_set/extensions/mysql_connection_monitor'
-require 'active_table_set/extensions/convenient_delegation'
+require 'active_table_set/extensions/connection_extension'
 require 'active_table_set/extensions/fixture_test_scenarios'
 require 'active_table_set/extensions/migration_extension'
 

@@ -1,7 +1,11 @@
 # Adds convient access to the Acive Table Set methods.
 module ActiveTableSet
   module Extensions
-    module ConvenientDelegation
+    module ConnectionExtension
+      def log(sql, name='', builds)
+        super(sql, name + "host:#{config['host']}", builds)
+      end
+
       def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
         ActiveTableSet.using(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout, &blk)
       end
@@ -11,4 +15,8 @@ module ActiveTableSet
       end
     end
   end
+end
+
+class AbstractAdapter
+  prepend ActiveTableSet::Extensions::ConnectionExtension
 end
