@@ -1,20 +1,42 @@
 require 'spec_helper'
 
-module ConvenientDelegationSpec
+module ConnectionExtensionSpec
   class TestInstanceDelegation
-    include ActiveTableSet::Extensions::ConvenientDelegation
+    include ActiveTableSet::Extensions::ConnectionExtension
   end
 
   class TestClassDelegation
-    extend ActiveTableSet::Extensions::ConvenientDelegation
+    extend ActiveTableSet::Extensions::ConnectionExtension
   end
 end
 
-describe ActiveTableSet::Extensions::ConvenientDelegation do
+describe ActiveTableSet::Extensions::ConnectionExtension do
+  context "log checking" do
+    it "adds the host to the log message" do
+      class TestExtensionLogging
+        prepend ActiveTableSet::Extensions::ConnectionExtension
+
+        def initialize(config)
+          @config = config
+        end
+
+        def config
+          @config
+        end
+
+        def log(sql, name, binds)
+          return name
+        end
+      end
+
+      test_log = TestExtensionLogging.new({})
+      expect(test_log.log('', '')).to match(/host:/)
+    end
+  end
   context "ConvientDelegation" do
 
     it "can delegate using to instances" do
-      inst = ConvenientDelegationSpec::TestInstanceDelegation.new
+      inst = ConnectionExtensionSpec::TestInstanceDelegation.new
 
       @called_block = false
       expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access: :am, partition_key: :pk, timeout: :t).and_yield
@@ -28,7 +50,7 @@ describe ActiveTableSet::Extensions::ConvenientDelegation do
     it "can delegate using to classes" do
       @called_block = false
       expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access: :am, partition_key: :pk, timeout: :t).and_yield
-      ConvenientDelegationSpec::TestClassDelegation.using(table_set: :ts, access: :am, partition_key: :pk, timeout: :t) do
+      ConnectionExtensionSpec::TestClassDelegation.using(table_set: :ts, access: :am, partition_key: :pk, timeout: :t) do
         @called_block = true
       end
 
@@ -39,7 +61,7 @@ describe ActiveTableSet::Extensions::ConvenientDelegation do
       @called_block = false
       expect(ActiveTableSet).to receive(:lock_access).with(:leader).and_yield
 
-      ConvenientDelegationSpec::TestClassDelegation.lock_access(:leader) do
+      ConnectionExtensionSpec::TestClassDelegation.lock_access(:leader) do
         @called_block = true
       end
 
