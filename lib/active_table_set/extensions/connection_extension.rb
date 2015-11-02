@@ -16,7 +16,3 @@ module ActiveTableSet
     end
   end
 end
-
-class AbstractAdapter
-  prepend ActiveTableSet::Extensions::ConnectionExtension
-end
