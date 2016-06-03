@@ -58,8 +58,11 @@ module ActiveRecord
         marshal_load.each do |yaml_file, (klass, fixtures)|
           fixture_hash = {}
           fixtures.each do |fixture_sym, id|
-            fixture_hash[fixture_sym] = Fixture.new({"id" => id}, klass._?.constantize) if klass.nil? || Object.const_defined?(klass)
-          end
+            begin # This smells wrong, but I can't find a cleaner way to do it
+              fixture_hash[fixture_sym] = Fixture.new({"id" => id}, klass._?.constantize)
+            rescue NameError # Class wasn't loadable or loaded yet
+              next
+            end          end
           marshal_hash[yaml_file] = fixture_hash
         end
         marshal_hash
