@@ -2,6 +2,24 @@ require 'shellwords'
 
 module ActiveRecord
   module TestFixturesExtension
+
+    class FixtureProxy
+      attr_accessor :fixture_block
+
+      def initialize(fixture_block)
+        @fixture_block = fixture_block
+        @fixture = nil
+      end
+
+      def fixture
+        @fixture ||= fixture_block.call
+      end
+
+      def [](key)
+        fixture[key]
+      end
+    end
+
     FIXTURE_REALMS = [:default, :sample_data]
 
     @@active_fixture ||= :none
@@ -56,14 +74,13 @@ module ActiveRecord
         marshal_hash = {}
         marshal_load = Marshal.load(File.read("#{fixture_path}default.marshal"))
         marshal_load.each do |yaml_file, (klass, fixtures)|
-          fixture_hash = {}
-          fixtures.each do |fixture_sym, id|
-            begin # This smells wrong, but I can't find a cleaner way to do it
+          marshal_hash[yaml_file] = FixtureProxy.new lambda {
+            fixture_hash = {}
+            fixtures.each do |fixture_sym, id|
               fixture_hash[fixture_sym] = Fixture.new({"id" => id}, klass._?.constantize)
-            rescue NameError # Class wasn't loadable
-              next
-            end          end
-          marshal_hash[yaml_file] = fixture_hash
+            end
+            fixture_hash
+          }
         end
         marshal_hash
       rescue Exception => ex
