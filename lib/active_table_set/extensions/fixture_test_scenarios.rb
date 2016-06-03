@@ -58,7 +58,7 @@ module ActiveRecord
         marshal_load.each do |yaml_file, (klass, fixtures)|
           fixture_hash = {}
           fixtures.each do |fixture_sym, id|
-            fixture_hash[fixture_sym] = Fixture.new({"id" => id}, klass._?.constantize)
+            fixture_hash[fixture_sym] = Fixture.new({"id" => id}, klass._?.constantize) if klass.nil? || Object.const_defined?(klass)
           end
           marshal_hash[yaml_file] = fixture_hash
         end
