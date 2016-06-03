@@ -60,7 +60,7 @@ module ActiveRecord
           fixtures.each do |fixture_sym, id|
             begin # This smells wrong, but I can't find a cleaner way to do it
               fixture_hash[fixture_sym] = Fixture.new({"id" => id}, klass._?.constantize)
-            rescue NameError # Class wasn't loadable or loaded yet
+            rescue NameError # Class wasn't loadable
               next
             end          end
           marshal_hash[yaml_file] = fixture_hash
