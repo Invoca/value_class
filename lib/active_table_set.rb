@@ -43,6 +43,11 @@ module ActiveTableSet
       ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend(ActiveTableSet::Extensions::ConnectionHandlerExtension)
       Rails::Application::Configuration.prepend(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
       ActiveRecord::TestFixtures.prepend(ActiveRecord::TestFixturesExtension)
+      ActiveRecord::ConnectionAdapters::AbstractAdapter.prepend(ActiveTableSet::Extensions::AbstractAdapterOverride)
+      ActiveRecord::ConnectionAdapters::Column.prepend(ConnectionAdaptersColumnOverride)
+      ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter::Column.prepend(AbstractMysqlAdapterOverride::AbstractMysqlAdapterColumnOverride)
+      ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter.prepend(AbstractMysqlAdapterOverride)
+      ActiveRecord::ConnectionAdapters::Mysql2Adapter.prepend(Mysql2AdapterOverride)
 
       if configuration.migration_timeout
         ActiveRecord::Migration.prepend(ActiveTableSet::Extensions::MigrationExtension)
