@@ -44,6 +44,7 @@ module ActiveTableSet
           :boolean                  => { :name => "tinyint", :limit => 1 },
           :varbinary                => { :name => "varbinary", :limit=> 255 } # Invoca patch
       }
+      NATIVE_DATABASE_TYPES.freeze
 
       def quote(value, column = nil)
         if value.kind_of?(String) && column && [:binary, :varbinary].include?(column.type) && column.class.respond_to?(:string_to_binary)
