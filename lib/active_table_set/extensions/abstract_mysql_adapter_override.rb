@@ -1,20 +1,8 @@
 module ActiveTableSet
   module Extensions
     module AbstractMysqlAdapterOverride
-      def quote(value, column = nil)
-        if value.kind_of?(String) && column && [:binary, :varbinary].include?(column.type) && column.class.respond_to?(:string_to_binary)
-          s = column.class.string_to_binary(value).unpack("H*")[0]
-          "x'#{s}'"
-        elsif value.kind_of?(BigDecimal)
-          value.to_s("F")
-        else
-          super
-        end
-      end
-
       def execute(sql, name = nil)
         if name == :skip_logging
-          # TODO: reference the module for `non_nil_connection`?
           non_nil_connection.query(sql)
         else
           log(sql, name) { non_nil_connection.query(sql) }
