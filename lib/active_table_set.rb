@@ -28,7 +28,6 @@ require 'active_table_set/extensions/fixture_test_scenarios'
 require 'active_table_set/extensions/migration_extension'
 require 'active_table_set/extensions/abstract_adapter_override'
 require 'active_table_set/extensions/abstract_mysql_adapter_override'
-require 'active_table_set/extensions/connection_adapters_column_override'
 require 'active_table_set/extensions/mysql2_adapter_override'
 
 require 'active_table_set/railties/enable_active_table_set'
