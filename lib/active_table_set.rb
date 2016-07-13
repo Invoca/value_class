@@ -54,7 +54,6 @@ module ActiveTableSet
       ActiveRecord::TestFixtures.prepend(ActiveRecord::TestFixturesExtension)
       ActiveRecord::ConnectionAdapters::AbstractAdapter.prepend(ActiveTableSet::Extensions::AbstractAdapterOverride)
       ActiveRecord::ConnectionAdapters::Column.prepend(ActiveTableSet::Extensions::ConnectionAdaptersColumnOverride)
-      ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter::Column.prepend(ActiveTableSet::Extensions::AbstractMysqlAdapterColumnOverride)
       ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter.prepend(ActiveTableSet::Extensions::AbstractMysqlAdapterOverride)
       ActiveRecord::ConnectionAdapters::Mysql2Adapter.prepend(ActiveTableSet::Extensions::Mysql2AdapterOverride)
 

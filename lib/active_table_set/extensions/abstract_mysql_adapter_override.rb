@@ -1,51 +1,6 @@
 module ActiveTableSet
   module Extensions
-    module AbstractMysqlAdapterColumnOverride
-      def extract_limit(sql_type)
-        case sql_type
-          when /blob|text/i
-            case sql_type
-              when /tiny/i
-                255
-              when /medium/i
-                16777215
-              when /long/i
-                4294967295
-              else
-                super # we could return 65535 here, but we leave it undecorated by default
-            end
-          when /^bigint/i;    8
-          when /^int/i;       4
-          when /^mediumint/i; 3
-          when /^smallint/i;  2
-          when /^tinyint/i;   1
-          when /^enum\((.+)\)/i
-            $1.split(',').map{|enum| enum.strip.length - 2}.max
-          else
-            super
-        end
-      end
-    end
-
     module AbstractMysqlAdapterOverride
-      NATIVE_DATABASE_TYPES = {
-          :primary_key              => "int auto_increment PRIMARY KEY",
-          :primary_key_no_increment => "int(11) PRIMARY KEY", # Invoca patch
-          :string                   => { :name => "varchar", :limit => 255 },
-          :text                     => { :name => "text" },
-          :integer                  => { :name => "int", :limit => 4 },
-          :float                    => { :name => "float" },
-          :decimal                  => { :name => "decimal" },
-          :datetime                 => { :name => "datetime" },
-          :timestamp                => { :name => "datetime" },
-          :time                     => { :name => "time" },
-          :date                     => { :name => "date" },
-          :binary                   => { :name => "blob" },
-          :boolean                  => { :name => "tinyint", :limit => 1 },
-          :varbinary                => { :name => "varbinary", :limit=> 255 } # Invoca patch
-      }
-      NATIVE_DATABASE_TYPES.freeze
-
       def quote(value, column = nil)
         if value.kind_of?(String) && column && [:binary, :varbinary].include?(column.type) && column.class.respond_to?(:string_to_binary)
           s = column.class.string_to_binary(value).unpack("H*")[0]
