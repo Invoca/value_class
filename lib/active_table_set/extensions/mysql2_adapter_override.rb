@@ -8,16 +8,14 @@ module ActiveTableSet
       end
 
       def insert_sql(sql, name = nil, pk = nil, id_value = nil, sequence_name = nil)
+        id_value ||= non_nil_connection.last_id
         super
-        id_value || non_nil_connection.last_id
       end
-      alias :create :insert_sql
 
       def exec_delete(sql, name, binds)
         execute to_sql(sql, binds), name
         non_nil_connection.affected_rows
       end
-      alias :exec_update :exec_delete
 
       def last_inserted_id(result)
         non_nil_connection.last_id

@@ -1,5 +1,10 @@
 require 'rails'
 require 'active_record'
+require 'active_record/connection_adapters/abstract_adapter'
+require 'active_record/connection_adapters/column'
+require 'active_record/connection_adapters/abstract_mysql_adapter'
+require 'active_record/connection_adapters/mysql2_adapter'
+
 require 'value_class'
 
 require 'active_table_set/pool_key'

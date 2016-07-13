@@ -2,21 +2,8 @@ module ActiveTableSet
   module Extensions
     module AbstractAdapterOverride
       def initialize(connection, logger = nil, pool = nil) #:nodoc:
-        super()
-
-        @active              = nil
-        @connection          = connection
-        @in_use              = false
-        @instrumenter        = ActiveSupport::Notifications.instrumenter
-        @last_use            = false
-        @logger              = logger
-        @open_transactions   = 0
-        @pool                = pool
-        @query_cache         = Hash.new { |h,sql| h[sql] = {} }
-        @query_cache_enabled = false
-        @schema_cache        = SchemaCache.new self
-        @visitor             = nil
-        @rows_read           = []
+        super
+        @rows_read = []
       end
 
       protected

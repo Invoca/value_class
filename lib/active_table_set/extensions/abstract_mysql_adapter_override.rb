@@ -72,8 +72,8 @@ module ActiveTableSet
       end
 
       def update_sql(sql, name = nil) #:nodoc:
+        @connection = non_nil_connection
         super
-        non_nil_connection.affected_rows
       end
 
       def trigger_dump
