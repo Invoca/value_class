@@ -296,7 +296,7 @@ describe ActiveTableSet::ConnectionManager do
         # First connection fails, log an exception and revert to previous setting
         ActiveRecord::Base.set_next_client_exception(ArgumentError, "badaboom")
         connection_manager.using(access: :balanced) do
-          expect(TestLog.logged_lines.first).to match(/badaboom/)
+          expect(TestLog.logged_lines.second).to match(/badaboom/)
           expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
         end
 
