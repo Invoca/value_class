@@ -83,8 +83,10 @@ describe ActiveTableSet do
 
     expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
     expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
-
     expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
+    expect(ActiveRecord::ConnectionAdapters::AbstractAdapter).to receive(:prepend).with(ActiveTableSet::Extensions::AbstractAdapterOverride)
+    expect(ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter).to receive(:prepend).with(ActiveTableSet::Extensions::AbstractMysqlAdapterOverride)
+    expect(ActiveRecord::ConnectionAdapters::Mysql2Adapter).to receive(:prepend).with(ActiveTableSet::Extensions::Mysql2AdapterOverride)
 
     expect(ActiveRecord::Base.connection_handler).to receive(:default_spec)
 
