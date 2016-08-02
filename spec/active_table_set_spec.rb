@@ -81,7 +81,12 @@ describe ActiveTableSet do
       end
     end
 
-    expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+    if Rails::VERSION::MAJOR == 4
+      expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::Rails4::ConnectionHandlerExtension)
+    else
+      expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+    end
+
     expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
     expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
     expect(ActiveRecord::ConnectionAdapters::AbstractAdapter).to receive(:prepend).with(ActiveTableSet::Extensions::AbstractAdapterOverride)
@@ -127,7 +132,12 @@ describe ActiveTableSet do
       end
     end
 
-    expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+    if Rails::VERSION::MAJOR == 4
+      expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::Rails4::ConnectionHandlerExtension)
+    else
+      expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+    end
+
     expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
 
     expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
