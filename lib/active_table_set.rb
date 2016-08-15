@@ -1,5 +1,9 @@
 require 'rails'
 require 'active_record'
+require 'active_record/connection_adapters/abstract_adapter'
+require 'active_record/connection_adapters/abstract_mysql_adapter'
+require 'active_record/connection_adapters/mysql2_adapter'
+
 require 'value_class'
 
 require 'active_table_set/pool_key'
@@ -21,6 +25,9 @@ require 'active_table_set/extensions/mysql_connection_monitor'
 require 'active_table_set/extensions/connection_extension'
 require 'active_table_set/extensions/fixture_test_scenarios'
 require 'active_table_set/extensions/migration_extension'
+require 'active_table_set/extensions/abstract_adapter_override'
+require 'active_table_set/extensions/abstract_mysql_adapter_override'
+require 'active_table_set/extensions/mysql2_adapter_override'
 
 require 'active_table_set/railties/enable_active_table_set'
 
@@ -43,6 +50,9 @@ module ActiveTableSet
       ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend(ActiveTableSet::Extensions::ConnectionHandlerExtension)
       Rails::Application::Configuration.prepend(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
       ActiveRecord::TestFixtures.prepend(ActiveRecord::TestFixturesExtension)
+      ActiveRecord::ConnectionAdapters::AbstractAdapter.prepend(ActiveTableSet::Extensions::AbstractAdapterOverride)
+      ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter.prepend(ActiveTableSet::Extensions::AbstractMysqlAdapterOverride)
+      ActiveRecord::ConnectionAdapters::Mysql2Adapter.prepend(ActiveTableSet::Extensions::Mysql2AdapterOverride)
 
       if configuration.migration_timeout
         ActiveRecord::Migration.prepend(ActiveTableSet::Extensions::MigrationExtension)
