@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency 'minitest',         '~> 4.7.5'
-  spec.add_dependency 'rails',            '~> 4.0.13'
+  spec.add_dependency 'rails',            '~> 4.0'
   spec.add_dependency 'attr_comparable'
   spec.add_dependency 'process_flags'
   spec.add_dependency 'exception_handling'

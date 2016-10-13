@@ -1,23 +1,23 @@
 GIT
   remote: git@github.com:Invoca/exception_handling
-  revision: 4930557c7e5cacfa852c0031bc4c8f4e11ad2ecf
-  ref: 4930557c7e5cacfa852c0031bc4c8f4e11ad2ecf
+  revision: 25ba1fee8e02ba78fc3d1cfc09a217556d3e32a9
+  ref: 25ba1fee8e02ba78fc3d1cfc09a217556d3e32a9
   specs:
-    exception_handling (1.2.2)
-      actionmailer (~> 4.0.13)
-      actionpack (~> 4.0.13)
-      activesupport (~> 4.0.13)
+    exception_handling (1.2.5)
+      actionmailer (~> 4.0)
+      actionpack (~> 4.0)
+      activesupport (~> 4.0)
       eventmachine (>= 0.12.10)
       hobo_support
       invoca-utils (~> 0.0.2)
 
 GIT
   remote: git@github.com:Invoca/process_flags
-  revision: 70f3a52295c5b12f53300f6c2432c3fd4e44ecc6
-  ref: 70f3a52295c5b12f53300f6c2432c3fd4e44ecc6
+  revision: 2ac72f8fda9570667e5d79dec7da7197c5ccb027
+  ref: 2ac72f8fda9570667e5d79dec7da7197c5ccb027
   specs:
     process_flags (0.1.0)
-      rails (~> 4.0.13)
+      rails (~> 4.0)
 
 PATH
   remote: .
@@ -27,7 +27,7 @@ PATH
       exception_handling
       minitest (~> 4.7.5)
       process_flags
-      rails (~> 4.0.13)
+      rails (~> 4.0)
 
 GEM
   remote: https://rubygems.org/
@@ -60,7 +60,7 @@ GEM
     attr_comparable (0.0.2)
       minitest
     builder (3.1.4)
-    coderay (1.1.0)
+    coderay (1.1.1)
     concurrent-ruby (1.0.2)
     diff-lcs (1.2.5)
     erubis (2.7.0)
@@ -77,8 +77,8 @@ GEM
     mime-types-data (3.2016.0521)
     minitest (4.7.5)
     multi_json (1.12.1)
-    mysql2 (0.3.18)
-    pry (0.10.1)
+    mysql2 (0.4.4)
+    pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
@@ -98,20 +98,20 @@ GEM
       activesupport (= 4.0.13)
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
-    rake (10.4.2)
-    rspec (3.3.0)
-      rspec-core (~> 3.3.0)
-      rspec-expectations (~> 3.3.0)
-      rspec-mocks (~> 3.3.0)
-    rspec-core (3.3.1)
-      rspec-support (~> 3.3.0)
-    rspec-expectations (3.3.0)
+    rake (10.5.0)
+    rspec (3.5.0)
+      rspec-core (~> 3.5.0)
+      rspec-expectations (~> 3.5.0)
+      rspec-mocks (~> 3.5.0)
+    rspec-core (3.5.4)
+      rspec-support (~> 3.5.0)
+    rspec-expectations (3.5.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.3.0)
-    rspec-mocks (3.3.1)
+      rspec-support (~> 3.5.0)
+    rspec-mocks (3.5.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.3.0)
-    rspec-support (3.3.0)
+      rspec-support (~> 3.5.0)
+    rspec-support (3.5.0)
     slop (3.6.0)
     sprockets (3.7.0)
       concurrent-ruby (~> 1.0)
@@ -136,3 +136,6 @@ DEPENDENCIES
   pry
   rake (~> 10.0)
   rspec (~> 3.2)
+
+BUNDLED WITH
+   1.12.5
