@@ -25,7 +25,7 @@ PATH
     active_table_set (0.1.0)
       attr_comparable
       exception_handling
-      minitest (~> 5.1)
+      minitest (>= 4.7.5)
       process_flags
       rails (~> 4.0)
 
