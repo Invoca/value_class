@@ -42,7 +42,7 @@ module ActiveTableSet
         end
 
         def version
-          @version ||= non_nil_connection.info[:version].scan(/^(\d+)\.(\d+)\.(\d+)/).flatten.map { |v| v.to_i }
+          @version ||= non_nil_connection.info[:version].match(/^\d+\.\d+\.\d+/)[0]
         end
     end
   end
