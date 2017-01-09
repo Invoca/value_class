@@ -139,7 +139,7 @@ module ActiveTableSet
     end
 
     def establish_connection_using_spec(connection_specification)
-      if blk = @config.before_enable(connection_specification)
+      if blk = @config.before_enable(request)
         blk.call
       end
       @connection_handler.current_spec = connection_specification
