@@ -437,7 +437,7 @@ describe ActiveTableSet::Configuration::Config do
       expected_before_enable_lambda = -> { "lambda" }
 
       request = ActiveTableSet::Configuration::Request.new(
-        table_set: :shard,
+        table_set: :sharded,
         access: :leader,
         partition_key: "alpha",
         test_scenario: nil,
@@ -446,10 +446,10 @@ describe ActiveTableSet::Configuration::Config do
       ats_config = ActiveTableSet::Configuration::Config.config do |conf|
         conf.enforce_access_policy true
         conf.environment           'test'
-        conf.default  =  { table_set: :shard }
+        conf.default  =  { table_set: :sharded }
 
         conf.table_set do |ts|
-          ts.name = :shard
+          ts.name = :sharded
 
           ts.partition do |part|
             part.leader do |leader|
