@@ -142,12 +142,17 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
       end
 
-      it "should call the before_enable lambda if it is defined on the table set" do
+      it "should not call the before_enable lambda if it is not defined on the table set" do
         connection_manager
-        expect(Proc).to receive(:new)
+        expect(Proc).not_to receive(:new)
 
         connection_manager.using(table_set: :common, partition_key: "alpha") do
         end
+      end
+
+      it "should call the before_enable lambda if it is defined on the table set" do
+        connection_manager
+        expect(Proc).to receive(:new)
 
         connection_manager.using(table_set: :sharded, partition_key: "alpha") do
         end
