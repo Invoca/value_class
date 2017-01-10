@@ -10,6 +10,7 @@ describe ActiveTableSet::Configuration::TableSet do
     end
 
     it "support a dsl for defining the table set" do
+      expected_before_enable_lambda = -> { "lambda" }
       table_set = ActiveTableSet::Configuration::TableSet.config do |ts|
         ts.access_policy do |ap|
           ap.disallow_read = "cf_%"
@@ -19,11 +20,14 @@ describe ActiveTableSet::Configuration::TableSet do
           partition.leader = leader
           partition.followers = [follower1, follower2]
         end
+
+        ts.before_enable = expected_before_enable_lambda
       end
 
       expect(table_set.access_policy.disallow_read).to eq("cf_%")
       expect(table_set.partitions.length).to eq(1)
       expect(table_set.partitions.first.leader.host).to eq("127.0.0.8")
+      expect(table_set.before_enable).to eq(expected_before_enable_lambda)
     end
   end
 

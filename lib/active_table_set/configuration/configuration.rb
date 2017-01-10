@@ -51,6 +51,11 @@ module ActiveTableSet
         end
       end
 
+      def before_enable(request)
+        ts = @table_sets_by_name[request.table_set] or raise ArgumentError, "Unknown table set #{request.table_set}, available_table_sets: #{@table_sets_by_name.keys.sort.join(', ')}"
+        ts.before_enable
+      end
+
       def database_configuration
         @database_configuration ||= _database_configuration
       end

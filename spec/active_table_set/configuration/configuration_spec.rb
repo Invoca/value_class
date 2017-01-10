@@ -37,6 +37,8 @@ describe ActiveTableSet::Configuration::Config do
             follower.database  "replication2"
           end
         end
+
+        ts.before_enable = -> { "lambda" }
       end
     end
 
@@ -67,6 +69,8 @@ describe ActiveTableSet::Configuration::Config do
               leader.database  "main"
             end
           end
+
+          ts.before_enable = -> { "lambda" }
         end
 
         conf.test_scenario do |ts|
@@ -110,6 +114,8 @@ describe ActiveTableSet::Configuration::Config do
                 leader.database  "main"
               end
             end
+
+            ts.before_enable = -> { "lambda" }
           end
 
           conf.test_scenario do |ts|
@@ -247,6 +253,8 @@ describe ActiveTableSet::Configuration::Config do
               leader.database             "main"
             end
           end
+
+          ts.before_enable = -> { "lambda" }
         end
 
         conf.table_set do |ts|
@@ -260,6 +268,8 @@ describe ActiveTableSet::Configuration::Config do
               leader.database             "main"
             end
           end
+
+          ts.before_enable = -> { "lambda" }
         end
       end
       expect(ats_config.default.table_set).to eq(:uncommon)
@@ -343,7 +353,10 @@ describe ActiveTableSet::Configuration::Config do
               leader.database  "main"
             end
           end
+
+          ts.before_enable = -> { "lambda" }
         end
+
         conf.table_set do |ts|
           ts.name = :uncommon
 
@@ -355,6 +368,8 @@ describe ActiveTableSet::Configuration::Config do
               leader.database             "main"
             end
           end
+
+          ts.before_enable = -> { "lambda" }
         end
       end
 
@@ -383,6 +398,8 @@ describe ActiveTableSet::Configuration::Config do
               leader.database  "main"
             end
           end
+
+          ts.before_enable = -> { "lambda" }
         end
       end
 
@@ -406,10 +423,48 @@ describe ActiveTableSet::Configuration::Config do
               leader.database  "main"
             end
           end
+
+          ts.before_enable = -> { "lambda" }
         end
       end
 
       expect(ats_config.migration_timeout).to eq(nil)
+    end
+  end
+
+  context "#before_enable" do
+    it "should return the request's table set's before_enable attribute" do
+      expected_before_enable_lambda = -> { "lambda" }
+
+      request = ActiveTableSet::Configuration::Request.new(
+        table_set: :sharded,
+        access: :leader,
+        partition_key: "alpha",
+        test_scenario: nil,
+        timeout: 100 )
+
+      ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+        conf.enforce_access_policy true
+        conf.environment           'test'
+        conf.default  =  { table_set: :sharded }
+
+        conf.table_set do |ts|
+          ts.name = :sharded
+
+          ts.partition do |part|
+            part.leader do |leader|
+              leader.host      "127.0.0.8"
+              leader.read_write_username  "tester"
+              leader.read_write_password  "verysecure"
+              leader.database  "main"
+            end
+          end
+
+          ts.before_enable = expected_before_enable_lambda
+        end
+      end
+
+      expect(ats_config.before_enable(request)).to eq(expected_before_enable_lambda)
     end
   end
 end
