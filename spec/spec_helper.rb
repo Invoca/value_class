@@ -170,6 +170,8 @@ module SpecHelper
             leader.database  "main"
           end
         end
+
+        ts.before_enable = -> { Proc.new { "block" } }
       end
 
       conf.test_scenario do |db|

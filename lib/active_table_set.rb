@@ -20,10 +20,13 @@ require 'active_table_set/configuration/table_set'
 require 'active_table_set/configuration/configuration'
 
 require 'active_table_set/extensions/connection_handler_extension'
+require 'active_table_set/extensions/rails4/connection_handler_extension'
 require 'active_table_set/extensions/database_configuration_override'
 require 'active_table_set/extensions/mysql_connection_monitor'
 require 'active_table_set/extensions/connection_extension'
+require 'active_table_set/extensions/rails4/connection_extension'
 require 'active_table_set/extensions/fixture_test_scenarios'
+require 'active_table_set/extensions/rails4/fixture_test_scenarios_four'
 require 'active_table_set/extensions/migration_extension'
 require 'active_table_set/extensions/abstract_adapter_override'
 require 'active_table_set/extensions/abstract_mysql_adapter_override'
@@ -47,9 +50,19 @@ module ActiveTableSet
       configuration
 
       # Install extensions
-      ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend(ActiveTableSet::Extensions::ConnectionHandlerExtension)
-      Rails::Application::Configuration.prepend(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
-      ActiveRecord::TestFixtures.prepend(ActiveRecord::TestFixturesExtension)
+      case Rails::VERSION::MAJOR
+      when 3
+        ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+        Rails::Application::Configuration.prepend(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
+        ActiveRecord::TestFixtures.prepend(ActiveRecord::TestFixturesExtension)
+      when 4
+        ActiveRecord::ConnectionAdapters::ConnectionHandler.prepend(ActiveTableSet::Extensions::Rails4::ConnectionHandlerExtension)
+        Rails::Application::Configuration.prepend(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
+        ActiveRecord::TestFixtures.prepend(ActiveRecord::TestFixturesExtensionFour)
+      else
+        raise "Unsupported rails version #{Rails::VERSION::MAJOR}"
+      end
+
       ActiveRecord::ConnectionAdapters::AbstractAdapter.prepend(ActiveTableSet::Extensions::AbstractAdapterOverride)
       ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter.prepend(ActiveTableSet::Extensions::AbstractMysqlAdapterOverride)
       ActiveRecord::ConnectionAdapters::Mysql2Adapter.prepend(ActiveTableSet::Extensions::Mysql2AdapterOverride)

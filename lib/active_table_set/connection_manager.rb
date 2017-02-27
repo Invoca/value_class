@@ -121,25 +121,29 @@ module ActiveTableSet
     def establish_connection
       if failover_available?
         if connection_quarantined?(current_specification)
-          @connection_handler.current_spec = failover_specification
-          test_connection
+          establish_connection_using_spec(failover_specification)
         else
           begin
-            @connection_handler.current_spec = current_specification
-            test_connection
+            establish_connection_using_spec(current_specification)
           rescue => ex
             ExceptionHandling.log_error(ex, "Failure checking out alternate database connection")
 
             quarantine_connection(current_specification)
 
-            @connection_handler.current_spec = failover_specification
-            test_connection
+            establish_connection_using_spec(failover_specification)
           end
         end
       else
-        @connection_handler.current_spec = current_specification
-        test_connection
+        establish_connection_using_spec(current_specification)
       end
+    end
+
+    def establish_connection_using_spec(connection_specification)
+      if blk = @config.before_enable(request)
+        blk.call
+      end
+      @connection_handler.current_spec = connection_specification
+      test_connection
     end
 
     def current_specification

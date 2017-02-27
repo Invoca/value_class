@@ -4,6 +4,7 @@ module ActiveTableSet
       value_attr      :name
       value_attr      :access_policy,  class_name: 'ActiveTableSet::Configuration::AccessPolicy', default: {}
       value_list_attr :partitions,     class_name: 'ActiveTableSet::Configuration::Partition', insert_method: :partition
+      value_attr      :before_enable
 
       def initialize(options = {})
         super

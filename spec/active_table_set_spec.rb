@@ -81,9 +81,15 @@ describe ActiveTableSet do
       end
     end
 
-    expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+    if Rails::VERSION::MAJOR == 4
+      expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::Rails4::ConnectionHandlerExtension)
+      expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtensionFour)
+    else
+      expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+      expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
+    end
+
     expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
-    expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
     expect(ActiveRecord::ConnectionAdapters::AbstractAdapter).to receive(:prepend).with(ActiveTableSet::Extensions::AbstractAdapterOverride)
     expect(ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter).to receive(:prepend).with(ActiveTableSet::Extensions::AbstractMysqlAdapterOverride)
     expect(ActiveRecord::ConnectionAdapters::Mysql2Adapter).to receive(:prepend).with(ActiveTableSet::Extensions::Mysql2AdapterOverride)
@@ -127,10 +133,15 @@ describe ActiveTableSet do
       end
     end
 
-    expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
-    expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
+    if Rails::VERSION::MAJOR == 4
+      expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::Rails4::ConnectionHandlerExtension)
+      expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtensionFour)
+    else
+      expect(ActiveRecord::ConnectionAdapters::ConnectionHandler).to receive(:prepend).with(ActiveTableSet::Extensions::ConnectionHandlerExtension)
+      expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
+    end
 
-    expect(ActiveRecord::TestFixtures).to receive(:prepend).with(ActiveRecord::TestFixturesExtension)
+    expect(Rails::Application::Configuration).to receive(:prepend).with(ActiveTableSet::Extensions::DatabaseConfigurationOverride)
 
     expect(ActiveRecord::Base.connection_handler).to receive(:default_spec)
 

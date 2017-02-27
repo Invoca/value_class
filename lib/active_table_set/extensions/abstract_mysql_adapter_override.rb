@@ -21,6 +21,7 @@ module ActiveTableSet
       end
 
       def trigger_dump
+        # TODO:Rails4 ORabani - remove the method since we won't be using it in rails 4
         triggers = ApplicationModel.connection.select_all("show triggers").map do |row|
           ApplicationModel.connection.select_one("show create trigger #{row['Trigger']}")['SQL Original Statement'].sub(/ DEFINER.*TRIGGER/, ' TRIGGER') +
               "\n//"
