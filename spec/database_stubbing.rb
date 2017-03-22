@@ -140,9 +140,9 @@ class StubConnectionHandler
 
   def retrieve_connection(klass) #:nodoc:
     pool = retrieve_connection_pool(klass)
-    raise ConnectionNotEstablished, "No connection pool for #{klass}" unless pool
+    raise  ActiveRecord::ConnectionNotEstablished, "No connection pool for #{klass}" unless pool
     conn = pool.connection
-    raise ConnectionNotEstablished, "No connection for #{klass} in connection pool" unless conn
+    raise  ActiveRecord::ConnectionNotEstablished, "No connection for #{klass} in connection pool" unless conn
     conn
   end
 
@@ -157,5 +157,11 @@ class StubConnectionHandler
 
   def remove_connection(klass)
     remove_calls << klass.name
+  end
+
+  # in ActiveRecord, this is part of a larger hash based on Process id. since we are all in the same process
+  # during testing, that's not necessary to full stub, so, it's just a local hash.
+  def owner_to_pool
+    @class_to_pool
   end
 end

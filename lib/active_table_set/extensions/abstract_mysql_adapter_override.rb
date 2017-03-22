@@ -19,16 +19,6 @@ module ActiveTableSet
         @connection = non_nil_connection
         super
       end
-
-      def trigger_dump
-        # TODO:Rails4 ORabani - remove the method since we won't be using it in rails 4
-        triggers = ApplicationModel.connection.select_all("show triggers").map do |row|
-          ApplicationModel.connection.select_one("show create trigger #{row['Trigger']}")['SQL Original Statement'].sub(/ DEFINER.*TRIGGER/, ' TRIGGER') +
-              "\n//"
-        end
-
-        "DELIMITER //\n#{triggers.join("\n")}\nDELIMITER ;\n"
-      end
     end
   end
 end

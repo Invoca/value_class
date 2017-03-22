@@ -9,10 +9,6 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
       @connection.extend(ActiveTableSet::Extensions::AbstractMysqlAdapterOverride)
     end
 
-    it "responds to trigger_dump" do
-      expect(@connection).to respond_to(:trigger_dump)
-    end
-
     # all other methods for Mysql2AdapterOverride are implemented for 'non_nil_connection' and this is tested within abstract_adapter_override_spec.rb
   end
 end
