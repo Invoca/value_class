@@ -3,7 +3,7 @@ module ActiveTableSet
   module Extensions
     module ConnectionExtension
       def log(sql, name='', builds=[])
-        super(sql, "#{name} host:#{config['host']}", builds)
+        super(sql, "#{name} host:#{@config[:host]}", builds)
       end
 
       def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)

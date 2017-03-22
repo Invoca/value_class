@@ -6,6 +6,14 @@ module ActiveTableSet
         klass.thread_local_instance_attr :thread_connection_spec
       end
 
+      # Overwrites connection handler method - retrieves
+      # the current
+      def establish_connection(owner, spec)
+        @class_to_pool.clear
+        raise RuntimeError, "Anonymous class is not allowed." unless owner.name
+        owner_to_pool[owner.name] = pool_for_spec(spec)
+      end
+
       # Overwrites the connection handler method.
       # Prefers the pool for the current spec, if any.
       def retrieve_connection_pool(klass)
@@ -35,13 +43,14 @@ module ActiveTableSet
         connection
       end
 
-      # Overwrites the connection handler method so that the pool specification is normalized
-      def establish_connection(name, spec)
-        @class_to_pool[name] = pool_for_spec(spec)
+      def normalize_config(config)
+        normalized_config = config.dup.symbolize_keys # These are sometimes strings and sometimes symbols.
+        normalized_config.delete(:flags)              # The mysql2 adapter mutates the config to add this flag, which causes mayhem.
+        normalized_config
       end
 
       def default_spec(spec)
-        @class_to_pool["ActiveRecord::Base"] = pool_for_spec(spec)
+        establish_connection(ActiveRecord::Base, spec)
       end
 
       def current_spec= (spec)
@@ -49,10 +58,13 @@ module ActiveTableSet
         self.thread_connection_spec = spec
       end
 
+
+      def connection_pools
+        @connection_pools ||= {}
+      end
+
       def pool_for_spec(spec)
-        normalized_config = spec.config.dup.stringify_keys # These are sometimes strings and sometimes symbols.
-        normalized_config.delete("flags")                  # The mysql2 adapter mutates the config to add this flag, which causes mayhem.
-        @connection_pools[normalized_config] ||= ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup)
+        connection_pools[normalize_config(spec.config)] ||= ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup)
       end
     end
   end

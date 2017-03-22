@@ -193,7 +193,7 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
 
       default_spec_2 = spec_class.new(database_config, 'some_method')
 
-      connection_handler.establish_connection("ActiveRecord::Base", default_spec_2)
+      connection_handler.establish_connection(ActiveRecord::Base, default_spec_2)
       expect(connection_handler.connection_pools.count).to eq(1)
     end
 

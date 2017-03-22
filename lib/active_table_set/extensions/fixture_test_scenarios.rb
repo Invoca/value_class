@@ -44,7 +44,7 @@ module ActiveRecord
       if !@@already_loaded_fixtures[self.class].nil?
         @loaded_fixtures = @@already_loaded_fixtures[self.class]
       else
-        ActiveRecord::Fixtures.reset_cache
+        ActiveRecord::FixtureSet.reset_cache
         @loaded_fixtures ||= (marshal_hash || create_fixtures_from_yaml)
         @@already_loaded_fixtures[self.class] = @loaded_fixtures
       end
@@ -52,9 +52,7 @@ module ActiveRecord
       if run_in_transaction?
         @fixture_connections = ats_fixture_connections
         @fixture_connections.each do |connection|
-          connection.increment_open_transactions
-          connection.transaction_joinable = false
-          connection.begin_db_transaction
+          connection.begin_transaction({:joinable => false})
         end
       else
         @@already_loaded_fixtures[self.class] = {}
