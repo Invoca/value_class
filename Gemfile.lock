@@ -1,4 +1,11 @@
 GIT
+  remote: git@github.com:Invoca/attr_comparable
+  revision: 667ca93440f167347aa5c3616e0d3db96e5f998f
+  branch: 1707/m/TECH-1476-Upgrade_Ruby_2_4
+  specs:
+    attr_comparable (0.0.2)
+
+GIT
   remote: git@github.com:Invoca/exception_handling
   revision: 25ba1fee8e02ba78fc3d1cfc09a217556d3e32a9
   ref: 25ba1fee8e02ba78fc3d1cfc09a217556d3e32a9
@@ -68,8 +75,6 @@ GEM
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
     arel (6.0.3)
-    attr_comparable (0.0.2)
-      minitest
     builder (3.2.2)
     coderay (1.1.1)
     concurrent-ruby (1.0.2)
@@ -159,6 +164,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_table_set!
+  attr_comparable!
   bundler (~> 1.8)
   exception_handling (~> 1.2.2)!
   mysql2 (= 0.4.5)
