@@ -1,6 +1,6 @@
 GIT
   remote: git@github.com:Invoca/attr_comparable
-  revision: 667ca93440f167347aa5c3616e0d3db96e5f998f
+  revision: eb04ae1d54c86c4b3339ac14cbd05dec1e59b021
   branch: 1707/m/TECH-1476-Upgrade_Ruby_2_4
   specs:
     attr_comparable (0.0.2)
