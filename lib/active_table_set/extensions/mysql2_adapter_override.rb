@@ -35,7 +35,7 @@ module ActiveTableSet
 
           # increase timeout so mysql server doesn't disconnect us
           wait_timeout = @config[:wait_timeout]
-          wait_timeout = 2147483 unless wait_timeout.is_a?(Fixnum)
+          wait_timeout = 2147483 unless wait_timeout.is_a?(Integer)
           variable_assignments << "@@wait_timeout = #{wait_timeout}"
 
           execute("SET #{variable_assignments.join(', ')}", :skip_logging)
