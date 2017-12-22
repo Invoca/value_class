@@ -80,7 +80,7 @@ module ActiveTableSet
       def display_table_set(table_set)
         partitions_data = table_set.partitions.each_with_index.map do |partition, index|
           hosts = ["(#{partition.leader.host})"] + partition.followers.map(&:host)
-          "      [#{index}]: #{hosts.join(', ')}"
+          "        [#{index}]: #{hosts.join(', ')}"
         end.join("\n")
 
         ["    #{table_set.name}:",

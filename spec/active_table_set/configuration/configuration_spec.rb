@@ -1,5 +1,21 @@
 require 'spec_helper'
 
+def strip_escaping(string)
+  string.gsub(/#{Regexp.escape("\e[")}\d+m/,'')
+end
+
+def simplify_formatting(string)
+  string.split("\n").map(&:squish).join("\n")
+end
+
+def assert_equal_ignoring_whitespace(expected, value)
+  fixed_expected = simplify_formatting(expected)
+  fixed_value = simplify_formatting(strip_escaping(value))
+  if fixed_expected != fixed_value
+    fail "No match even after ignoring whitespace\nExpected:\n#{expected}\nReceived:\n#{value}"
+  end
+end
+
 describe ActiveTableSet::Configuration::Config do
   it "can be constructed using a block" do
     ats_config = ActiveTableSet::Configuration::Config.config do |conf|
@@ -466,5 +482,69 @@ describe ActiveTableSet::Configuration::Config do
 
       expect(ats_config.before_enable(request)).to eq(expected_before_enable_lambda)
     end
+  end
+
+  it "can display the current configuration" do
+    ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default  =  { table_set: :common }
+
+
+      conf.class_table_set class_name: "advertiser", table_set: :uncommon
+      conf.class_table_set do |t|
+        t.class_name "affiliate"
+        t.table_set :uncommon
+      end
+
+      conf.table_set do |ts|
+        ts.name = :common
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host      "127.0.0.8"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.database  "main"
+          end
+        end
+
+        ts.before_enable = -> { "lambda" }
+      end
+
+      conf.table_set do |ts|
+        ts.name = :uncommon
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host                 "127.0.0.8"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.database             "main"
+          end
+        end
+
+        ts.before_enable = -> { "lambda" }
+      end
+    end
+
+    assert_equal_ignoring_whitespace <<-EOF, ats_config.display
+      Current ActiveTableSet Configuration:
+        environment:         test
+        read_write_username: 
+        read_only_username:  
+        default table set:   common
+        default access:      leader
+        default timeout:     110
+        table sets:
+          common:
+            database: 
+            partitions: 
+              [0]: (127.0.0.8)
+          uncommon:
+            database: 
+            partitions: 
+              [0]: (127.0.0.8)
+    EOF
   end
 end
