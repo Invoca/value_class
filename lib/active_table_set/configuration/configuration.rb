@@ -60,7 +60,33 @@ module ActiveTableSet
         @database_configuration ||= _database_configuration
       end
 
+      def display
+        ["Current ActiveTableSet Configuration:",
+         "  environment:         #{environment}",
+         "  read_write_username: #{read_write_username}",
+         "  read_only_username:  #{read_only_username}",
+         "  default table set:   #{default.table_set}",
+         "  default access:      #{default.access}",
+         "  default timeout:     #{default.timeout}",
+         display_table_sets].join("\n")
+      end
+
       private
+
+      def display_table_sets
+        (["  table sets:"] + table_sets.map { |table_set| display_table_set(table_set) }).join("\n")
+      end
+
+      def display_table_set(table_set)
+        partitions_data = table_set.partitions.each_with_index.map do |partition, index|
+          hosts = ["(#{partition.leader.host})"] + partition.followers.map(&:host)
+          "        [#{index}]: #{hosts.join(', ')}"
+        end.join("\n")
+
+        ["    #{table_set.name}:",
+         "      database: #{table_set.database}",
+         "      partitions: ", partitions_data].join("\n")
+      end
 
       ConfigStruct = Struct.new(:key, :value)
 
