@@ -15,7 +15,7 @@ module ActiveTableSet
 
       def connection=(new_connection)
         @connection = new_connection
-        @connection_set_caller = caller
+        @connection_set_caller = caller.presence
       end
 
       def non_nil_connection

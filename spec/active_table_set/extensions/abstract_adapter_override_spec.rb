@@ -24,7 +24,7 @@ describe ActiveTableSet::Extensions::Mysql2AdapterOverride do
     end
 
     it "raises error if connection is not defined" do
-      @connection.disconnect!
+      @connection.instance_variable_set(:@connection, nil)
 
       begin
         @connection.send(:non_nil_connection)
