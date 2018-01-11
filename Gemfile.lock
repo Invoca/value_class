@@ -1,16 +1,16 @@
 GIT
   remote: git@github.com:Invoca/attr_comparable
-  revision: 64c1628df586e7f983958c23d92c76e3df2ca190
-  ref: 64c1628df586e7f983958c23d92c76e3df2ca190
+  revision: 9daa7a7fb935c1ab5bf1402c47aba19756b66e4f
+  ref: 9daa7a7fb935c1ab5bf1402c47aba19756b66e4f
   specs:
     attr_comparable (0.0.2)
 
 GIT
   remote: git@github.com:Invoca/exception_handling
-  revision: 22e42f95ebb2d1221e610e451bd1ab0cffb99551
-  ref: 22e42f95ebb2d1221e610e451bd1ab0cffb99551
+  revision: 536df035f2ba0cb390ab4022f62caa3dd0667388
+  ref: 536df035f2ba0cb390ab4022f62caa3dd0667388
   specs:
-    exception_handling (1.2.8)
+    exception_handling (1.2.9)
       actionmailer (~> 4.0)
       actionpack (~> 4.0)
       activesupport (~> 4.0)
