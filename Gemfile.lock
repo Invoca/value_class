@@ -7,8 +7,8 @@ GIT
 
 GIT
   remote: git@github.com:Invoca/exception_handling
-  revision: 536df035f2ba0cb390ab4022f62caa3dd0667388
-  ref: 536df035f2ba0cb390ab4022f62caa3dd0667388
+  revision: 2eab7a60b05c9156f1082859acfef334f451626e
+  ref: 2eab7a60b05c9156f1082859acfef334f451626e
   specs:
     exception_handling (1.2.9)
       actionmailer (~> 4.0)
