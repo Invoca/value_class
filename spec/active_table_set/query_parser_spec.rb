@@ -125,6 +125,22 @@ describe ActiveTableSet::QueryParser do
       end
     end
 
+    context "queries with comments" do
+      {
+        leading_comment_large_query: ["cf_advertiser_campaign_date_aggregate_pts", "cf_advertiser_campaign_dimensions"]
+      }.each do |query_file, expected_reads|
+
+        it "parses #{query_file}" do
+          qp = ActiveTableSet::QueryParser.new(load_sample_query(query_file))
+
+          expect(qp.operation).to eq(:select)
+          expect(qp.read_tables).to eq(expected_reads)
+          expect(qp.write_tables).to eq([])
+        end
+      end
+    end
+
+
     context "other sql commands" do
       [
           'SAVEPOINT active_record_1',

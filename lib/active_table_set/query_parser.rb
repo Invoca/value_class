@@ -13,28 +13,30 @@ module ActiveTableSet
 
     MATCH_OPTIONALLY_QUOTED_TABLE_NAME = "[`]?([0-9,a-z,A-Z$_.]+)[`]?"
 
-    SELECT_QUERY = /\A\s*select\s/i
+    HASH_COMMENT ="(?:\s*\#[^\n]*\n)*\s*"
+
+    SELECT_QUERY = /\A#{HASH_COMMENT}select\s/i
     SELECT_FROM_MATCH = /FROM #{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    INSERT_QUERY = /\A\s*insert\s(?:ignore\s)?into/i
-    INSERT_TARGET_MATCH = /\A\s*insert\s(?:ignore\s)?into\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+    INSERT_QUERY = /\A#{HASH_COMMENT}insert\s(?:ignore\s)?into/i
+    INSERT_TARGET_MATCH = /\A#{HASH_COMMENT}insert\s(?:ignore\s)?into\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    UPDATE_QUERY = /\A\s*update\s/i
-    UPDATE_TARGET_MATCH = /\A\s*update\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+    UPDATE_QUERY = /\A#{HASH_COMMENT}update\s/i
+    UPDATE_TARGET_MATCH = /\A#{HASH_COMMENT}update\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    DELETE_QUERY = /\A\s*delete\s/i
-    DELETE_TARGET_MATCH = /\A\s*delete.*from\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+    DELETE_QUERY = /\A#{HASH_COMMENT}delete\s/i
+    DELETE_TARGET_MATCH = /\A#{HASH_COMMENT}delete.*from\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    DROP_QUERY = /\A\s*drop\s*table\s/i
-    DROP_TARGET_MATCH = /\A\s*drop\s*table\s*(?:if\s+exists)?\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+    DROP_QUERY = /\A#{HASH_COMMENT}drop\s*table\s/i
+    DROP_TARGET_MATCH = /\A#{HASH_COMMENT}drop\s*table\s*(?:if\s+exists)?\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    CREATE_QUERY = /\A\s*create\s*table\s/i
-    CREATE_TARGET_MATCH = /\A\s*create\s*table\s*(?:if\s+exists)?\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+    CREATE_QUERY = /\A#{HASH_COMMENT}create\s*table\s/i
+    CREATE_TARGET_MATCH = /\A#{HASH_COMMENT}create\s*table\s*(?:if\s+exists)?\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    TRUNCATE_QUERY = /\A\s*truncate\s*table\s/i
-    TRUNCATE_TARGET_MATCH = /\A\s*truncate\s*table\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
+    TRUNCATE_QUERY = /\A#{HASH_COMMENT}truncate\s*table\s/i
+    TRUNCATE_TARGET_MATCH = /\A#{HASH_COMMENT}truncate\s*table\s*\s#{MATCH_OPTIONALLY_QUOTED_TABLE_NAME}/i
 
-    OTHER_SQL_COMMAND_QUERY = /\A\s*(?:begin|commit|end|release|savepoint|rollback|show|set|alter)/i
+    OTHER_SQL_COMMAND_QUERY = /\A#{HASH_COMMENT}(?:begin|commit|end|release|savepoint|rollback|show|set|alter)/i
 
     JOIN_MATCH = /(?:left\souter)?\sjoin\s[`]?([0-9,a-z,A-Z$_.]+)[`]?/im
 
