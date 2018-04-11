@@ -37,44 +37,46 @@ describe ValueClass::ThreadLocalAttribute do
     expect(auto2.body_color).to eq(:black)
   end
 
-  it "should be different on different threads" do
-    ThreadLocalSpec::Automobile.manufacturer = :Volkswagen
-    ThreadLocalSpec::Automobile.model = :Vanagon
+  { Thread => :join, Fiber => :resume }.each do |klass, run_method|
+    it "should be different on different #{klass}s" do
+      ThreadLocalSpec::Automobile.manufacturer = :Volkswagen
+      ThreadLocalSpec::Automobile.model        = :Vanagon
 
-    auto = ThreadLocalSpec::Automobile.new
+      auto = ThreadLocalSpec::Automobile.new
 
-    auto.model_year = 1988
-    auto.body_color = :red
+      auto.model_year = 1988
+      auto.body_color = :red
 
-    @thread_manufacturer = nil
-    @thread_model = nil
-    @thread_year  = nil
-    @thread_color = nil
+      manufacturer = nil
+      model        = nil
+      year         = nil
+      color        = nil
 
-    t = Thread.new do
-      ThreadLocalSpec::Automobile.manufacturer = :Dodge
-      ThreadLocalSpec::Automobile.model = :Colt
+      t = klass.new do
+        ThreadLocalSpec::Automobile.manufacturer = :Dodge
+        ThreadLocalSpec::Automobile.model        = :Colt
 
-      auto.model_year = 1981
-      auto.body_color = :blue
+        auto.model_year = 1981
+        auto.body_color = :blue
 
-      @thread_manufacturer = ThreadLocalSpec::Automobile.manufacturer
-      @thread_model = ThreadLocalSpec::Automobile.model
-      @thread_year  = auto.model_year
-      @thread_color = auto.body_color
+        manufacturer = ThreadLocalSpec::Automobile.manufacturer
+        model        = ThreadLocalSpec::Automobile.model
+        year  = auto.model_year
+        color = auto.body_color
+      end
+      t.send(run_method)
+
+      expect(ThreadLocalSpec::Automobile.manufacturer).to eq(:Volkswagen)
+      expect(manufacturer).to eq(:Dodge)
+
+      expect(ThreadLocalSpec::Automobile.model).to eq(:Vanagon)
+      expect(model).to eq(:Colt)
+
+      expect(auto.model_year).to eq(1988)
+      expect(year).to eq(1981)
+
+      expect(auto.body_color).to eq(:red)
+      expect(color).to eq(:blue)
     end
-    t.join
-
-    expect(ThreadLocalSpec::Automobile.manufacturer).to eq(:Volkswagen)
-    expect(@thread_manufacturer).to eq(:Dodge)
-
-    expect(ThreadLocalSpec::Automobile.model).to eq(:Vanagon)
-    expect(@thread_model).to eq(:Colt)
-
-    expect(auto.model_year).to eq(1988)
-    expect(@thread_year).to eq(1981)
-
-    expect(auto.body_color).to eq(:red)
-    expect(@thread_color).to eq(:blue)
   end
 end
