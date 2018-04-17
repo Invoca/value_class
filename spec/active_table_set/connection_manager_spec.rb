@@ -160,7 +160,7 @@ describe ActiveTableSet::ConnectionManager do
     end
 
     context "use_test_scenario" do
-      it "overrides the access policy, but not the connection" do
+      it "overrides the access policy, but not the connection (which may be made on a new fiber)" do
         connection_manager
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
 
@@ -184,6 +184,7 @@ describe ActiveTableSet::ConnectionManager do
 
           expect(connection_handler.current_config["host"]).to eq("12.0.0.1")
           expect(connection_manager.access_policy.disallow_read).to eq("")
+          Fiber.new { expect(connection_manager.send(:request).test_scenario).to eq("legacy") }.resume
         end
 
         expect(connection_handler.current_config["host"]).to eq("12.0.0.1")

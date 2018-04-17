@@ -3,21 +3,27 @@ module ActiveTableSet
     module ConnectionHandlerExtension
       def self.prepended(klass)
         klass.send(:include, ValueClass::ThreadLocalAttribute)
-        klass.thread_local_instance_attr :thread_connection_spec
+        klass.thread_local_instance_attr :thread_connection_spec  # holds the `using` preference per thread/fiber
       end
+
+      attr_accessor :test_scenario_connection_spec                # holds the `use_test_scenario` spec globally (across all threads/fibers)
 
       # Overwrites connection handler method - retrieves
       # the current
       def establish_connection(owner, spec)
         @class_to_pool.clear
-        raise RuntimeError, "Anonymous class is not allowed." unless owner.name
+        owner.name or raise RuntimeError, "Anonymous class is not allowed."
         owner_to_pool[owner.name] = pool_for_spec(spec)
       end
 
-      # Overwrites the connection handler method.
+      # Overrides the connection handler method.
       # Prefers the pool for the current spec, if any.
       def retrieve_connection_pool(klass)
-        (thread_connection_spec && pool_for_spec(thread_connection_spec)) || super
+        if (current_connection_spec = thread_connection_spec || test_scenario_connection_spec)
+          pool_for_spec(current_connection_spec)
+        else
+          super
+        end
       end
 
       # Disables the remove connection method on default
@@ -44,7 +50,7 @@ module ActiveTableSet
       end
 
       def normalize_config(config)
-        normalized_config = config.dup.symbolize_keys # These are sometimes strings and sometimes symbols.
+        normalized_config = config.symbolize_keys     # These are sometimes strings and sometimes symbols.
         normalized_config.delete(:flags)              # The mysql2 adapter mutates the config to add this flag, which causes mayhem.
         normalized_config
       end

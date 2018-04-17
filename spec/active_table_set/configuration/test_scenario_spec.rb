@@ -24,17 +24,16 @@ describe ActiveTableSet::Configuration::TestScenario do
         test_scenario: nil,
         timeout: 100 )
 
-      prev_con_spec = large_table_set.connection_spec(prev_request)
+      prev_con_attributes = large_table_set.connection_attributes(prev_request)
 
       test_scenario = large_table_set.test_scenarios.first
 
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :leader, timeout: 100, test_scenario: test_scenario.scenario_name)
 
-      con_spec = test_scenario.connection_spec(request, [], "foo", prev_con_spec)
+      con_attributes = test_scenario.connection_attributes(request, [], "foo", prev_con_attributes)
 
-      expect(con_spec.pool_key.host).to eq(test_scenario.host)
-      expect(con_spec.pool_key.username).to eq(test_scenario.read_write_username)
+      expect(con_attributes.pool_key.host).to eq(test_scenario.host)
+      expect(con_attributes.pool_key.username).to eq(test_scenario.read_write_username)
     end
   end
-
 end

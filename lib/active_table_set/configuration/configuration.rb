@@ -36,16 +36,16 @@ module ActiveTableSet
         ).merge(@default)
       end
 
-      def connection_spec(initial_request)
+      def connection_attributes(initial_request)
         request = convert_timeouts(initial_request)
 
         ts = @table_sets_by_name[request.table_set] or raise ArgumentError, "Unknown table set #{request.table_set}, available_table_sets: #{@table_sets_by_name.keys.sort.join(', ')}"
-        spec = ts.connection_spec(request, [self], environment)
+        spec = ts.connection_attributes(request, [self], environment)
 
         if request.test_scenario
           scenario = @test_scenarios_by_name[request.test_scenario] or raise ArgumentError, "Unknown test_scenario #{request.test_scenario}, available test scenarios: #{@test_scenarios_by_name.keys.sort.join(', ')}"
 
-          scenario.connection_spec(request, [self], environment, spec)
+          scenario.connection_attributes(request, [self], environment, spec)
         else
           spec
         end
@@ -106,7 +106,7 @@ module ActiveTableSet
       end
 
       def default_database_config
-        ConfigStruct.new(environment, connection_spec(default).pool_key)
+        ConfigStruct.new(environment, connection_attributes(default).pool_key)
       end
 
       def table_set_database_config
