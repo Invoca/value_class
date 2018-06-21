@@ -26,10 +26,10 @@ module ActiveTableSet
         @instrumenter.instrument(
             "sql.active_record",
             hash = {
-                :sql           => sql,
-                :name          => name,
-                :connection_id => object_id,
-                :binds         => binds
+                sql:            sql,
+                name:           name,
+                connection_id:  object_id,
+                binds:          binds
             }
         ) do
           yield.tap do |result|
@@ -39,9 +39,9 @@ module ActiveTableSet
         end
       rescue Exception => e
         message = "#{e.class.name}: #{e.message}: #{sql}"
-        @logger.debug message if @logger
+        @logger.debug(message) if @logger
         exception = translate_exception(e, message)
-        exception.set_backtrace e.backtrace
+        exception.set_backtrace(e.backtrace)
         raise exception
       end
     end

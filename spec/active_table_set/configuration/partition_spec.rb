@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 describe ActiveTableSet::Configuration::Partition do
-  let(:cfg)       { { :leader => leader, :followers => [follower1, follower2] } }
-  let(:part)      { ActiveTableSet::Configuration::Partition.new( leader: leader) }
+  let(:cfg)       { { leader: leader, followers: [follower1, follower2] } }
+  let(:part)      { ActiveTableSet::Configuration::Partition.new(leader: leader) }
 
   context "config" do
     it "provides a leader" do

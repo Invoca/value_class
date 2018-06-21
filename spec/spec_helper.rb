@@ -15,43 +15,43 @@ end
 
 module SpecHelper
   def leader
-    { :host => "127.0.0.8",  :read_write_username => "tester",  :read_write_password => "verysecure",  :database => "main" }
+    { host: "127.0.0.8",  read_write_username: "tester",  read_write_password: "verysecure",  database: "main" }
   end
 
   def follower1
-    { :host => "127.0.0.9",  :read_write_username => "tester1", :read_write_password => "verysecure1", :database => "replication1" }
+    { host: "127.0.0.9",  read_write_username: "tester1", read_write_password: "verysecure1", database: "replication1" }
   end
 
   def follower2
-    { :host => "127.0.0.10", :read_write_username => "tester2", :read_write_password => "verysecure2", :database => "replication2" }
+    { host: "127.0.0.10", read_write_username: "tester2", read_write_password: "verysecure2", database: "replication2" }
   end
 
   def partition_cfg
-    { :partition_key => 'alpha', :leader => leader, :followers => [follower1, follower2] }
+    { partition_key: 'alpha', leader: leader, followers: [follower1, follower2] }
   end
 
   def table_set_cfg
-    { :name => "test_ts", :partitions => [partition_cfg], :access_policy => { :disallow_read => "cf_%" } }
+    { :name => "test_ts", partitions: [partition_cfg], access_policy: { disallow_read: "cf_%" } }
   end
 
   def beta_leader
-    { :host => "10.0.0.1",   :read_write_username => "beta",  :read_write_password => "verysecure",  :database => "main" }
+    { host: "10.0.0.1",   read_write_username: "beta",  read_write_password: "verysecure",  database: "main" }
   end
 
   def beta_follower1
-    { :host => "10.0.0.2",   :read_write_username => "beta1", :read_write_password => "verysecure1", :database => "replication1" }
+    { host: "10.0.0.2",   read_write_username: "beta1", read_write_password: "verysecure1", database: "replication1" }
   end
 
   def beta_follower2
-    { :host => "10.0.0.3",   :read_write_username => "beta2", :read_write_password => "verysecure2", :database => "replication2" }
+    { host: "10.0.0.3",   read_write_username: "beta2", read_write_password: "verysecure2", database: "replication2" }
   end
 
   def beta_partition_cfg
-    { :partition_key => 'beta', :leader => beta_leader, :followers => [beta_follower1, beta_follower2] }
+    { partition_key: 'beta', leader: beta_leader, followers: [beta_follower1, beta_follower2] }
   end
 
   def multi_table_set_cfg
-    { :name => "test_multi", :partitions => [partition_cfg, beta_partition_cfg], :access_policy => { :disallow_read => "cf_%" } }
+    { :name => "test_multi", partitions: [partition_cfg, beta_partition_cfg], access_policy: { disallow_read: "cf_%" } }
   end
 
   def small_table_set

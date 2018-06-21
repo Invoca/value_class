@@ -13,7 +13,7 @@ module ActiveTableSet
       end
 
       def exec_delete(sql, name, binds)
-        execute to_sql(sql, binds), name
+        execute(to_sql(sql, binds), name)
         non_nil_connection.affected_rows
       end
 
@@ -23,7 +23,7 @@ module ActiveTableSet
 
       private
         def configure_connection
-          non_nil_connection.query_options.merge!(:as => :array)
+          non_nil_connection.query_options.merge!(as: :array)
 
           # By default, MySQL 'where id is null' selects the last inserted id.
           # Turn this off. http://dev.rubyonrails.org/ticket/6778

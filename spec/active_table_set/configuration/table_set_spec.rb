@@ -45,7 +45,7 @@ describe ActiveTableSet::Configuration::TableSet do
     it "raises an exception if we have more than one partition and any partitions do not have a key" do
       cfg = {
           partitions: [
-              { :leader => leader, :followers => [follower1, follower2] },
+              { leader: leader, followers: [follower1, follower2] },
               beta_partition_cfg
           ]
       }

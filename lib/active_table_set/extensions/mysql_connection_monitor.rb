@@ -28,8 +28,8 @@ module ActiveTableSet
       end
 
       def show_error_in_bars(header, string_or_array)
-        lines = [string_or_array].flatten.map { |s| s.split("\n") }.flatten
-        header + "\n" + lines.map { |l| "    #{l}"}.join("\n")
+        lines = Array(string_or_array).flat_map { |s| s.split("\n") }
+        header + "\n" + lines.map { |l| "    #{l}" }.join("\n")
       end
     end
   end

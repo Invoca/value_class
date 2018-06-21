@@ -52,7 +52,7 @@ module ActiveRecord
       if run_in_transaction?
         @fixture_connections = ats_fixture_connections
         @fixture_connections.each do |connection|
-          connection.begin_transaction({:joinable => false})
+          connection.begin_transaction(joinable: false)
         end
       else
         @@already_loaded_fixtures[self.class] = {}
