@@ -23,9 +23,7 @@ module ActiveTableSet
     #
     def mon_try_enter
       if @mon_owner != Fiber.current
-        unless @mon_mutex.try_lock
-          return false
-        end
+        @mon_mutex.try_lock or return false
         @mon_owner = Fiber.current
         @mon_count = 0
       end
@@ -67,7 +65,9 @@ module ActiveTableSet
       begin
         yield
       ensure
-        mon_exit
+        ExceptionHandling.ensure_safe("mon_exit") do
+          mon_exit
+        end
       end
     end
     alias synchronize mon_synchronize
@@ -114,6 +114,8 @@ module ActiveTableSet
       connection_spec.config[:reaping_frequency] and raise "reaping_frequency is not supported (the ActiveRecord Reaper is thread-based)"
 
       super
+
+      @reaper = nil   # no need to keep a reference to this since it does nothing
 
       # note that @reserved_connections is a ThreadSafe::Cache which is overkill in a fibered world, but harmless
     end

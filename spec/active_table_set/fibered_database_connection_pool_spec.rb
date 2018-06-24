@@ -15,12 +15,21 @@ class TestMonitor
 end
 
 describe ActiveTableSet::FiberedDatabaseConnectionPool do
+  before do
+    @exceptions = []
+    @next_ticks = []
+    @trace      = []
+    allow(ExceptionHandling).to receive(:log_error) { |*args| store_exception(args) }
+    allow(EM).to receive(:next_tick) { |&block| queue_next_tick(&block) }
+  end
+
+  after do
+    expect(@exceptions).to eq([])
+  end
+
   describe ActiveTableSet::FiberedMonitorMixin do
     before do
       @monitor    = TestMonitor.new
-      @next_ticks = []
-      @trace      = []
-      allow(EM).to receive(:next_tick) { |&block| queue_next_tick(&block) }
     end
 
     it "should implement mutual exclusion" do
@@ -257,12 +266,38 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
     end
   end
 
-  # context "construction" do
-  #   it "has a Queue" do
-  #     queue = ActiveTableSet::FiberedDatabaseConnectionPool::Queue.new
-  #     binding.pry
-  #   end
-  # end
+  describe ActiveRecord::ConnectionAdapters::ConnectionPool::Queue do
+    before do
+      @timers     = []
+      allow(EM).to receive(:add_timer) { |&block| queue_timer(&block); block }
+      allow(EM).to receive(:cancel_timer) { |block| cancel_timer(block) }
+    end
+
+    describe "poll" do
+      it "should return added entries immediately" do
+        spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new({ database: 'rr_prod', host: 'master.ringrevenue.net' }, :em_mysql2)
+        cp = ActiveTableSet::FiberedDatabaseConnectionPool.new(spec)
+        queue = cp.instance_variable_get(:@available)
+        queue.add(1)
+        polled = []
+        fiber = Fiber.new { polled << queue.poll(1) }
+        fiber.resume
+        expect(polled).to eq([1])
+      end
+
+      it "should block when queue is empty" do
+        spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new({ database: 'rr_prod', host: 'master.ringrevenue.net' }, :em_mysql2)
+        cp = ActiveTableSet::FiberedDatabaseConnectionPool.new(spec)
+        queue = cp.instance_variable_get(:@available)
+        polled = []
+        fiber = Fiber.new { polled << queue.poll(10) }
+        fiber.resume
+        queue.add(1)
+        run_next_ticks
+        expect(polled).to eq([1])
+      end
+    end
+  end
 
 private
   def trace(message)
@@ -286,5 +321,17 @@ private
     trace "fiber #{fiber} RESUME"
     @fibers[fiber].resume(fiber, *args)
     run_next_ticks
+  end
+
+  def queue_timer(&block)
+    @timers << block
+  end
+
+  def cancel_timer(timer_block)
+    @timers.delete_if { |block| block == timer_block }
+  end
+
+  def store_exception(args)
+    @exceptions << args
   end
 end
