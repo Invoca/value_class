@@ -70,7 +70,12 @@ module ActiveTableSet
       end
 
       def pool_for_spec(spec)
-        connection_pools[normalize_config(spec.config)] ||= ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup)
+        connection_pools[normalize_config(spec.config)] ||=
+            if spec.config[:adapter] == "em_mysql2"
+              FiberedDatabaseConnectionPool.new(spec.dup)
+            else
+              ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup)
+            end
       end
     end
   end
