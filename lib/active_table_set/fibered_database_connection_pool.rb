@@ -2,6 +2,10 @@
 
 require 'em-synchrony'
 require 'em-synchrony/thread'
+require 'active_table_set/extensions/fibered_mutex_with_waiter_priority'
+
+EventMachine::Synchrony::Thread::Mutex.prepend ActiveTableSet::Extensions::FiberedMutexWithWaiterPriority
+
 
 module ActiveTableSet
   class FiberedConditionVariable < MonitorMixin::ConditionVariable

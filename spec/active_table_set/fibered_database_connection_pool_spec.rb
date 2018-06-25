@@ -223,7 +223,7 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
                              "fiber 0 RESUME",
                              "fiber 0 begin",
                              "fiber 0 LOCK 1",
-                             "fiber 0 LOCK 2",
+                             "fiber 0 LOCK 2",    # fiber 0 locks the mutex
                              "fiber 0 yield",
                              "fiber 1 RESUME",
                              "fiber 1 begin",
@@ -234,7 +234,7 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
                              "fiber 0 RESUME",
                              "fiber 0 WAIT",
                              "next_tick queued",
-                                                  # fiber 0 yields while waiting for signal
+                                                  # fiber 0 yields while waiting for condition to be signaled
                              "next_tick.call",    # fiber 0 yields mutex to fiber 1
                              "fiber 1 LOCK 1",
                              "fiber 1 LOCK 2",
@@ -248,6 +248,12 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
                              "next_tick queued",
                              "fiber 1 end",
                              "next_tick.call",
+                             "next_tick.call",    # fiber 1 yields to fiber 0 that was waiting for the signal (this takes priority over fiber 2 that was already waiting on the mutex)
+                             "fiber 0 UNWAIT",
+                             "fiber 0 UNLOCK 2",
+                             "fiber 0 UNLOCK 1",
+                             "next_tick queued",
+                             "fiber 0 end",
                              "next_tick.call",
                              "fiber 2 LOCK 1",
                              "fiber 2 LOCK 2",
@@ -255,13 +261,7 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
                              "fiber 2 RESUME",
                              "fiber 2 UNLOCK 2",
                              "fiber 2 UNLOCK 1",
-                             "next_tick queued",
-                             "fiber 2 end",
-                             "next_tick.call",
-                             "fiber 0 UNWAIT",
-                             "fiber 0 UNLOCK 2",
-                             "fiber 0 UNLOCK 1",
-                             "fiber 0 end"
+                             "fiber 2 end"
                            ])
     end
   end
