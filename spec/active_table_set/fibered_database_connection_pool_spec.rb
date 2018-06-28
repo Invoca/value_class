@@ -3,6 +3,15 @@ require 'active_table_set/fibered_database_connection_pool'
 require 'rspec/mocks'
 require 'active_record/connection_adapters/em_mysql2_adapter'
 
+module ActiveTableSet
+  class << self
+    def clear_for_testing
+      @config = nil
+      @manager  = nil
+    end
+  end
+end
+
 class TestMonitor
   include ActiveTableSet::FiberedMonitorMixin
 
@@ -17,6 +26,9 @@ end
 
 describe ActiveTableSet::FiberedDatabaseConnectionPool do
   before do
+    ActiveTableSet.clear_for_testing
+    ActiveRecord::Base.default_connection_handler = ActiveRecord::ConnectionAdapters::ConnectionHandler.new
+
     @exceptions = []
     @next_ticks = []
     @trace      = []
@@ -315,17 +327,47 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
 
       allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
 
-      c1 = ActiveRecord::Base.connection
-      c2 = nil
-      fiber = Fiber.new { c2 = ActiveRecord::Base.connection }
+      c0 = ActiveRecord::Base.connection
+      c1 = nil
+      fiber = Fiber.new { c1 = ActiveRecord::Base.connection }
       fiber.resume
 
+      expect(c0).to be
       expect(c1).to be
-      expect(c2).to be
-      expect(c2).to_not eq(c1)
-      expect(c2.fiber_owner).to eq(fiber)
+      expect(c1).to_not eq(c0)
+      expect(c0.owner).to eq(Fiber.current)
+      expect(c1.owner).to eq(fiber)
+      expect(c0.in_use?).to be
       expect(c1.in_use?).to be
-      expect(c2.in_use?).to be
+    end
+
+    it "should reclaim connections when the fiber has exited" do
+      configure_ats_like_ringswitch
+      ActiveTableSet.enable
+
+      connection_stub = String.new
+      allow(connection_stub).to receive(:query_options) { {} }
+      expect(connection_stub).to receive(:query) { }.exactly(2).times
+      allow(connection_stub).to receive(:ping) { true }
+      allow(connection_stub).to receive(:close).at_least(1).times
+
+      allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
+
+      c0 = ActiveRecord::Base.connection
+      c1 = nil
+
+      fiber1 = Fiber.new { c1 = ActiveRecord::Base.connection }
+      fiber1.resume
+
+      expect(c1.owner).to eq(fiber1)
+
+      c2 = nil
+      fiber2 = Fiber.new { c2 = ActiveRecord::Base.connection }
+      fiber2.resume
+
+      expect(c2.owner).to eq(fiber2)
+
+      expect(c1.object_id).to eq(c2.object_id)
     end
   end
 

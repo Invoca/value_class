@@ -127,5 +127,20 @@ module ActiveTableSet
     def current_connection_id
       ActiveRecord::Base.connection_id ||= Fiber.current.object_id
     end
+
+    def checkout
+      ExceptionHandling.ensure_safe("checkin_dead_connections") { checkin_dead_connections }
+      super
+    end
+
+    private
+
+    def checkin_dead_connections
+      @reserved_connections.values.each do |connection|
+        if !connection.owner.alive?
+          checkin(connection)
+        end
+      end
+    end
   end
 end
