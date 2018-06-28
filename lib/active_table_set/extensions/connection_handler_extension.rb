@@ -71,8 +71,11 @@ module ActiveTableSet
 
       def pool_for_spec(spec)
         connection_pools[normalize_config(spec.config)] ||=
-            if spec.config[:adapter] == "em_mysql2"
+            if spec.config[:adapter] == "fibered_mysql2"
               require 'active_table_set/fibered_database_connection_pool'
+              require 'active_table_set/extensions/fibered_mysql2_connection_factory'
+              ActiveRecord::Base.class.prepend(ActiveTableSet::Extensions::FiberedMysql2ConnectionFactory)
+
               FiberedDatabaseConnectionPool.new(spec.dup)
             else
               ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup)

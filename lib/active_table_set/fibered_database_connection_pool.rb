@@ -123,5 +123,9 @@ module ActiveTableSet
 
       # note that @reserved_connections is a ThreadSafe::Cache which is overkill in a fibered world, but harmless
     end
+
+    def current_connection_id
+      ActiveRecord::Base.connection_id ||= Fiber.current.object_id
+    end
   end
 end

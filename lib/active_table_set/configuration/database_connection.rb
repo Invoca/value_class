@@ -50,9 +50,8 @@ module ActiveTableSet
             return v
           end
         end
-        raise ArgumentError, "could not resolve #{name} value for #{context}"
+        raise ArgumentError, "could not resolve #{name} value for #{context.inspect}"
       end
-
     end
   end
 end

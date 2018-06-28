@@ -288,5 +288,4 @@ describe ActiveTableSet do
 
     expect(ActiveTableSet.configured?).to eq(true)
   end
-
 end

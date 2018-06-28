@@ -95,9 +95,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
           read_write_username: "test_user",
           read_write_password: "secure_pwd")
 
-      expect { connection.pool_key(alternates:[], context: "foo", timeout: 10) }.to raise_error(ArgumentError, "could not resolve database value for foo")
+      expect { connection.pool_key(alternates:[], context: "foo", timeout: 10) }.to raise_error(ArgumentError, 'could not resolve database value for "foo"')
     end
-
   end
-
 end

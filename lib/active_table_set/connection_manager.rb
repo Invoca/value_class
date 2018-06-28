@@ -178,8 +178,7 @@ module ActiveTableSet
     end
 
     def release_connection
-      pool = @connection_handler.pool_for_spec(current_specification)
-      pool && pool.release_connection
+      @connection_handler.pool_for_spec(current_specification)&.release_connection
     end
 
     def process_flag_access

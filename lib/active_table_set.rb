@@ -94,7 +94,6 @@ module ActiveTableSet
       manager.allow_test_access(&blk)
     end
 
-
     def database_configuration
       configuration.database_configuration
     end
@@ -114,6 +113,5 @@ module ActiveTableSet
     def configured?
       !!@config
     end
-
   end
 end

@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'active_table_set/fibered_database_connection_pool'
 require 'rspec/mocks'
+require 'active_record/connection_adapters/em_mysql2_adapter'
 
 class TestMonitor
   include ActiveTableSet::FiberedMonitorMixin
@@ -299,6 +300,35 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
     end
   end
 
+  describe ActiveRecord::ConnectionAdapters::ConnectionPool do
+    it "should serve separate connections per fiber" do
+      configure_ats_like_ringswitch
+      ActiveTableSet.enable
+
+      connection_stub = Object.new
+      allow(connection_stub).to receive(:query_options) { {} }
+      expect(connection_stub).to receive(:query) do |*args|
+        expect(args).to eq(["SET SQL_AUTO_IS_NULL=0, NAMES 'utf8', @@wait_timeout = 2147483"])
+      end.exactly(2).times
+      allow(connection_stub).to receive(:ping) { true }
+      allow(connection_stub).to receive(:close)
+
+      allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
+
+      c1 = ActiveRecord::Base.connection
+      c2 = nil
+      fiber = Fiber.new { c2 = ActiveRecord::Base.connection }
+      fiber.resume
+
+      expect(c1).to be
+      expect(c2).to be
+      expect(c2).to_not eq(c1)
+      expect(c2.fiber_owner).to eq(fiber)
+      expect(c1.in_use?).to be
+      expect(c2.in_use?).to be
+    end
+  end
+
 private
   def trace(message)
     @trace << message
@@ -333,5 +363,43 @@ private
 
   def store_exception(args)
     @exceptions << args
+  end
+
+  def configure_ats_like_ringswitch
+    ActiveTableSet.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default  =  { table_set: :ringswitch }
+
+      conf.table_set do |ts|
+        ts.name = :ringswitch
+        ts.adapter = 'fibered_mysql2'
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host                 "10.0.0.1"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.database             "main"
+          end
+        end
+      end
+
+      conf.table_set do |ts|
+        ts.name = :ringswitch_jobs
+        ts.adapter = 'fibered_mysql2'
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host                 "10.0.0.1"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.database             "main"
+          end
+        end
+      end
+    end
   end
 end
