@@ -8,13 +8,16 @@ module ActiveTableSet
       "#{adapter}_connection"
     end
 
-    def connection_spec
-      if defined?(ActiveRecord::ConnectionAdapters::ConnectionSpecification)
-        spec_class = ActiveRecord::ConnectionAdapters::ConnectionSpecification
-      else
-        spec_class = ActiveRecord::Base::ConnectionSpecification
+    def connection_spec(table_set)
+      spec_class =
+          if defined?(ActiveRecord::ConnectionAdapters::ConnectionSpecification)
+            ActiveRecord::ConnectionAdapters::ConnectionSpecification
+          else
+            ActiveRecord::Base::ConnectionSpecification
+          end
+      spec_class.new(to_hash, connector_name).tap do |cs|
+        cs.config["table_set"] = table_set
       end
-      spec_class.new(to_hash, connector_name)
     end
   end
 end

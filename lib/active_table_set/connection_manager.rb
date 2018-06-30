@@ -51,7 +51,7 @@ module ActiveTableSet
 
       new_request = request.merge(test_scenario: test_scenario_name)
 
-      @connection_handler.test_scenario_connection_spec = connection_attributes(new_request).pool_key.connection_spec
+      @connection_handler.test_scenario_connection_spec = connection_attributes(new_request).pool_key.connection_spec(new_request.table_set)
 
       if new_request != request
         release_connection
@@ -82,6 +82,13 @@ module ActiveTableSet
       yield
     ensure
       self._access_policy_disabled = old_access_policy_setting
+    end
+
+    def connection_pool_stats
+      @connection_handler.connection_pool_stats.tap do |stats|
+        # reference every table set so that missing ones (no DB connections currently) will get 0 stats instead
+        @config.table_sets.each { |ts| stats[ts.name] }
+      end
     end
 
     private
@@ -151,12 +158,12 @@ module ActiveTableSet
     end
 
     def current_specification
-      connection_attributes(request).pool_key.connection_spec
+      connection_attributes(request).pool_key.connection_spec(request.table_set)
     end
 
     def failover_specification
       if connection_attributes(request).failover_pool_key
-        connection_attributes(request).failover_pool_key.connection_spec
+        connection_attributes(request).failover_pool_key.connection_spec(request.table_set)
       end
     end
 

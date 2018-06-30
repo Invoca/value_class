@@ -19,8 +19,9 @@ describe ActiveTableSet::PoolKey do
 
     it "generates a connection spec" do
       pk = ActiveTableSet::PoolKey.new(adapter: "sqlite")
-      spec = pk.connection_spec
-      expect(spec.config).to eq(pk.to_hash)
+      spec = pk.connection_spec(:common)
+      expect(spec.config["table_set"]).to eq(:common)
+      expect(spec.config.except("table_set")).to eq(pk.to_hash)
       expect(spec.adapter_method).to eq(pk.connector_name)
     end
   end

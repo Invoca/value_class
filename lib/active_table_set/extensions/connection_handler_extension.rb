@@ -81,6 +81,17 @@ module ActiveTableSet
               ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup)
             end
       end
+
+      def connection_pool_stats
+        connection_pools.reduce(Hash.new { |h, k| h[k] = { allocated: 0, in_use: 0 } }) do |result, (spec, connection_pool)|
+          allocated = connection_pool.connections.size
+          in_use    = connection_pool.instance_variable_get(:@reserved_connections).size
+          table_set = spec[:table_set] or raise ":table_set not found in #{spec.inspect}"
+          result[table_set][:allocated] += allocated
+          result[table_set][:in_use]    += in_use
+          result
+        end
+      end
     end
   end
 end
