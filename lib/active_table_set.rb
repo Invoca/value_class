@@ -28,6 +28,8 @@ require 'active_table_set/extensions/migration_extension'
 require 'active_table_set/extensions/abstract_adapter_override'
 require 'active_table_set/extensions/abstract_mysql_adapter_override'
 require 'active_table_set/extensions/mysql2_adapter_override'
+require 'active_table_set/extensions/connection_pool_extension'
+ActiveRecord::ConnectionAdapters::ConnectionPool.prepend(ActiveTableSet::Extensions::ConnectionPoolExtension)
 
 require 'active_table_set/railties/enable_active_table_set'
 

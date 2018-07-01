@@ -184,7 +184,7 @@ describe ActiveTableSet::ConnectionManager do
 
           expect(connection_handler.current_config["host"]).to eq("12.0.0.1")
           expect(connection_manager.access_policy.disallow_read).to eq("")
-          Fiber.new { expect(connection_manager.send(:request).test_scenario).to eq("legacy") }.resume
+          Fiber.new { expect(connection_manager.send(:settings).test_scenario).to eq("legacy") }.resume
         end
 
         expect(connection_handler.current_config["host"]).to eq("12.0.0.1")
@@ -331,6 +331,38 @@ describe ActiveTableSet::ConnectionManager do
           expect(TestLog.logged_lines.first).to eq(nil)
           expect(connection_handler.current_config["host"]).to eq("10.0.0.2")
         end
+      end
+    end
+
+    describe "connection_pool_stats" do
+      it "should return a hash of stats with zeroes for unused table_sets" do
+        configure_ats_like_ringswitch
+        ActiveTableSet.enable
+
+        connection_stub = Object.new
+        allow(connection_stub).to receive(:query_options) { {} }
+        expect(connection_stub).to receive(:query) { }.exactly(3).times
+        allow(connection_stub).to receive(:ping) { true }
+        allow(connection_stub).to receive(:close).exactly(3).times
+
+        allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
+
+        c0 = ActiveRecord::Base.connection
+        fiber1 = Fiber.new { c1 = ActiveRecord::Base.connection; Fiber.yield }
+        fiber2 = Fiber.new { c2 = ActiveRecord::Base.connection; Fiber.yield }
+        fiber3 = Fiber.new { c3 = ActiveRecord::Base.connection; Fiber.yield }
+        fiber1.resume # bump in_use and allocated to 2
+        fiber2.resume # bump in_use and allocated to 3
+        fiber1.resume # allow fiber to exit (so connection can be reclaimed)
+        fiber2.resume #   "      "   "   "    "    "        "   "   "
+        fiber3.resume # reset in_use to 2 but allocated will stay at 3
+
+        stats = ActiveTableSet.manager.connection_pool_stats
+
+        expect(stats).to eq(
+                           ringswitch:      { allocated: 3, in_use: 2 },
+                           ringswitch_jobs: { allocated: 0, in_use: 0 }
+                         )
       end
     end
   end

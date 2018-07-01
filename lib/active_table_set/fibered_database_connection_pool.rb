@@ -114,10 +114,10 @@ module ActiveTableSet
   class FiberedDatabaseConnectionPool < ActiveRecord::ConnectionAdapters::ConnectionPool
     include FiberedMonitorMixin
 
-    def initialize(connection_spec)
+    def initialize(connection_spec, table_set:)
       connection_spec.config[:reaping_frequency] and raise "reaping_frequency is not supported (the ActiveRecord Reaper is thread-based)"
 
-      super
+      super(connection_spec, table_set: table_set)
 
       @reaper = nil   # no need to keep a reference to this since it does nothing
 
@@ -137,9 +137,7 @@ module ActiveTableSet
 
     def checkin_dead_connections
       @reserved_connections.values.each do |connection|
-        if !connection.owner.alive?
-          checkin(connection)
-        end
+        connection.owner.alive? or checkin(connection)
       end
     end
   end

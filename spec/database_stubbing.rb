@@ -59,6 +59,7 @@ class StubClient < ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter
   SIMPLE_METHODS.each do |method|
     define_method method do
       record_command(method, [])
+      0
     end
   end
 end
@@ -129,7 +130,6 @@ class StubConnectionHandler
     @remove_calls     = []
   end
 
-
   def retrieve_connection_pool(klass)
     @class_to_pool[klass.name]
   end
@@ -139,13 +139,9 @@ class StubConnectionHandler
   end
 
   def retrieve_connection(klass) #:nodoc:
-    pool = retrieve_connection_pool(klass)
-    raise  ActiveRecord::ConnectionNotEstablished, "No connection pool for #{klass}" unless pool
-    conn = pool.connection
-    raise  ActiveRecord::ConnectionNotEstablished, "No connection for #{klass} in connection pool" unless conn
-    conn
+    pool = retrieve_connection_pool(klass) or raise ActiveRecord::ConnectionNotEstablished, "No connection pool for #{klass}"
+    pool.connection or raise ActiveRecord::ConnectionNotEstablished, "No connection for #{klass} in connection pool"
   end
-
 
   def connection
     retrieve_connection(ActiveRecord::Base)

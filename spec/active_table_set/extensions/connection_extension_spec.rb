@@ -33,8 +33,8 @@ describe ActiveTableSet::Extensions::ConnectionExtension do
       expect(test_log.log('', '')).to match(/host:/)
     end
   end
-  context "ConvientDelegation" do
 
+  context "convenient delegation" do
     it "can delegate using to instances" do
       inst = ConnectionExtensionSpec::TestInstanceDelegation.new
 

@@ -1,3 +1,6 @@
+require 'em-synchrony'
+require 'active_record/connection_adapters/em_mysql2_adapter'
+
 module ActiveTableSet
   class FiberedMysql2Adapter < ActiveRecord::ConnectionAdapters::EMMysql2Adapter
     def initialize(*args)

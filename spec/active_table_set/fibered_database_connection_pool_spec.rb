@@ -289,7 +289,7 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
     describe "poll" do
       it "should return added entries immediately" do
         spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new({ database: 'rr_prod', host: 'master.ringrevenue.net' }, :em_mysql2)
-        cp = ActiveTableSet::FiberedDatabaseConnectionPool.new(spec)
+        cp = ActiveTableSet::FiberedDatabaseConnectionPool.new(spec, table_set: :common)
         queue = cp.instance_variable_get(:@available)
         queue.add(1)
         polled = []
@@ -300,7 +300,7 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
 
       it "should block when queue is empty" do
         spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new({ database: 'rr_prod', host: 'master.ringrevenue.net' }, :em_mysql2)
-        cp = ActiveTableSet::FiberedDatabaseConnectionPool.new(spec)
+        cp = ActiveTableSet::FiberedDatabaseConnectionPool.new(spec, table_set: :common)
         queue = cp.instance_variable_get(:@available)
         polled = []
         fiber = Fiber.new { polled << queue.poll(10) }
@@ -437,43 +437,5 @@ private
 
   def store_exception(args)
     @exceptions << args
-  end
-
-  def configure_ats_like_ringswitch
-    ActiveTableSet.config do |conf|
-      conf.enforce_access_policy true
-      conf.environment           'test'
-      conf.default  =  { table_set: :ringswitch }
-
-      conf.table_set do |ts|
-        ts.name = :ringswitch
-        ts.adapter = 'fibered_mysql2'
-        ts.access_policy do |ap|
-          ap.disallow_read  'cf_%'
-          ap.disallow_write 'cf_%'
-        end
-        ts.partition do |part|
-          part.leader do |leader|
-            leader.host                 "10.0.0.1"
-            leader.read_write_username  "tester"
-            leader.read_write_password  "verysecure"
-            leader.database             "main"
-          end
-        end
-      end
-
-      conf.table_set do |ts|
-        ts.name = :ringswitch_jobs
-        ts.adapter = 'fibered_mysql2'
-        ts.partition do |part|
-          part.leader do |leader|
-            leader.host                 "10.0.0.1"
-            leader.read_write_username  "tester"
-            leader.read_write_password  "verysecure"
-            leader.database             "main"
-          end
-        end
-      end
-    end
   end
 end

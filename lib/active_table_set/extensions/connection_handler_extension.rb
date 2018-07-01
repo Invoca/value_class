@@ -38,12 +38,12 @@ module ActiveTableSet
       def retrieve_connection(klass)
         connection = super
 
-        unless connection.respond_to?(:using)
+        connection.is_a?(ActiveTableSet::Extensions::ConnectionExtension) or
           connection.class.send(:include, ActiveTableSet::Extensions::ConnectionExtension)
-        end
 
-        if ActiveTableSet.enforce_access_policy? && !connection.respond_to?(:show_error_in_bars)
-          connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
+        if ActiveTableSet.enforce_access_policy?
+          connection.is_a?(ActiveTableSet::Extensions::MysqlConnectionMonitor) or
+            connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
         end
 
         connection
@@ -64,29 +64,31 @@ module ActiveTableSet
         self.thread_connection_spec = spec
       end
 
-
       def connection_pools
         @connection_pools ||= {}
       end
 
       def pool_for_spec(spec)
         connection_pools[normalize_config(spec.config)] ||=
+          begin
+            table_set = spec.instance_variable_get(:@table_set) or raise "@table_set not found in #{spec.inspect}"
             if spec.config[:adapter] == "fibered_mysql2"
               require 'active_table_set/fibered_database_connection_pool'
               require 'active_table_set/extensions/fibered_mysql2_connection_factory'
               ActiveRecord::Base.class.prepend(ActiveTableSet::Extensions::FiberedMysql2ConnectionFactory)
 
-              FiberedDatabaseConnectionPool.new(spec.dup)
+              FiberedDatabaseConnectionPool.new(spec.dup, table_set: table_set)
             else
-              ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup)
+              ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec.dup, table_set: table_set)
             end
+          end
       end
 
       def connection_pool_stats
         connection_pools.reduce(Hash.new { |h, k| h[k] = { allocated: 0, in_use: 0 } }) do |result, (spec, connection_pool)|
           allocated = connection_pool.connections.size
           in_use    = connection_pool.instance_variable_get(:@reserved_connections).size
-          table_set = spec[:table_set] or raise ":table_set not found in #{spec.inspect}"
+          table_set = connection_pool.try(:table_set) or raise "table_set not found on #{connection_pool.inspect}"
           result[table_set][:allocated] += allocated
           result[table_set][:in_use]    += in_use
           result

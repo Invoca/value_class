@@ -11,7 +11,7 @@ require 'process_flags'
 module ActiveTableSet
   class ConnectionManager
 
-    QUARANTINE_DURATION_SECONDS = 60
+    QUARANTINE_DURATION = 60.seconds
 
     def initialize(config:, connection_handler:)
       @config             = config
@@ -23,39 +23,39 @@ module ActiveTableSet
     end
 
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
-      new_request = request.merge(
+      new_settings = settings.merge(
         table_set:     table_set,
         access:        process_flag_access || _access_lock || access,
         partition_key: partition_key,
         timeout:       timeout
       )
 
-      if new_request == request
+      if new_settings == settings
         yield
       else
-        new_connection_attributes     = connection_attributes(new_request)
-        current_connection_attributes = connection_attributes(request)
+        new_connection_attributes     = connection_attributes(new_settings)
+        current_connection_attributes = connection_attributes(settings)
 
         if new_connection_attributes == current_connection_attributes
           yield
         elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
-          yield_with_new_access_policy(new_request, &blk)
+          yield_with_new_access_policy(new_settings, &blk)
         else
-          yield_with_new_connection(new_request, &blk)
+          yield_with_new_connection(new_settings, &blk)
         end
       end
     end
 
     def use_test_scenario(test_scenario_name)
-      @test_scenario_name = test_scenario_name  # store in case other threads/fibers call request below
+      @test_scenario_name = test_scenario_name  # store in case other threads/fibers call settings below
 
-      new_request = request.merge(test_scenario: test_scenario_name)
+      new_settings = settings.merge(test_scenario: test_scenario_name)
 
-      @connection_handler.test_scenario_connection_spec = connection_attributes(new_request).pool_key.connection_spec(new_request.table_set)
+      @connection_handler.test_scenario_connection_spec = connection_attributes(new_settings).pool_key.connection_spec(new_settings.table_set)
 
-      if new_request != request
+      if new_settings != settings
         release_connection
-        self._request = new_request
+        self._settings = new_settings
         establish_connection
       end
     end
@@ -72,7 +72,7 @@ module ActiveTableSet
 
     def access_policy
       unless _access_policy_disabled
-        @config.enforce_access_policy && connection_attributes(request).access_policy
+        @config.enforce_access_policy && connection_attributes(settings).access_policy
       end
     end
 
@@ -94,27 +94,27 @@ module ActiveTableSet
     private
 
     include ValueClass::ThreadLocalAttribute
-    thread_local_instance_attr :_request
+    thread_local_instance_attr :_settings
     thread_local_instance_attr :_access_lock
     thread_local_instance_attr :_access_policy_disabled
 
-    def request
-      self._request ||= @config.default.merge(test_scenario: @test_scenario_name)
+    def settings
+      self._settings ||= @config.default.merge(test_scenario: @test_scenario_name)
     end
 
-    def yield_with_new_access_policy(new_request)
-      old_request   = _request
-      self._request = new_request
+    def yield_with_new_access_policy(new_settings)
+      old_settings   = _settings
+      self._settings = new_settings
 
       yield
 
     ensure
-      self._request = old_request
+      self._settings = old_settings
     end
 
-    def yield_with_new_connection(new_request)
-      old_request   = _request
-      self._request = new_request
+    def yield_with_new_connection(new_settings)
+      old_settings   = _settings
+      self._settings = new_settings
 
       establish_connection
 
@@ -124,7 +124,7 @@ module ActiveTableSet
       begin
         release_connection
       ensure
-        self._request = old_request
+        self._settings = old_settings
         establish_connection
       end
     end
@@ -150,7 +150,7 @@ module ActiveTableSet
     end
 
     def establish_connection_using_spec(connection_specification)
-      if blk = @config.before_enable(request)
+      if blk = @config.before_enable(settings)
         blk.call
       end
       @connection_handler.current_spec = connection_specification
@@ -158,12 +158,12 @@ module ActiveTableSet
     end
 
     def current_specification
-      connection_attributes(request).pool_key.connection_spec(request.table_set)
+      connection_attributes(settings).pool_key.connection_spec(settings.table_set)
     end
 
     def failover_specification
-      if connection_attributes(request).failover_pool_key
-        connection_attributes(request).failover_pool_key.connection_spec(request.table_set)
+      if connection_attributes(settings).failover_pool_key
+        connection_attributes(settings).failover_pool_key.connection_spec(settings.table_set)
       end
     end
 
@@ -173,11 +173,11 @@ module ActiveTableSet
 
 
     def failover_available?
-      connection_attributes(request).failover_pool_key
+      connection_attributes(settings).failover_pool_key
     end
 
     def quarantine_connection(specification)
-      @quarantine_until[specification.config] = Time.now + QUARANTINE_DURATION_SECONDS
+      @quarantine_until[specification.config] = Time.now + QUARANTINE_DURATION
     end
 
     def connection_quarantined?(specification)
@@ -192,8 +192,8 @@ module ActiveTableSet
       ProcessFlags.is_set?(:disable_alternate_databases) ? :leader : nil
     end
 
-    def connection_attributes(request)
-      @connection_specs[request] ||= @config.connection_attributes(request)
+    def connection_attributes(settings)
+      @connection_specs[settings] ||= @config.connection_attributes(settings)
     end
   end
 end

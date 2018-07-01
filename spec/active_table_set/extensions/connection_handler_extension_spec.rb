@@ -2,39 +2,32 @@ require 'spec_helper'
 
 describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
 
-  def map_hash_to_spec(hash)
-
-    spec_class.new(con_spec.to_hash, con_spec.connector_name)
-  end
-
   let(:connection_handler) { StubConnectionHandler.new }
 
-  let(:spec_class) {
-    if defined?(ActiveRecord::ConnectionAdapters::ConnectionSpecification)
-      ActiveRecord::ConnectionAdapters::ConnectionSpecification
-    else
-      ActiveRecord::Base::ConnectionSpecification
-    end
-  }
-
   let(:default_spec) do
-    spec_class.new(
+    ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(
       ActiveTableSet::Configuration::DatabaseConnection.new(
         host: "some.ip",
         read_write_username: "test_user",
         read_write_password: "secure_pwd",
         database: "my_database").to_hash,
-      'stub_client_connection')
+      'stub_client_connection'
+    ).tap do |connection_specification|
+      connection_specification.instance_variable_set(:@table_set, :ringswitch)
+    end
   end
 
   let(:alternate_spec) do
-    spec_class.new(
+    ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(
       ActiveTableSet::Configuration::DatabaseConnection.new(
         host: "some_other.ip",
         read_write_username: "test_user2",
         read_write_password: "secure_pwd2",
         database: "my_database2").to_hash,
-      'some_method')
+      'some_method'
+    ).tap do |connection_specification|
+      connection_specification.instance_variable_set(:@table_set, :ringswitch)
+    end
   end
 
   context "connection handler extension" do
@@ -114,13 +107,14 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         expect(connection_handler.connection_pools.count).to eq(1)
 
         # Need a new spec because it was mutated above...
-        default_spec_2 = spec_class.new(
+        default_spec_2 = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(
           ActiveTableSet::Configuration::DatabaseConnection.new(
             host: "some.ip",
             read_write_username: "test_user",
             read_write_password: "secure_pwd",
             database: "my_database").to_hash,
           'some_method' )
+        default_spec_2.instance_variable_set(:@table_set, :ringswitch)
 
         connection_handler.current_spec = default_spec_2
 
@@ -153,7 +147,8 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         read_write_password: "secure_pwd",
         database: "my_database").to_hash.symbolize_keys
 
-      default_spec_2 = spec_class.new(database_config, 'some_method')
+      default_spec_2 = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(database_config, 'some_method')
+      default_spec_2.instance_variable_set(:@table_set, :ringswitch)
 
       connection_handler.current_spec = default_spec_2
 
@@ -174,7 +169,8 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         database: "my_database").to_hash
       database_config["flags"] = 2
 
-      default_spec_2 = spec_class.new(database_config, 'some_method')
+      default_spec_2 = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(database_config, 'some_method')
+      default_spec_2.instance_variable_set(:@table_set, :ringswitch)
 
       connection_handler.current_spec = default_spec_2
 
@@ -195,11 +191,45 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         database: "my_database").to_hash
       database_config["flags"] = 2
 
-      default_spec_2 = spec_class.new(database_config, 'some_method')
+      default_spec_2 = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(database_config, 'some_method')
+      default_spec_2.instance_variable_set(:@table_set, :ringswitch)
 
       connection_handler.establish_connection(ActiveRecord::Base, default_spec_2)
       expect(connection_handler.connection_pools.count).to eq(1)
     end
 
+    describe "connection_pool_stats" do
+      it "should return a hash of stats for table_sets that have connection_pools" do
+        configure_ats_like_ringswitch
+        connection_handler.default_spec(
+          ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(
+            ActiveTableSet::Configuration::DatabaseConnection.new(
+              host:                 "some.ip",
+              adapter:              "fibered_mysql2",
+              read_write_username:  "test_user",
+              read_write_password:  "secure_pwd",
+              database:             "my_database").to_hash,
+            'stub_client_connection'
+          ).tap do |connection_specification|
+            connection_specification.instance_variable_set(:@table_set, :ringswitch)
+          end
+        )
+        ActiveTableSet.enable
+
+        c0 = connection_handler.connection
+        fiber1 = Fiber.new { c1 = connection_handler.connection }
+        fiber2 = Fiber.new { c2 = connection_handler.connection }
+        fiber3 = Fiber.new { c3 = connection_handler.connection }
+        fiber1.resume # bump in_use and allocated to 2
+        fiber2.resume # bump in_use and allocated to 3
+        fiber3.resume # bump in_use and allocated to 4
+
+        stats = connection_handler.connection_pool_stats
+
+        expect(stats).to eq(
+                           ringswitch:      { allocated: 4, in_use: 4 }
+                         )
+      end
+    end
   end
 end

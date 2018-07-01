@@ -75,9 +75,7 @@ module SpecHelper
           end
         end
       end
-
     end
-
   end
 
   def large_table_set
@@ -188,6 +186,44 @@ module SpecHelper
         db.read_write_username  "tester1"
         db.read_write_password  "verysecure1"
         db.database  "replication1"
+      end
+    end
+  end
+
+  def configure_ats_like_ringswitch
+    ActiveTableSet.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default  =  { table_set: :ringswitch }
+
+      conf.table_set do |ts|
+        ts.name = :ringswitch
+        ts.adapter = 'fibered_mysql2'
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host                 "10.0.0.1"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.database             "main"
+          end
+        end
+      end
+
+      conf.table_set do |ts|
+        ts.name = :ringswitch_jobs
+        ts.adapter = 'fibered_mysql2'
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host                 "10.0.0.1"
+            leader.read_write_username  "tester"
+            leader.read_write_password  "verysecure"
+            leader.database             "main"
+          end
+        end
       end
     end
   end
