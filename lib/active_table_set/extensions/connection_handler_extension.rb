@@ -75,7 +75,7 @@ module ActiveTableSet
       def pool_for_spec(spec)
         connection_pools[normalize_config(spec.config)] ||=
           begin
-            table_set = spec.instance_variable_get(:@table_set) or raise "@table_set not found in #{spec.inspect}"
+            table_set = spec.instance_variable_get(:@table_set) or "_none_"
             if spec.config[:adapter] == "fibered_mysql2"
               require 'active_table_set/fibered_database_connection_pool'
               require 'active_table_set/extensions/fibered_mysql2_connection_factory'
