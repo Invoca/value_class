@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # TODO: only allow named timeouts
 # TODO: Allow class table sets... (Maybe. Would rather do something different for ringswitch delayed job connection)
 # TODO: Worried about release connection. (Does connection pool do this?)

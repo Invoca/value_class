@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ActiveTableSet
   class QueryParser
     attr_reader :query, :read_tables, :write_tables, :operation

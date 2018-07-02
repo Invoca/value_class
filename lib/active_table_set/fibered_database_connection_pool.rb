@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This class behaves the same as ActiveRecord's ConnectionPool, but synchronizes with fibers rather than threads.
 
 require 'em-synchrony'

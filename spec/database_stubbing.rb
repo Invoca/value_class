@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class StubClient < ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter
   attr_reader :called_commands, :config
   attr_accessor :reconnect, :connect_timeout, :read_timeout, :write_timeout, :local_infile, :charset_name

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'em-synchrony'
 require 'active_record/connection_adapters/em_mysql2_adapter'
 

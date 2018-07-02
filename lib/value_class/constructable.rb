@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ValueClass
   module Constructable
     extend ActiveSupport::Concern

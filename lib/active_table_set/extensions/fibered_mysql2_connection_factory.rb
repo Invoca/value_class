@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_table_set/fibered_mysql2_adapter'
 
 

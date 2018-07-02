@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Adds convient access to the Acive Table Set methods.
 module ActiveTableSet
   module Extensions

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ActiveTableSet
   # these match the active record connection attributes.
   class PoolKey < ValueClass.struct(

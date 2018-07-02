@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ValueClass
   class Attribute
     attr_reader :name, :options, :limit

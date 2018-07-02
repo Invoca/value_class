@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'active_table_set/fibered_database_connection_pool'
 require 'rspec/mocks'

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Need better name
 module ActiveTableSet
   module Extensions
