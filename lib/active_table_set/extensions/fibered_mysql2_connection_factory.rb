@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'active_table_set/fibered_mysql2_adapter'
+require 'active_record/connection_adapters/fibered_mysql2_adapter'
 
 
 module EM::Synchrony
