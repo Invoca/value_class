@@ -68,22 +68,6 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
       expect(connection.respond_to?(:show_error_in_bars)).to eq(false)
     end
 
-    it "adds the using method to the connection class" do
-      expect(ActiveTableSet).to receive(:enforce_access_policy?) { false }
-      connection_handler.default_spec(default_spec)
-      connection = connection_handler.connection
-
-      expect(connection.respond_to?(:using)).to eq(true)
-
-      @called_block = false
-      expect(ActiveTableSet).to receive(:using).with(table_set: :ts, access: :am, partition_key: :pk, timeout: :t).and_yield
-      connection.using(table_set: :ts, access: :am, partition_key: :pk, timeout: :t) do
-        @called_block = true
-      end
-
-      expect(@called_block).to eq(true)
-    end
-
     it "has a pool for spec method" do
       connection_handler.default_spec(default_spec)
       expect(connection_handler.pool_for_spec(default_spec).spec.config).to eq(default_spec.config)

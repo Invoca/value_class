@@ -40,10 +40,12 @@ module ActiveTableSet
       def retrieve_connection(klass)
         connection = super
 
+        # include into connection class (which could be one of several classes depending on the 'adapter' setting)
         connection.is_a?(ActiveTableSet::Extensions::ConnectionExtension) or
           connection.class.send(:include, ActiveTableSet::Extensions::ConnectionExtension)
 
         if ActiveTableSet.enforce_access_policy?
+          # extend just the eigenclass for this connection instance--not the common class for all connections
           connection.is_a?(ActiveTableSet::Extensions::MysqlConnectionMonitor) or
             connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
         end
