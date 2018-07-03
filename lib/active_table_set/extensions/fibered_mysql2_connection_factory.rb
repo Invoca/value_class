@@ -10,6 +10,10 @@ module EM::Synchrony
       def configure_connection
         super                   # undo EM::Synchrony's override here
       end
+
+      def transaction(*args)
+        super                   # and here
+      end
     end
   end
 end
