@@ -6,7 +6,7 @@ require 'em-synchrony'
 require 'em-synchrony/thread'
 require 'active_table_set/extensions/fibered_mutex_with_waiter_priority'
 
-EventMachine::Synchrony::Thread::Mutex.prepend ActiveTableSet::Extensions::FiberedMutexWithWaiterPriority
+EventMachine::Synchrony::Thread::Mutex.prepend(ActiveTableSet::Extensions::FiberedMutexWithWaiterPriority)
 
 
 module ActiveTableSet
@@ -121,7 +121,7 @@ module ActiveTableSet
 
       super(connection_spec, table_set: table_set)
 
-      @reaper = nil   # no need to keep a reference to this since it does nothing
+      @reaper = nil   # no need to keep a reference to this since it does nothing in this sub-class
 
       # note that @reserved_connections is a ThreadSafe::Cache which is overkill in a fibered world, but harmless
     end
@@ -130,16 +130,25 @@ module ActiveTableSet
       ActiveRecord::Base.connection_id ||= Fiber.current.object_id
     end
 
-    def checkout
-      ExceptionHandling.ensure_safe("checkin_dead_connections") { checkin_dead_connections }
+    def checkin(connection)
+      ExceptionHandling.log_info("checkin: Checking in connection for Fiber #{Fiber.current.object_id} (##{Thread.current[:fiber_number]})")
       super
     end
 
-    private
+    def checkout
+      ExceptionHandling.ensure_safe("reap_connections") { reap_connections }
+      ExceptionHandling.log_info("checkout: Checking out connection for Fiber #{Fiber.current.object_id} (##{Thread.current[:fiber_number]})")
+      super
+    end
 
-    def checkin_dead_connections
+    def reap_connections
       @reserved_connections.values.each do |connection|
-        connection.owner.alive? or checkin(connection)
+        if connection.owner.alive?
+          ExceptionHandling.log_info("reap_connections: Connection still in use for Fiber #{connection.owner.object_id}")
+        else
+          ExceptionHandling.log_info("reap_connections: Reaping connection for Fiber #{connection.owner.object_id}")
+          checkin(connection)
+        end
       end
     end
   end

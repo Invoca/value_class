@@ -343,7 +343,7 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
       expect(c1.in_use?).to be
     end
 
-    it "should reclaim connections when the fiber has exited" do
+    it "should reclaim connections when the fiber has exited (and log details)" do
       configure_ats_like_ringswitch
       ActiveTableSet.enable
 
@@ -352,19 +352,29 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
       expect(connection_stub).to receive(:query) { }.exactly(2).times
       allow(connection_stub).to receive(:ping) { true }
       allow(connection_stub).to receive(:close).at_least(1).times
+      expect_any_instance_of(ActiveTableSet::FiberedDatabaseConnectionPool).to receive(:reap_connections).with(no_args).exactly(3).times.and_call_original
 
       allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
 
       c0 = ActiveRecord::Base.connection
       c1 = nil
 
-      fiber1 = Fiber.new { c1 = ActiveRecord::Base.connection }
+      fiber1 = Fiber.new { Thread.current[:fiber_number] = "95"; c1 = ActiveRecord::Base.connection }
+
+      c2 = nil
+      fiber2 = Fiber.new { Thread.current[:fiber_number] = "96"; c2 = ActiveRecord::Base.connection }
+
+      expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Connection still in use for Fiber #{Fiber.current.object_id}/)
+      expect(ExceptionHandling).to receive(:log_info).with("checkout: Checking out connection for Fiber #{fiber1.object_id} (#95)")
+      expect(ExceptionHandling).to receive(:log_info).with("checkout: Checking out connection for Fiber #{fiber2.object_id} (#96)")
+      expect(ExceptionHandling).to receive(:log_info).with("checkin: Checking in connection for Fiber #{fiber2.object_id} (#96)")
+      expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Reaping connection for Fiber #{fiber1.object_id}/)
+      expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Connection still in use for Fiber #{Fiber.current.object_id}/)
+
       fiber1.resume
 
       expect(c1.owner).to eq(fiber1)
 
-      c2 = nil
-      fiber2 = Fiber.new { c2 = ActiveRecord::Base.connection }
       fiber2.resume
 
       expect(c2.owner).to eq(fiber2)
