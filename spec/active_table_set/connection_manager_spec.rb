@@ -367,5 +367,31 @@ describe ActiveTableSet::ConnectionManager do
                          )
       end
     end
+
+    describe "reap_connections" do
+      it "should call reap_connections on each connection pool" do
+        configure_ats_like_ringswitch
+        ActiveTableSet.enable
+
+        connection_stub = Object.new
+        allow(connection_stub).to receive(:query_options) { {} }
+        expect(connection_stub).to receive(:query) { }
+        allow(connection_stub).to receive(:ping) { true }
+        allow(connection_stub).to receive(:close).exactly(3).times
+
+        allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
+
+        reap_count = nil
+        allow_any_instance_of(ActiveTableSet::FiberedDatabaseConnectionPool).to receive(:reap_connections) { reap_count += 1 }
+
+        c0 = ActiveRecord::Base.connection
+        c1 = ActiveTableSet.using(timeout: :migration) { ActiveRecord::Base.connection }
+
+        reap_count = 0
+        ActiveTableSet.manager.reap_connections
+
+        expect(reap_count).to eq(2)
+      end
+    end
   end
 end

@@ -98,6 +98,10 @@ module ActiveTableSet
           result
         end
       end
+
+      def reap_connections
+        connection_pools.each_value(&:reap_connections)
+      end
     end
   end
 end

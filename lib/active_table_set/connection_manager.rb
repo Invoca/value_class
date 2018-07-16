@@ -93,6 +93,10 @@ module ActiveTableSet
       end
     end
 
+    def reap_connections
+      @connection_handler.reap_connections
+    end
+
     private
 
     include ValueClass::ThreadLocalAttribute
