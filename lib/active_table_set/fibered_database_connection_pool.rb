@@ -144,9 +144,9 @@ module ActiveTableSet
     def reap_connections
       @reserved_connections.values.each do |connection|
         if connection.owner.alive?
-          ExceptionHandling.log_info("reap_connections: Connection still in use for Fiber #{connection.owner.object_id}")
+          ExceptionHandling.log_info("reap_connections: Table set #{try(:table_set).inspect} connection still in use for Fiber #{connection.owner.object_id}")
         else
-          ExceptionHandling.log_info("reap_connections: Reaping connection for Fiber #{connection.owner.object_id}")
+          ExceptionHandling.log_info("reap_connections: Table set #{try(:table_set).inspect} reaping connection for Fiber #{connection.owner.object_id}")
           checkin(connection)
         end
       end

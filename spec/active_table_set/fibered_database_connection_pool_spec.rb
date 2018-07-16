@@ -364,12 +364,12 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
       c2 = nil
       fiber2 = Fiber.new { Thread.current[:fiber_number] = "96"; c2 = ActiveRecord::Base.connection }
 
-      expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Connection still in use for Fiber #{Fiber.current.object_id}/)
+      expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Table set :ringswitch connection still in use for Fiber #{Fiber.current.object_id}/)
       expect(ExceptionHandling).to receive(:log_info).with("checkout: Checking out connection for Fiber #{fiber1.object_id} (#95)")
       expect(ExceptionHandling).to receive(:log_info).with("checkout: Checking out connection for Fiber #{fiber2.object_id} (#96)")
       expect(ExceptionHandling).to receive(:log_info).with("checkin: Checking in connection for Fiber #{fiber2.object_id} (#96)")
-      expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Reaping connection for Fiber #{fiber1.object_id}/)
-      expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Connection still in use for Fiber #{Fiber.current.object_id}/)
+      expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Table set :ringswitch reaping connection for Fiber #{fiber1.object_id}/)
+      expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Table set :ringswitch connection still in use for Fiber #{Fiber.current.object_id}/)
 
       fiber1.resume
 
