@@ -175,5 +175,16 @@ describe ActiveTableSet::QueryParser do
       expect(qp.read_tables).to eq([])
     end
 
+    it "handles this query" do
+      query = "update cf_affiliate_dimensions
+               set affiliate_global_name = 'aff five (Network 1)', affiliate_name = 'aff five'
+               where affiliate_id = 5"
+
+      qp = ActiveTableSet::QueryParser.new(query)
+      expect(qp.operation).to eq(:update)
+      expect(qp.read_tables).to eq([])
+      expect(qp.write_tables).to eq(["cf_affiliate_dimensions"])
+    end
+
   end
 end
