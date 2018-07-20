@@ -33,36 +33,15 @@ module ActiveTableSet
     end
 
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
-      handle = override(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout)
-      yield
+      handler = override(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout)
+      if block_given?
+        yield
+      else
+        handler
+      end
     ensure
-      handle&.reset
+      handler&.reset if block_given?
     end
-
-
-    # def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
-    #   new_request = request.merge(
-    #     table_set:     table_set,
-    #     access:        process_flag_access || _access_lock || access,
-    #     partition_key: partition_key,
-    #     timeout:       timeout
-    #   )
-    #
-    #   if new_request == request
-    #     yield
-    #   else
-    #     new_connection_attributes     = connection_attributes(new_request)
-    #     current_connection_attributes = connection_attributes(request)
-    #
-    #     if new_connection_attributes == current_connection_attributes
-    #       yield
-    #     elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
-    #       yield_with_new_access_policy(new_request, &blk)
-    #     else
-    #       yield_with_new_connection(new_request, &blk)
-    #     end
-    #   end
-    # end
 
     def use_test_scenario(test_scenario_name)
       @test_scenario_name = test_scenario_name  # store in case other threads/fibers call request below
@@ -129,10 +108,9 @@ module ActiveTableSet
     end
 
     def override_with_new_connection(new_request)
-      old_request   = self._request
-      self._request = new_request
-      establish_connection
-      OverrideReset.new(
+      old_request    = self._request
+      self._request  = new_request
+      override_reset = OverrideReset.new(
         ->() do
           begin
             release_connection
@@ -142,6 +120,12 @@ module ActiveTableSet
           end
         end
       )
+
+      establish_connection
+      override_reset
+    rescue
+      override_reset.reset
+      raise
     end
 
     def override_with_new_access_policy(new_request)
