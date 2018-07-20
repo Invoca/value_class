@@ -22,7 +22,25 @@ module ActiveTableSet
       connection_handler.default_spec(current_specification)
     end
 
-    def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
+    class NilOverride
+      def reset
+      end
+    end
+
+    class AccessPolicyOverride
+      def initialize(connection_manager, new_request)
+        @connection_manager = connection_manager
+        @old_request   = connection_manager._request
+        connection_manager._request = new_request
+      end
+
+      def reset
+        @connection_manager._request = old_request
+      end
+    end
+
+
+    def use(table_set: nil, access: nil, partition_key: nil, timeout: nil)
       new_request = request.merge(
         table_set:     table_set,
         access:        process_flag_access || _access_lock || access,
@@ -31,20 +49,56 @@ module ActiveTableSet
       )
 
       if new_request == request
-        yield
+        NilOverride.new
       else
         new_connection_attributes     = connection_attributes(new_request)
         current_connection_attributes = connection_attributes(request)
 
         if new_connection_attributes == current_connection_attributes
-          yield
+          NilOverride.new
         elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
-          yield_with_new_access_policy(new_request, &blk)
+          AccessPolicyOverride.new(self, new_request)
         else
-          yield_with_new_connection(new_request, &blk)
+          raise "not implemented"
         end
       end
     end
+
+    def reset(handler)
+      handler.reset
+    end
+
+    def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
+      handle = use(table_set: nil, access: nil, partition_key: nil, timeout: nil)
+      yield
+    ensure
+      handle&.reset
+    end
+
+
+    # def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
+    #   new_request = request.merge(
+    #     table_set:     table_set,
+    #     access:        process_flag_access || _access_lock || access,
+    #     partition_key: partition_key,
+    #     timeout:       timeout
+    #   )
+    #
+    #   if new_request == request
+    #     yield
+    #   else
+    #     new_connection_attributes     = connection_attributes(new_request)
+    #     current_connection_attributes = connection_attributes(request)
+    #
+    #     if new_connection_attributes == current_connection_attributes
+    #       yield
+    #     elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
+    #       yield_with_new_access_policy(new_request, &blk)
+    #     else
+    #       yield_with_new_connection(new_request, &blk)
+    #     end
+    #   end
+    # end
 
     def use_test_scenario(test_scenario_name)
       @test_scenario_name = test_scenario_name  # store in case other threads/fibers call request below
