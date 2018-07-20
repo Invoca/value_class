@@ -17,7 +17,7 @@ module ActiveTableSet
         @follower_config          = followers.any?     ? followers.first : leader
       end
 
-      def connection_spec(request, database_connections, connection_name_prefix, access_policy)
+      def connection_attributes(request, database_connections, connection_name_prefix, access_policy)
         selected_config = configs_for_access(request.access)
 
         ConnectionAttributes.new(

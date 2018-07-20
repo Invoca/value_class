@@ -88,19 +88,19 @@ describe ActiveTableSet::Configuration::Partition do
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :leader, timeout: 100)
 
-      con_spec = part.connection_spec(request, [], "foo", "access_policy")
+      con_attributes = part.connection_attributes(request, [], "foo", "access_policy")
 
-      expect(con_spec.pool_key.host).to eq(part.leader.host)
-      expect(con_spec.pool_key.username).to eq(part.leader.read_write_username)
+      expect(con_attributes.pool_key.host).to eq(part.leader.host)
+      expect(con_attributes.pool_key.username).to eq(part.leader.read_write_username)
     end
 
     it "passes through the timeout, access policy and connection_name" do
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :leader, timeout: 100)
 
-      con_spec = part.connection_spec(request, [], "foo", "access_policy")
+      con_attributes = part.connection_attributes(request, [], "foo", "access_policy")
 
-      expect(con_spec.access_policy).to eq("access_policy")
+      expect(con_attributes.access_policy).to eq("access_policy")
     end
 
 
@@ -108,21 +108,21 @@ describe ActiveTableSet::Configuration::Partition do
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :follower, timeout: 100)
 
-      con_spec = part.connection_spec(request, [], "foo", "access_policy")
+      con_attributes = part.connection_attributes(request, [], "foo", "access_policy")
 
-      expect(con_spec.pool_key.host).to eq(part.followers.first.host)
-      expect(con_spec.pool_key.username).to eq(part.followers.first.read_only_username)
-      expect(con_spec.failover_pool_key).to eq(nil)
+      expect(con_attributes.pool_key.host).to eq(part.followers.first.host)
+      expect(con_attributes.pool_key.username).to eq(part.followers.first.read_only_username)
+      expect(con_attributes.failover_pool_key).to eq(nil)
     end
 
     it "uses leader as follower if there are no followers" do
       part = small_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :follower, timeout: 100)
 
-      con_spec = part.connection_spec(request, [small_table_set.table_sets.first], "foo", "access_policy")
+      con_attributes = part.connection_attributes(request, [small_table_set.table_sets.first], "foo", "access_policy")
 
-      expect(con_spec.pool_key.host).to eq(part.leader.host)
-      expect(con_spec.pool_key.username).to eq(part.leader.read_only_username)
+      expect(con_attributes.pool_key.host).to eq(part.leader.host)
+      expect(con_attributes.pool_key.username).to eq(part.leader.read_only_username)
     end
 
     it "provides a chosen database config for balanced read access (when leader is chosen)" do
@@ -131,11 +131,11 @@ describe ActiveTableSet::Configuration::Partition do
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :balanced, timeout: 100)
 
-      con_spec = part.connection_spec(request, [], "foo", "access_policy")
+      con_attributes = part.connection_attributes(request, [], "foo", "access_policy")
 
-      expect(con_spec.pool_key.host).to eq(part.leader.host)
-      expect(con_spec.pool_key.username).to eq(part.leader.read_only_username)
-      expect(con_spec.failover_pool_key).to eq(nil)
+      expect(con_attributes.pool_key.host).to eq(part.leader.host)
+      expect(con_attributes.pool_key.username).to eq(part.leader.read_only_username)
+      expect(con_attributes.failover_pool_key).to eq(nil)
     end
 
     it "provides a chosen database config for balanced read access (when follower is chosen)" do
@@ -144,13 +144,13 @@ describe ActiveTableSet::Configuration::Partition do
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :balanced, timeout: 100)
 
-      con_spec = part.connection_spec(request, [], "foo", "access_policy")
+      con_attributes = part.connection_attributes(request, [], "foo", "access_policy")
 
-      expect(con_spec.pool_key.host).to eq(part.followers.first.host)
-      expect(con_spec.pool_key.username).to eq(part.followers.first.read_only_username)
+      expect(con_attributes.pool_key.host).to eq(part.followers.first.host)
+      expect(con_attributes.pool_key.username).to eq(part.followers.first.read_only_username)
 
       # When follower is chosen, fail back to leader host.
-      expect(con_spec.failover_pool_key.host).to eq(part.leader.host)
+      expect(con_attributes.failover_pool_key.host).to eq(part.leader.host)
     end
 
     it "provides a chosen database config for balanced access (when no followers)" do
@@ -159,10 +159,10 @@ describe ActiveTableSet::Configuration::Partition do
       part = large_table_set.table_sets.first.partitions.first.clone_config { |clone| clone.followers = [] }
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :balanced, timeout: 100)
 
-      con_spec = part.connection_spec(request, [], "foo", "access_policy")
+      con_attributes = part.connection_attributes(request, [], "foo", "access_policy")
 
-      expect(con_spec.pool_key.host).to eq(part.leader.host)
-      expect(con_spec.pool_key.username).to eq(part.leader.read_only_username)
+      expect(con_attributes.pool_key.host).to eq(part.leader.host)
+      expect(con_attributes.pool_key.username).to eq(part.leader.read_only_username)
     end
   end
 end

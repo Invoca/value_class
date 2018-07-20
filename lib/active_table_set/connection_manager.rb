@@ -22,32 +22,33 @@ module ActiveTableSet
       connection_handler.default_spec(current_specification)
     end
 
-    def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
-      new_request = request.merge(
-        table_set:     table_set,
-        access:        process_flag_access || _access_lock || access,
-        partition_key: partition_key,
-        timeout:       timeout
-      )
+    class OverrideReset
+      def initialize(reset_callable = nil)
+        @reset_callable = reset_callable
+      end
 
-      if new_request == request
-        yield
-      else
-        new_connection_spec     = connection_spec(new_request)
-        current_connection_spec = connection_spec(request)
-
-        if new_connection_spec == current_connection_spec
-          yield
-        elsif new_connection_spec.pool_key == current_connection_spec.pool_key
-          yield_with_new_access_policy(new_request, &blk)
-        else
-          yield_with_new_connection(new_request, &blk)
-        end
+      def reset
+        @reset_callable&.call
       end
     end
 
+    def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
+      handler = override(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout)
+      if block_given?
+        yield
+      else
+        handler
+      end
+    ensure
+      handler&.reset if block_given?
+    end
+
     def use_test_scenario(test_scenario_name)
+      @test_scenario_name = test_scenario_name  # store in case other threads/fibers call request below
+
       new_request = request.merge(test_scenario: test_scenario_name)
+
+      @connection_handler.test_scenario_connection_spec = connection_attributes(new_request).pool_key.connection_spec
 
       if new_request != request
         release_connection
@@ -68,7 +69,7 @@ module ActiveTableSet
 
     def access_policy
       unless _access_policy_disabled
-        @config.enforce_access_policy && connection_spec(request).access_policy
+        @config.enforce_access_policy && connection_attributes(request).access_policy
       end
     end
 
@@ -82,40 +83,64 @@ module ActiveTableSet
 
     private
 
+    def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
+      new_request = request.merge(
+        table_set:     table_set,
+        access:        process_flag_access || _access_lock || access,
+        partition_key: partition_key,
+        timeout:       timeout
+      )
+
+      if new_request == request
+        OverrideReset.new
+      else
+        new_connection_attributes     = connection_attributes(new_request)
+        current_connection_attributes = connection_attributes(request)
+
+        if new_connection_attributes == current_connection_attributes
+          OverrideReset.new
+        elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
+          override_with_new_access_policy(new_request)
+        else
+          override_with_new_connection(new_request)
+        end
+      end
+    end
+
+    def override_with_new_connection(new_request)
+      old_request    = self._request
+      self._request  = new_request
+      override_reset = OverrideReset.new(
+        ->() do
+          begin
+            release_connection
+          ensure
+            self._request = old_request
+            establish_connection
+          end
+        end
+      )
+
+      establish_connection
+      override_reset
+    rescue
+      override_reset.reset
+      raise
+    end
+
+    def override_with_new_access_policy(new_request)
+      old_request   = self._request
+      self._request = new_request
+      OverrideReset.new(->() { self._request = old_request })
+    end
+
     include ValueClass::ThreadLocalAttribute
     thread_local_instance_attr :_request
     thread_local_instance_attr :_access_lock
     thread_local_instance_attr :_access_policy_disabled
 
     def request
-      self._request ||= @config.default
-    end
-
-    def yield_with_new_access_policy(new_request)
-      old_request   = _request
-      self._request = new_request
-
-      yield
-
-    ensure
-      self._request = old_request
-    end
-
-    def yield_with_new_connection(new_request)
-      old_request   = _request
-      self._request = new_request
-
-      establish_connection
-
-      yield
-
-    ensure
-      begin
-        release_connection
-      ensure
-        self._request = old_request
-        establish_connection
-      end
+      self._request ||= @config.default.merge(test_scenario: @test_scenario_name)
     end
 
     def establish_connection
@@ -147,12 +172,12 @@ module ActiveTableSet
     end
 
     def current_specification
-      connection_spec(request).pool_key.connection_spec
+      connection_attributes(request).pool_key.connection_spec
     end
 
     def failover_specification
-      if connection_spec(request).failover_pool_key
-        connection_spec(request).failover_pool_key.connection_spec
+      if connection_attributes(request).failover_pool_key
+        connection_attributes(request).failover_pool_key.connection_spec
       end
     end
 
@@ -162,7 +187,7 @@ module ActiveTableSet
 
 
     def failover_available?
-      connection_spec(request).failover_pool_key
+      connection_attributes(request).failover_pool_key
     end
 
     def quarantine_connection(specification)
@@ -182,8 +207,8 @@ module ActiveTableSet
       ProcessFlags.is_set?(:disable_alternate_databases) ? :leader : nil
     end
 
-    def connection_spec(request)
-      @connection_specs[request] ||= @config.connection_spec(request)
+    def connection_attributes(request)
+      @connection_specs[request] ||= @config.connection_attributes(request)
     end
   end
 end

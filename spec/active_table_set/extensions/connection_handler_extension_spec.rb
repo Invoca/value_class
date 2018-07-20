@@ -7,7 +7,7 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
     spec_class.new(con_spec.to_hash, con_spec.connector_name)
   end
 
-  let(:connection_handler) {StubConnectionHandler.new}
+  let(:connection_handler) { StubConnectionHandler.new }
 
   let(:spec_class) {
     if defined?(ActiveRecord::ConnectionAdapters::ConnectionSpecification)
@@ -24,7 +24,7 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         read_write_username: "test_user",
         read_write_password: "secure_pwd",
         database: "my_database").to_hash,
-      'stub_client_connection' )
+      'stub_client_connection')
   end
 
   let(:alternate_spec) do
@@ -34,18 +34,22 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         read_write_username: "test_user2",
         read_write_password: "secure_pwd2",
         database: "my_database2").to_hash,
-      'some_method' )
+      'some_method')
   end
 
   context "connection handler extension" do
-
     it "has thread variables" do
       connection_handler.thread_connection_spec = :value
       expect(connection_handler.thread_connection_spec).to eq(:value)
     end
 
-    it "returns the default connection if the thread is not overloaded" do
+    it "returns the default connection if the thread connection spec is not set" do
       connection_handler.default_spec(default_spec)
+      expect(connection_handler.current_config).to eq(default_spec.config)
+    end
+
+    it "returns the test_scenario_connection_spec if that is set but the thread connection is not set" do
+      connection_handler.test_scenario_connection_spec = default_spec
       expect(connection_handler.current_config).to eq(default_spec.config)
     end
 
@@ -90,7 +94,7 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
       expect(connection_handler.pool_for_spec(default_spec).spec.config).to eq(default_spec.config)
     end
 
-    it "suppresses remove connection for active record base" do
+    it "suppresses remove_connection for active record base" do
       connection_handler.remove_connection(ActiveRecord::Base)
       connection_handler.remove_connection(ActiveTableSet)
 

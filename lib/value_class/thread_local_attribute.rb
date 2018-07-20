@@ -34,11 +34,11 @@ module ValueClass
       end
 
       def _get_thread_local_atttribute(object, name)
-        Thread.current.thread_variable_get(_thread_local_key(object, name))
+        Thread.current[_thread_local_key(object, name)]
       end
 
       def _set_thread_local_atttribute(object, name, value)
-        Thread.current.thread_variable_set(_thread_local_key(object, name), value)
+        Thread.current[_thread_local_key(object, name)] = value
       end
     end
   end

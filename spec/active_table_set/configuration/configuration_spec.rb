@@ -173,9 +173,9 @@ describe ActiveTableSet::Configuration::Config do
           test_scenario: nil,
           timeout: 100 )
 
-      con_spec = large_table_set.connection_spec(request)
+      con_attributes = large_table_set.connection_attributes(request)
 
-      expect(con_spec.pool_key.host).to eq("10.0.0.1")
+      expect(con_attributes.pool_key.host).to eq("10.0.0.1")
     end
 
     it "finds sharded connections" do
@@ -186,9 +186,9 @@ describe ActiveTableSet::Configuration::Config do
           test_scenario: nil,
           timeout: 100 )
 
-      con_spec = large_table_set.connection_spec(request)
+      con_attributes = large_table_set.connection_attributes(request)
 
-      expect(con_spec.pool_key.host).to eq("11.0.1.1")
+      expect(con_attributes.pool_key.host).to eq("11.0.1.1")
     end
 
     it "raises if the table set is not found" do
@@ -199,7 +199,7 @@ describe ActiveTableSet::Configuration::Config do
           test_scenario: nil,
           timeout: 100 )
 
-      expect { large_table_set.connection_spec(request) }.to raise_error(ArgumentError, "Unknown table set not_found, available_table_sets: common, sharded")
+      expect { large_table_set.connection_attributes(request) }.to raise_error(ArgumentError, "Unknown table set not_found, available_table_sets: common, sharded")
     end
 
     it "returns the test scenario if it is overridden" do
@@ -210,9 +210,9 @@ describe ActiveTableSet::Configuration::Config do
         test_scenario: "legacy",
         timeout: 100 )
 
-      con_spec = large_table_set.connection_spec(request)
+      con_attributes = large_table_set.connection_attributes(request)
 
-      expect(con_spec.pool_key.host).to eq("12.0.0.1")
+      expect(con_attributes.pool_key.host).to eq("12.0.0.1")
     end
 
     it "raises if the test scenario is not found" do
@@ -223,7 +223,7 @@ describe ActiveTableSet::Configuration::Config do
         test_scenario: "badname",
         timeout: 100 )
 
-      expect { large_table_set.connection_spec(request) }.to raise_error(ArgumentError, "Unknown test_scenario badname, available test scenarios: fixture, legacy" )
+      expect { large_table_set.connection_attributes(request) }.to raise_error(ArgumentError, "Unknown test_scenario badname, available test scenarios: fixture, legacy" )
     end
 
   end
@@ -337,10 +337,10 @@ describe ActiveTableSet::Configuration::Config do
         test_scenario: nil,
         timeout: :web )
 
-      con_spec = large_table_set.connection_spec(request)
+      con_attributes = large_table_set.connection_attributes(request)
 
-      expect(con_spec.pool_key.read_timeout).to eq(110)
-      expect(con_spec.pool_key.write_timeout).to eq(110)
+      expect(con_attributes.pool_key.read_timeout).to eq(110)
+      expect(con_attributes.pool_key.write_timeout).to eq(110)
     end
   end
 

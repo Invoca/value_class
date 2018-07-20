@@ -21,7 +21,7 @@ module ActiveTableSet
         partitions.count > 1
       end
 
-      def connection_spec(request, database_connections, connection_name_prefix)
+      def connection_attributes(request, database_connections, connection_name_prefix)
         updated_prefix = "#{connection_name_prefix}_#{name}"
         target_partition =
           if partitioned?
@@ -35,7 +35,7 @@ module ActiveTableSet
             partitions.first
           end
 
-        target_partition.connection_spec(request, [self] + database_connections, updated_prefix, access_policy)
+        target_partition.connection_attributes(request, [self] + database_connections, updated_prefix, access_policy)
       end
 
       private
