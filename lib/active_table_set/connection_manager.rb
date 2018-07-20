@@ -22,66 +22,14 @@ module ActiveTableSet
       connection_handler.default_spec(current_specification)
     end
 
-    class NilOverride
-      def reset
-      end
-    end
-
-    class AccessPolicyOverride
-      def initialize(connection_manager, new_request)
-        @connection_manager = connection_manager
-        @old_request   = @connection_manager._request
-        @connection_manager._request = new_request
+    class OverrideReset
+      def initialize(reset_callable = nil)
+        @reset_callable = reset_callable
       end
 
       def reset
-        @connection_manager._request = @old_request
+        @reset_callable&.call
       end
-    end
-
-    class ConnectionOverride
-      def initialize(connection_manager, new_request)
-        @connection_manager = connection_manager
-        @old_request = @connection_manager._request
-        @connection_manager._request = new_request
-
-        @connection_manager.send(:establish_connection)
-      end
-
-      def reset
-        @connection_manager.send(:release_connection)
-      ensure
-        @connection_manager._request = @old_request
-        @connection_manager.send(:establish_connection)
-      end
-    end
-
-    def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
-      new_request = request.merge(
-        table_set:     table_set,
-        access:        process_flag_access || _access_lock || access,
-        partition_key: partition_key,
-        timeout:       timeout
-      )
-
-      if new_request == request
-        NilOverride.new
-      else
-        new_connection_attributes     = connection_attributes(new_request)
-        current_connection_attributes = connection_attributes(request)
-
-        if new_connection_attributes == current_connection_attributes
-          NilOverride.new
-        elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
-          AccessPolicyOverride.new(self, new_request)
-        else
-          ConnectionOverride.new(self, new_request)
-        end
-      end
-    end
-
-    def reset(handler)
-      handler.reset
     end
 
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
@@ -156,6 +104,52 @@ module ActiveTableSet
 
     private
 
+    def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
+      new_request = request.merge(
+        table_set:     table_set,
+        access:        process_flag_access || _access_lock || access,
+        partition_key: partition_key,
+        timeout:       timeout
+      )
+
+      if new_request == request
+        OverrideReset.new
+      else
+        new_connection_attributes     = connection_attributes(new_request)
+        current_connection_attributes = connection_attributes(request)
+
+        if new_connection_attributes == current_connection_attributes
+          OverrideReset.new
+        elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
+          override_with_new_access_policy(new_request)
+        else
+          override_with_new_connection(new_request)
+        end
+      end
+    end
+
+    def override_with_new_connection(new_request)
+      old_request   = self._request
+      self._request = new_request
+      establish_connection
+      OverrideReset.new(
+        ->() do
+          begin
+            release_connection
+          ensure
+            self._request = old_request
+            establish_connection
+          end
+        end
+      )
+    end
+
+    def override_with_new_access_policy(new_request)
+      old_request   = self._request
+      self._request = new_request
+      OverrideReset.new(->() { self._request = old_request })
+    end
+
     include ValueClass::ThreadLocalAttribute
     thread_local_instance_attr :_request
     thread_local_instance_attr :_access_lock
@@ -163,33 +157,6 @@ module ActiveTableSet
 
     def request
       self._request ||= @config.default.merge(test_scenario: @test_scenario_name)
-    end
-
-    def yield_with_new_access_policy(new_request)
-      old_request   = _request
-      self._request = new_request
-
-      yield
-
-    ensure
-      self._request = old_request
-    end
-
-    def yield_with_new_connection(new_request)
-      old_request   = _request
-      self._request = new_request
-
-      establish_connection
-
-      yield
-
-    ensure
-      begin
-        release_connection
-      ensure
-        self._request = old_request
-        establish_connection
-      end
     end
 
     def establish_connection
