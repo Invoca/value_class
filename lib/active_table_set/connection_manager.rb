@@ -30,17 +30,33 @@ module ActiveTableSet
     class AccessPolicyOverride
       def initialize(connection_manager, new_request)
         @connection_manager = connection_manager
-        @old_request   = connection_manager._request
-        connection_manager._request = new_request
+        @old_request   = @connection_manager._request
+        @connection_manager._request = new_request
       end
 
       def reset
-        @connection_manager._request = old_request
+        @connection_manager._request = @old_request
       end
     end
 
+    class ConnectionOverride
+      def initialize(connection_manager, new_request)
+        @connection_manager = connection_manager
+        @old_request = @connection_manager._request
+        @connection_manager._request = new_request
 
-    def use(table_set: nil, access: nil, partition_key: nil, timeout: nil)
+        @connection_manager.send(:establish_connection)
+      end
+
+      def reset
+        @connection_manager.send(:release_connection)
+      ensure
+        @connection_manager._request = @old_request
+        @connection_manager.send(:establish_connection)
+      end
+    end
+
+    def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
       new_request = request.merge(
         table_set:     table_set,
         access:        process_flag_access || _access_lock || access,
@@ -59,7 +75,7 @@ module ActiveTableSet
         elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
           AccessPolicyOverride.new(self, new_request)
         else
-          raise "not implemented"
+          ConnectionOverride.new(self, new_request)
         end
       end
     end
@@ -69,7 +85,7 @@ module ActiveTableSet
     end
 
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
-      handle = use(table_set: nil, access: nil, partition_key: nil, timeout: nil)
+      handle = override(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout)
       yield
     ensure
       handle&.reset
