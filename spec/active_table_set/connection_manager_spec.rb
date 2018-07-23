@@ -21,6 +21,23 @@ describe ActiveTableSet::ConnectionManager do
     end
 
     context "using" do
+      it "allows timeouts to be overidden without a block" do
+        connection_manager
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        expect(connection_handler.current_config["read_timeout"]).to eq(110)
+        expect(connection_handler.current_config["write_timeout"]).to eq(110)
+
+        handler = connection_manager.using(timeout: 30)
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        expect(connection_handler.current_config["read_timeout"]).to eq(30)
+        expect(connection_handler.current_config["write_timeout"]).to eq(30)
+
+        handler.reset
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        expect(connection_handler.current_config["read_timeout"]).to eq(110)
+        expect(connection_handler.current_config["write_timeout"]).to eq(110)
+      end
+
       it "allows timeouts to be overidden" do
         connection_manager
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
