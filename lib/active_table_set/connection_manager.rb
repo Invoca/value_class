@@ -23,12 +23,12 @@ module ActiveTableSet
     end
 
     class OverrideReset
-      def initialize(reset_callable = nil)
-        @reset_callable = reset_callable
+      def initialize(&reset_block)
+        @reset_block = reset_block
       end
 
       def reset
-        @reset_callable&.call
+        @reset_block&.call
       end
     end
 
@@ -110,16 +110,14 @@ module ActiveTableSet
     def override_with_new_connection(new_request)
       old_request    = self._request
       self._request  = new_request
-      override_reset = OverrideReset.new(
-        ->() do
-          begin
-            release_connection
-          ensure
-            self._request = old_request
-            establish_connection
-          end
+      override_reset = OverrideReset.new do
+        begin
+          release_connection
+        ensure
+          self._request = old_request
+          establish_connection
         end
-      )
+      end
 
       establish_connection
       override_reset
@@ -131,7 +129,7 @@ module ActiveTableSet
     def override_with_new_access_policy(new_request)
       old_request   = self._request
       self._request = new_request
-      OverrideReset.new(->() { self._request = old_request })
+      OverrideReset.new { self._request = old_request }
     end
 
     include ValueClass::ThreadLocalAttribute
