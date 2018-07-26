@@ -131,13 +131,13 @@ module ActiveTableSet
     end
 
     def checkin(connection)
-      ExceptionHandling.log_info("checkin: Checking in connection for Fiber #{Fiber.current.object_id} (##{Thread.current[:fiber_number]})")
+      ExceptionHandling.log_info("checkin: Table set #{try(:table_set).inspect} checking in connection for Fiber #{Fiber.current.object_id}")
       super
     end
 
     def checkout
       ExceptionHandling.ensure_safe("reap_connections") { reap_connections }
-      ExceptionHandling.log_info("checkout: Checking out connection for Fiber #{Fiber.current.object_id} (##{Thread.current[:fiber_number]})")
+      ExceptionHandling.log_info("checkout: Table set #{try(:table_set).inspect} checking out connection for Fiber #{Fiber.current.object_id}")
       super
     end
 
