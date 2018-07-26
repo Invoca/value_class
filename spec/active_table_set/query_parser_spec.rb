@@ -127,6 +127,22 @@ describe ActiveTableSet::QueryParser do
       end
     end
 
+    context "queries with comments" do
+      {
+        leading_comment_large_query: ["cf_advertiser_campaign_date_aggregate_pts", "cf_advertiser_campaign_dimensions"]
+      }.each do |query_file, expected_reads|
+
+        it "parses #{query_file}" do
+          qp = ActiveTableSet::QueryParser.new(load_sample_query(query_file))
+
+          expect(qp.operation).to eq(:select)
+          expect(qp.read_tables).to eq(expected_reads)
+          expect(qp.write_tables).to eq([])
+        end
+      end
+    end
+
+
     context "other sql commands" do
       [
           'SAVEPOINT active_record_1',
@@ -159,6 +175,17 @@ describe ActiveTableSet::QueryParser do
       expect(qp.operation).to eq(:insert)
       expect(qp.write_tables).to eq(['simple_sessions'])
       expect(qp.read_tables).to eq([])
+    end
+
+    it "handles this query" do
+      query = "update cf_affiliate_dimensions
+               set affiliate_global_name = 'aff five (Network 1)', affiliate_name = 'aff five'
+               where affiliate_id = 5"
+
+      qp = ActiveTableSet::QueryParser.new(query)
+      expect(qp.operation).to eq(:update)
+      expect(qp.read_tables).to eq([])
+      expect(qp.write_tables).to eq(["cf_affiliate_dimensions"])
     end
 
   end

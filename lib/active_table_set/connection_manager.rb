@@ -24,28 +24,25 @@ module ActiveTableSet
       connection_handler.default_spec(current_specification)
     end
 
-    def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
-      new_settings = settings.merge(
-        table_set:     table_set,
-        access:        process_flag_access || _access_lock || access,
-        partition_key: partition_key,
-        timeout:       timeout
-      )
+    class OverrideReset
+      def initialize(&reset_block)
+        @reset_block = reset_block
+      end
 
-      if new_settings == settings
+      def reset
+        @reset_block&.call
+      end
+    end
+
+    def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
+      handler = override(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout)
+      if block_given?
         yield
       else
-        new_connection_attributes     = connection_attributes(new_settings)
-        current_connection_attributes = connection_attributes(settings)
-
-        if new_connection_attributes == current_connection_attributes
-          yield
-        elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
-          yield_with_new_access_policy(new_settings, &blk)
-        else
-          yield_with_new_connection(new_settings, &blk)
-        end
+        handler
       end
+    ensure
+      handler&.reset if block_given?
     end
 
     def use_test_scenario(test_scenario_name)
@@ -99,6 +96,55 @@ module ActiveTableSet
 
     private
 
+    def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
+      new_settings = settings.merge(
+        table_set:     table_set,
+        access:        process_flag_access || _access_lock || access,
+        partition_key: partition_key,
+        timeout:       timeout
+      )
+
+      if new_settings == settings
+        OverrideReset.new
+      else
+        new_connection_attributes     = connection_attributes(new_settings)
+        current_connection_attributes = connection_attributes(settings)
+
+        if new_connection_attributes == current_connection_attributes
+          OverrideReset.new
+        elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
+          override_with_new_access_policy(new_settings)
+        else
+          override_with_new_connection(new_settings)
+        end
+      end
+    end
+
+    def override_with_new_connection(new_settings)
+      old_settings    = self._settings
+      self._settings  = new_settings
+      override_reset = OverrideReset.new do
+        begin
+          release_connection
+        ensure
+          self._settings = old_settings
+          establish_connection
+        end
+      end
+
+      establish_connection
+      override_reset
+    rescue
+      override_reset.reset
+      raise
+    end
+
+    def override_with_new_access_policy(new_settings)
+      old_settings   = self._settings
+      self._settings = new_settings
+      OverrideReset.new { self._settings = old_settings }
+    end
+
     include ValueClass::ThreadLocalAttribute
     thread_local_instance_attr :_settings
     thread_local_instance_attr :_access_lock
@@ -106,33 +152,6 @@ module ActiveTableSet
 
     def settings
       self._settings ||= @config.default.merge(test_scenario: @test_scenario_name)
-    end
-
-    def yield_with_new_access_policy(new_settings)
-      old_settings   = _settings
-      self._settings = new_settings
-
-      yield
-
-    ensure
-      self._settings = old_settings
-    end
-
-    def yield_with_new_connection(new_settings)
-      old_settings   = _settings
-      self._settings = new_settings
-
-      establish_connection
-
-      yield
-
-    ensure
-      begin
-        release_connection
-      ensure
-        self._settings = old_settings
-        establish_connection
-      end
     end
 
     def establish_connection
