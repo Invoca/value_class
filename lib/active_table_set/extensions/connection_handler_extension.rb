@@ -100,7 +100,7 @@ module ActiveTableSet
       end
 
       def reap_connections
-        connection_pools.each_value(&:reap_connections)
+        connection_pools.each_value { |connection_pool| connection_pool.try(:reap_connections) }
       end
     end
   end

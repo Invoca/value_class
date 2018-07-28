@@ -80,6 +80,27 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
       expect(connection_handler.remove_calls).to eq(["ActiveTableSet"])
     end
 
+    context "reap_connections" do
+      it "calls reap_connections on each connection pool when defined" do
+        2.times do |i|
+          pool = Object.new
+          expect(pool).to receive(:reap_connections)
+          connection_handler.connection_pools[i] = pool
+        end
+
+        connection_handler.reap_connections
+      end
+
+      it "doesn't call reap_connections on each connection pool when not defined" do
+        2.times do |i|
+          pool = Object.new
+          connection_handler.connection_pools[i] = pool
+        end
+
+        connection_handler.reap_connections
+      end
+    end
+
     context "pool leaking" do
       it "does not leak pools if a connection handler mutates the connection" do
         allow(ActiveTableSet).to receive(:enforce_access_policy?) { true }
