@@ -126,6 +126,30 @@ module ActiveTableSet
       # note that @reserved_connections is a ThreadSafe::Cache which is overkill in a fibered world, but harmless
     end
 
+    def log_with_counts(method, message)
+      ExceptionHandling.log_info("#{method}: Table set #{try(:table_set).inspect} for Fiber #{Fiber.current.object_id} [#{@available.instance_variable_get(:@queue).size}, #{@connections.size}, #{@size}]: #{message}")
+    end
+
+    def acquire_connection
+      log_with_counts("0. acquire_connection", "about to @available_poll")
+      if conn = @available.poll
+        log_with_counts("1. acquire_connection", "got connection from @available")
+        conn
+      elsif @connections.size < @size
+        log_with_counts("2. acquire_connection", "about to checkout_new_connection")
+        checkout_new_connection.tap do
+          log_with_counts("2. acquire_connection", "DONE")
+        end
+      else
+        log_with_counts("3. acuire_connection", "about to reap")
+        reap
+        log_with_counts("3. acuire_connection", "about to poll for #{@checkout_timeout} seconds")
+        @available.poll(@checkout_timeout).tap do
+          log_with_counts("3. acuire_connection", "DONE")
+        end
+      end
+    end
+
     def current_connection_id
       ActiveRecord::Base.connection_id ||= Fiber.current.object_id
     end
