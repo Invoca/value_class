@@ -127,7 +127,7 @@ module ActiveTableSet
     end
 
     def log_with_counts(method, message)
-      ExceptionHandling.log_info("#{method}: Table set #{try(:table_set).inspect} for Fiber #{Fiber.current.object_id} [#{@available.instance_variable_get(:@queue).size}, #{@connections.size}, #{@size}]: #{message}")
+      ExceptionHandling.log_info("#{method}: Table set #{try(:table_set).inspect} for Fiber #{Fiber.current.object_id} [#{@available.instance_variable_get(:@queue).size}, #{@connections.size}, #{@size}]: #{message}\nconfig = #{spec.config.inspect}")
     end
 
     def acquire_connection
@@ -141,11 +141,11 @@ module ActiveTableSet
           log_with_counts("2. acquire_connection", "DONE")
         end
       else
-        log_with_counts("3. acuire_connection", "about to reap")
+        log_with_counts("3. acquire_connection", "about to reap")
         reap
-        log_with_counts("3. acuire_connection", "about to poll for #{@checkout_timeout} seconds")
+        log_with_counts("3. acquire_connection", "about to poll for #{@checkout_timeout} seconds")
         @available.poll(@checkout_timeout).tap do
-          log_with_counts("3. acuire_connection", "DONE")
+          log_with_counts("3. acquire_connection", "DONE")
         end
       end
     end
