@@ -103,7 +103,7 @@ describe ActiveTableSet::Configuration::TableSet do
       it "when using a multiple partitions, requires the partition key" do
         table_set = large_table_set.table_sets.last
         request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :leader, timeout: 100)
-        expect { table_set.connection_attributes(request, [], "foo") }.to raise_error(ArgumentError, "Table set sharded is partioned, you must provide a partition key. Available partitions: alpha, beta")
+        expect { table_set.connection_attributes(request, [], "foo") }.to raise_error(ArgumentError, "Table set sharded is partitioned, you must provide a partition key. Available partitions: alpha, beta")
       end
 
       it "alerts when passing an invalid parition key" do

@@ -28,7 +28,7 @@ module ActiveTableSet
         target_partition =
           if partitioned?
             partition_key = request.partition_key
-            partition_key or raise ArgumentError, "Table set #{name} is partioned, you must provide a partition key. Available partitions: #{partition_keys.join(', ')}"
+            partition_key or raise ArgumentError, "Table set #{name} is partitioned, you must provide a partition key. Available partitions: #{partition_keys.join(', ')}"
 
             (selected_partition = @partitions_by_key[partition_key]) or raise ArgumentError, "Partition #{partition_key} not found in table set #{name}. Available partitions: #{partition_keys.join(', ')}"
 

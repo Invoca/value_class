@@ -234,7 +234,7 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         stats = connection_handler.connection_pool_stats
 
         expect(stats).to eq(
-                           ringswitch:      { allocated: 4, in_use: 4 }
+                           "ringswitch-" => { allocated: 4, in_use: 4 }
                          )
       end
     end

@@ -392,9 +392,9 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
 
         connection_stub = Object.new
         allow(connection_stub).to receive(:query_options) { {} }
-        expect(connection_stub).to receive(:query) { }.exactly(3).times
+        expect(connection_stub).to receive(:query) { }.exactly(4).times
         allow(connection_stub).to receive(:ping) { true }
-        allow(connection_stub).to receive(:close).exactly(3).times
+        allow(connection_stub).to receive(:close).exactly(4).times
 
         allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
 
@@ -408,11 +408,15 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
         fiber2.resume #   "      "   "   "    "    "        "   "   "
         fiber3.resume # reset in_use to 2 but allocated will stay at 3
 
+        ActiveTableSet.using(table_set: :ringswitch_jobs, timeout: 25) do
+          ActiveRecord::Base.connection
+        end
+
         stats = ActiveTableSet.manager.connection_pool_stats
 
         expect(stats).to eq(
-            ringswitch:      { allocated: 3, in_use: 2 },
-            ringswitch_jobs: { allocated: 0, in_use: 0 }
+            "ringswitch-110"     => { allocated: 3, in_use: 2 },
+            "ringswitch_jobs-25" => { allocated: 1, in_use: 0 }
         )
       end
     end

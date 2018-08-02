@@ -92,9 +92,9 @@ module ActiveTableSet
         connection_pools.reduce(Hash.new { |h, k| h[k] = { allocated: 0, in_use: 0 } }) do |result, (spec, connection_pool)|
           allocated = connection_pool.connections.size
           in_use    = connection_pool.instance_variable_get(:@reserved_connections).size
-          table_set = connection_pool.try(:table_set) or raise "table_set not found on #{connection_pool.inspect}"
-          result[table_set][:allocated] += allocated
-          result[table_set][:in_use]    += in_use
+          table_set_with_timeout = connection_pool.table_set_with_timeout
+          result[table_set_with_timeout][:allocated] += allocated
+          result[table_set_with_timeout][:in_use]    += in_use
           result
         end
       end

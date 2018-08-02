@@ -84,10 +84,7 @@ module ActiveTableSet
     end
 
     def connection_pool_stats
-      @connection_handler.connection_pool_stats.tap do |stats|
-        # reference every table set so that missing ones (no DB connections currently) will get 0 stats instead
-        @config.table_sets.each { |ts| stats[ts.name] }
-      end
+      @connection_handler.connection_pool_stats
     end
 
     def reap_connections

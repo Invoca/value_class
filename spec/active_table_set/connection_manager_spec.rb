@@ -379,8 +379,7 @@ describe ActiveTableSet::ConnectionManager do
         stats = ActiveTableSet.manager.connection_pool_stats
 
         expect(stats).to eq(
-                           ringswitch:      { allocated: 3, in_use: 2 },
-                           ringswitch_jobs: { allocated: 0, in_use: 0 }
+                           "ringswitch-110" => { allocated: 3, in_use: 2 }
                          )
       end
     end

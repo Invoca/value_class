@@ -127,7 +127,7 @@ module ActiveTableSet
     end
 
     def log_with_counts(method, message)
-      ExceptionHandling.log_info("#{method}: Table set #{try(:table_set).inspect} for Fiber #{Fiber.current.object_id} [#{@available.instance_variable_get(:@queue).size}, #{@connections.size}, #{@size}]: #{message}\nconfig = #{spec.config.inspect}")
+      ExceptionHandling.log_info("#{method}: Table set-timeout #{table_set_with_timeout} for Fiber #{Fiber.current.object_id} [#{@reserved_connections.size}, #{@connections.size}, #{@size}]: #{message}")
     end
 
     def acquire_connection
