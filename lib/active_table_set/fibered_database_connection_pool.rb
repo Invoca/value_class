@@ -155,22 +155,22 @@ module ActiveTableSet
     end
 
     def checkin(connection)
-      ExceptionHandling.log_info("checkin: Table set #{try(:table_set).inspect} checking in connection for Fiber #{Fiber.current.object_id}")
+      ExceptionHandling.log_info("checkin: Table set #{table_set_with_timeout} checking in connection for Fiber #{Fiber.current.object_id}")
       super
     end
 
     def checkout
       ExceptionHandling.ensure_safe("reap_connections") { reap_connections }
-      ExceptionHandling.log_info("checkout: Table set #{try(:table_set).inspect} checking out connection for Fiber #{Fiber.current.object_id}")
+      ExceptionHandling.log_info("checkout: Table set #{table_set_with_timeout} checking out connection for Fiber #{Fiber.current.object_id}")
       super
     end
 
     def reap_connections
       @reserved_connections.values.each do |connection|
         if connection.owner.alive?
-          ExceptionHandling.log_info("reap_connections: Table set #{try(:table_set).inspect} connection still in use for Fiber #{connection.owner.object_id}")
+          ExceptionHandling.log_info("reap_connections: Table set #{table_set_with_timeout} connection still in use for Fiber #{connection.owner.object_id}")
         else
-          ExceptionHandling.log_info("reap_connections: Table set #{try(:table_set).inspect} reaping connection for Fiber #{connection.owner.object_id}")
+          ExceptionHandling.log_info("reap_connections: Table set #{table_set_with_timeout} reaping connection for Fiber #{connection.owner.object_id}")
           checkin(connection)
         end
       end
