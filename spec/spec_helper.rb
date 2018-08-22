@@ -200,8 +200,8 @@ module SpecHelper
       conf.default  =  { table_set: :ringswitch }
 
       conf.table_set do |ts|
-        ts.name = :ringswitch
-        ts.adapter = 'fibered_mysql2'
+        ts.name :ringswitch
+        ts.adapter 'fibered_mysql2'
         ts.access_policy do |ap|
           ap.disallow_read  'cf_%'
           ap.disallow_write 'cf_%'
@@ -217,8 +217,9 @@ module SpecHelper
       end
 
       conf.table_set do |ts|
-        ts.name = :ringswitch_jobs
-        ts.adapter = 'fibered_mysql2'
+        ts.name :ringswitch_jobs
+        ts.adapter 'fibered_mysql2'
+        ts.pool_size 1
         ts.partition do |part|
           part.leader do |leader|
             leader.host                 "10.0.0.1"

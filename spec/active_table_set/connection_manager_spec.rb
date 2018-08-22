@@ -114,13 +114,11 @@ describe ActiveTableSet::ConnectionManager do
         connection_manager.using(table_set: :sharded, partition_key: "alpha") do
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
 
-          begin
+          expect(-> do
             connection_manager.using(table_set: :common) do
               raise ArgumentError, "boom"
             end
-            fail "Exception did not propagate"
-          rescue ArgumentError
-          end
+          end).to raise_exception(ArgumentError)
 
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
         end
@@ -128,21 +126,33 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
       end
 
+      it "wraps reestablishing connection with ensure_safe" do
+        connection_manager.using(table_set: :sharded, partition_key: "alpha") do
+          expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
+
+          expect(ExceptionHandling).to receive(:log_error) # .with(instance_of(RuntimeError), /re-establishing connection with old settings/)
+          raise_count = 0
+          expect(connection_manager).to receive(:establish_connection) { raise RuntimeError if (raise_count += 1) == 2 }.exactly(3).times
+          expect(-> do
+            connection_manager.using(table_set: :common) do
+              raise ArgumentError, "boom"
+            end
+          end).to raise_exception(ArgumentError)
+        end
+      end
+
       it "resets even multiple levels of nesting if exceptions occur" do
         connection_manager
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
 
-        begin
+        expect(-> do
           connection_manager.using(table_set: :sharded, partition_key: "alpha") do
             expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
             connection_manager.using(table_set: :common) do
               raise ArgumentError, "boom"
             end
-
-            fail "Exception did not propagate"
           end
-        rescue ArgumentError
-        end
+        end).to raise_exception(ArgumentError)
 
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
       end
@@ -157,7 +167,7 @@ describe ActiveTableSet::ConnectionManager do
         rescue Exception => ex
           received_exception = ex
         end
-        expect(received_exception.message).to eq("Raised an exception")
+        expect(received_exception&.message).to eq("Raised an exception")
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
       end
 

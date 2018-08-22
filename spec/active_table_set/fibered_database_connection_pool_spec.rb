@@ -385,6 +385,45 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
       expect(c1.object_id).to eq(c2.object_id)
     end
 
+    it "should hand off connection on checkin to any fiber waiting on checkout" do
+      configure_ats_like_ringswitch
+      ActiveTableSet.enable
+
+      connection_stub = String.new
+      allow(connection_stub).to receive(:query_options) { {} }
+      expect(connection_stub).to receive(:query) { }.exactly(2).times
+      allow(connection_stub).to receive(:ping) { true }
+      allow(connection_stub).to receive(:close).at_least(1).times
+      expect_any_instance_of(ActiveTableSet::FiberedDatabaseConnectionPool).to receive(:reap_connections).with(no_args).exactly(3).times.and_call_original
+
+      allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
+
+      EM.run do
+        ActiveTableSet.using(table_set: :ringswitch_jobs) do
+          c0 = ActiveRecord::Base.connection
+          c1 = nil
+          fiber1 = Fiber.new do
+            c1 = ActiveTableSet.using(table_set: :ringswitch_jobs) do
+              ActiveRecord::Base.connection
+            end
+          end
+
+          fiber1.resume
+          expect(c1).to eq(nil) # should block because there is only one connection
+
+          ExceptionHandling.log_info "about to sleep(1)"
+          sleep(1)
+          c0.pool.checkin(c0)
+
+          ExceptionHandling.log_info "back from sleep(1)"
+
+          expect(c1).to eq(c0)
+
+          EM.stop
+        end
+      end
+    end
+
     describe "connection_pool_stats" do
       it "should return a hash of stats" do
         configure_ats_like_ringswitch

@@ -132,9 +132,9 @@ module ActiveTableSet
 
     def acquire_connection
       log_with_counts("0. acquire_connection", "about to @available_poll")
-      if conn = @available.poll
+      if connection = @available.poll
         log_with_counts("1. acquire_connection", "got connection from @available")
-        conn
+        connection
       elsif @connections.size < @size
         log_with_counts("2. acquire_connection", "about to checkout_new_connection")
         checkout_new_connection.tap do

@@ -24,6 +24,7 @@ module ActiveTableSet
       connection_handler.default_spec(current_specification)
     end
 
+    # This object remembers a reset block. When `reset` is called, it executes that block.
     class OverrideReset
       def initialize(&reset_block)
         @reset_block = reset_block
@@ -34,15 +35,33 @@ module ActiveTableSet
       end
     end
 
+    # Wrapper to avoid cascading exceptions.
+    # Calls the passed-in block. On the way out, calls the cleanup_block.
+    # If an exception is raised by either of those, it is passed through,
+    # but if an exception is raised by the block and then a cascading exception
+    # is raised by the cleanup_block, the former is passed through and the latter
+    # is logged with `ensure_safe`.
+    def ensure_safe_cleanup(context, block, &cleanup_block)
+      result = block.call
+    rescue Exception
+      ExceptionHandling.ensure_safe(context, &cleanup_block)
+      raise
+    else
+      cleanup_block.call
+      result
+    end
+
+    # If a block is given, runs the block using the given settings and resets to the old on the way out.
+    # If no block is given, changes the settings and returns a handler which does the reset when `reset` is called on it.
     def using(table_set: nil, access: nil, partition_key: nil, timeout: nil, &blk)
       handler = override(table_set: table_set, access: access, partition_key: partition_key, timeout: timeout)
       if block_given?
-        yield
+        ensure_safe_cleanup("using resetting with old settings", blk) do
+          handler&.reset
+        end
       else
         handler
       end
-    ensure
-      handler&.reset if block_given?
     end
 
     def use_test_scenario(test_scenario_name)
@@ -117,13 +136,14 @@ module ActiveTableSet
       end
     end
 
+    # Overrides the settings and makes a new connection with those.
+    # Returns an object with a `reset` method to use for resetting the connection.
     def override_with_new_connection(new_settings)
       old_settings    = self._settings
       self._settings  = new_settings
       override_reset = OverrideReset.new do
-        begin
-          release_connection
-        ensure
+        ensure_safe_cleanup("override_with_new_connection re-establishing connection with old settings: #{old_settings.inspect}",
+                            -> { release_connection }) do
           self._settings = old_settings
           establish_connection
         end
@@ -132,7 +152,7 @@ module ActiveTableSet
       establish_connection
       override_reset
     rescue
-      override_reset.reset
+      ensure_safe("override_with_new_connection: resetting") { override_reset.reset }
       raise
     end
 
