@@ -31,4 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec-mocks', '~> 3.7'
   spec.add_development_dependency 'mysql2',  '0.4.5'
   spec.add_development_dependency 'pry'
+  spec.add_development_dependency 'pry-byebug'
 end

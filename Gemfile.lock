@@ -80,6 +80,7 @@ GEM
       tzinfo (~> 1.1)
     arel (6.0.4)
     builder (3.2.3)
+    byebug (10.0.2)
     coderay (1.1.2)
     concurrent-ruby (1.0.5)
     crass (1.0.4)
@@ -109,6 +110,9 @@ GEM
     pry (0.11.3)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
+    pry-byebug (3.6.0)
+      byebug (~> 10.0)
+      pry (~> 0.10)
     rack (1.6.10)
     rack-test (0.6.3)
       rack (>= 1.0)
@@ -175,6 +179,7 @@ DEPENDENCIES
   mysql2 (= 0.4.5)
   process_flags!
   pry
+  pry-byebug
   rake (~> 10.0)
   rspec (~> 3.7)
   rspec-mocks (~> 3.7)
