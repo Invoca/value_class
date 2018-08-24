@@ -394,28 +394,29 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
       expect(connection_stub).to receive(:query) { }.exactly(2).times
       allow(connection_stub).to receive(:ping) { true }
       allow(connection_stub).to receive(:close).at_least(1).times
-      expect_any_instance_of(ActiveTableSet::FiberedDatabaseConnectionPool).to receive(:reap_connections).with(no_args).exactly(3).times.and_call_original
 
       allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
 
       EM.run do
         ActiveTableSet.using(table_set: :ringswitch_jobs) do
+          expect(ActiveRecord::Base.connection_pool).to receive(:reap_connections).with(no_args).exactly(1).times.and_call_original
+
           c0 = ActiveRecord::Base.connection
+          connection_pool = c0.pool
           c1 = nil
           fiber1 = Fiber.new do
             c1 = ActiveTableSet.using(table_set: :ringswitch_jobs) do
-              ActiveRecord::Base.connection
+              run_next_ticks
+              ActiveRecord::Base.connection.tap { run_next_ticks }
             end
           end
-
           fiber1.resume
+
           expect(c1).to eq(nil) # should block because there is only one connection
 
-          ExceptionHandling.log_info "about to sleep(1)"
-          sleep(1)
-          c0.pool.checkin(c0)
+          connection_pool.checkin(c0)
 
-          ExceptionHandling.log_info "back from sleep(1)"
+          run_next_ticks
 
           expect(c1).to eq(c0)
 

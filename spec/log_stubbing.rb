@@ -12,7 +12,7 @@ module TestLog
       @log_stream.rewind
       lines = @log_stream.readlines
       clear_log
-      lines.map { |l| l.strip }.reject { |l| l == "" }.compact
+      lines.map { |l| l.strip.presence }.compact
     end
 
     def clear_log
