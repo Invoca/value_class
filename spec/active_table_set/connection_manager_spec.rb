@@ -407,7 +407,7 @@ describe ActiveTableSet::ConnectionManager do
 
         allow(Mysql2::EM::Client).to receive(:new) { |config| connection_stub }
 
-        reap_count = nil
+        reap_count = 0
         allow_any_instance_of(ActiveTableSet::FiberedDatabaseConnectionPool).to receive(:reap_connections) { reap_count += 1 }
 
         c0 = ActiveRecord::Base.connection

@@ -2,14 +2,13 @@
 
 module ActiveTableSet
   class QueryParser
-    attr_reader :query, :read_tables, :write_tables, :operation, :clean_query
+    attr_reader :query, :read_tables, :write_tables, :operation
 
     def initialize(query)
-      @query = query.dup.force_encoding("BINARY")
-      @read_tables = []
+      @query        = query.dup.force_encoding("BINARY")
+      @read_tables  = []
       @write_tables = []
-      @clean_query = strip_comments(query)
-      parse_query
+      parse_query(@query)
     end
 
     private
@@ -41,96 +40,101 @@ module ActiveTableSet
 
     JOIN_MATCH = /(?:left\souter)?\sjoin\s[`]?([0-9,a-z,A-Z$_.]+)[`]?/im
 
-    def parse_query
-      case
-      when clean_query =~ SELECT_QUERY
-        parse_select_query
-      when clean_query =~ INSERT_QUERY
-        parse_insert_query
-      when clean_query =~ UPDATE_QUERY
-        parse_update_query
-      when clean_query =~ DELETE_QUERY
-        parse_delete_query
-      when clean_query =~ DROP_QUERY
-        parse_drop_query
-      when clean_query =~ CREATE_QUERY
-        parse_create_query
-      when clean_query =~ TRUNCATE_QUERY
-        parse_truncate_query
-      when clean_query =~ OTHER_SQL_COMMAND_QUERY
-        @operation = :other
-      else
-        raise "ActiveTableSet::QueryParser.parse_query - unexpected query: #{query}"
-      end
+    # returns the operation
+    def parse_query(query)
+      clean_query = strip_comments(query)
+
+      @operation =
+        case clean_query
+        when SELECT_QUERY
+          parse_select_query(clean_query, @read_tables)
+          :select
+        when INSERT_QUERY
+          parse_insert_query(clean_query, @read_tables, @write_tables)
+          :insert
+        when UPDATE_QUERY
+          parse_update_query(clean_query, @read_tables, @write_tables)
+          :update
+        when DELETE_QUERY
+          parse_delete_query(clean_query, @read_tables, @write_tables)
+          :delete
+        when DROP_QUERY
+          parse_drop_query(clean_query, @write_tables)
+          :drop
+        when CREATE_QUERY
+          parse_create_query(clean_query, @write_tables)
+          :create
+        when TRUNCATE_QUERY
+          parse_truncate_query(clean_query, @write_tables)
+          :truncate
+        when OTHER_SQL_COMMAND_QUERY
+          :other
+        else
+          raise "ActiveTableSet::QueryParser.parse_query - unexpected query: #{query}"
+        end
     end
 
     def strip_comments(source_query)
       source_query
         .scrub("*")
         .split("\n")
-        .map { |row| row.strip.starts_with?("#") ? nil : row }
+        .map { |row| row unless row.strip.starts_with?("#") }
         .compact
         .join("\n")
     end
 
-    def parse_select_query
-      @operation = :select
-      if clean_query =~ SELECT_FROM_MATCH
-        @read_tables << Regexp.last_match(1)
+    def parse_select_query(clean_query, read_tables)
+      if (table = clean_query[SELECT_FROM_MATCH, 1])
+        read_tables << table
       end
-      parse_joins
+      read_tables.concat(parse_joins(clean_query))
     end
 
-    def parse_insert_query
-      @operation = :insert
-      if clean_query =~ INSERT_TARGET_MATCH
-        @write_tables << Regexp.last_match(1)
+    def parse_insert_query(clean_query, read_tables, write_tables)
+      if (table = clean_query[INSERT_TARGET_MATCH, 1])
+        write_tables << table
       end
-      if clean_query =~ SELECT_FROM_MATCH
-        @read_tables << Regexp.last_match(1)
+      if (table = clean_query[SELECT_FROM_MATCH, 1])
+        read_tables << table
       end
-      parse_joins
+      read_tables.concat(parse_joins(clean_query))
     end
 
-    def parse_update_query
-      @operation = :update
-      if clean_query =~ UPDATE_TARGET_MATCH
-        @write_tables << Regexp.last_match(1)
+    def parse_update_query(clean_query, read_tables, write_tables)
+      if (table = clean_query[UPDATE_TARGET_MATCH, 1])
+        write_tables << table
       end
-      parse_joins
+      read_tables.concat(parse_joins(clean_query))
     end
 
-    def parse_delete_query
-      @operation = :delete
-      if clean_query =~ DELETE_TARGET_MATCH
-        @write_tables << Regexp.last_match(1)
+    def parse_delete_query(clean_query, read_tables, write_tables)
+      if (table = clean_query[DELETE_TARGET_MATCH, 1])
+        write_tables << table
       end
-      parse_joins
+      read_tables.concat(parse_joins(clean_query))
     end
 
-    def parse_drop_query
-      @operation = :drop
-      if clean_query =~ DROP_TARGET_MATCH
-        @write_tables << Regexp.last_match(1)
+    def parse_drop_query(clean_query, write_tables)
+      if (table = clean_query[DROP_TARGET_MATCH, 1])
+        write_tables << table
       end
     end
 
-    def parse_create_query
-      @operation = :create
-      if clean_query =~ CREATE_TARGET_MATCH
-        @write_tables << Regexp.last_match(1)
+    def parse_create_query(clean_query, write_tables)
+      if (table = clean_query[CREATE_TARGET_MATCH, 1])
+        write_tables << table
       end
     end
 
-    def parse_truncate_query
-      @operation = :truncate
-      if clean_query =~ TRUNCATE_TARGET_MATCH
-        @write_tables << Regexp.last_match(1)
+    def parse_truncate_query(clean_query, write_tables)
+      if (table = clean_query[TRUNCATE_TARGET_MATCH, 1])
+        write_tables << table
       end
     end
 
-    def parse_joins
-      @read_tables += clean_query.scan(JOIN_MATCH).flatten
+    # return additional @read_tables
+    def parse_joins(clean_query)
+      clean_query.scan(JOIN_MATCH).flatten
     end
   end
 end
