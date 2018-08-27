@@ -25,7 +25,7 @@ module ActiveTableSet
     end
 
     # This object remembers a reset block. When `reset` is called, it executes that block.
-    class OverrideReset
+    class ProxyForReset
       def initialize(&reset_block)
         @reset_block = reset_block
       end
@@ -35,11 +35,10 @@ module ActiveTableSet
       end
     end
 
-    # Wrapper to avoid cascading exceptions.
+    # Wrapper to avoid cascading exceptions hiding the original cause.
     # Calls the passed-in block. On the way out, calls the cleanup_block.
     # If an exception is raised by either of those, it is passed through,
-    # but if an exception is raised by the block and then a cascading exception
-    # is raised by the cleanup_block, the former is passed through and the latter
+    # but if both happen, the former is passed through and the latter
     # is logged with `ensure_safe`.
     def ensure_safe_cleanup(context, block, &cleanup_block)
       result = block.call
@@ -121,13 +120,13 @@ module ActiveTableSet
       )
 
       if new_settings == settings
-        OverrideReset.new
+        ProxyForReset.new
       else
         new_connection_attributes     = connection_attributes(new_settings)
         current_connection_attributes = connection_attributes(settings)
 
         if new_connection_attributes == current_connection_attributes
-          OverrideReset.new
+          ProxyForReset.new
         elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
           override_with_new_access_policy(new_settings)
         else
@@ -141,7 +140,7 @@ module ActiveTableSet
     def override_with_new_connection(new_settings)
       old_settings    = self._settings
       self._settings  = new_settings
-      override_reset = OverrideReset.new do
+      proxy_for_reset = ProxyForReset.new do
         ensure_safe_cleanup("override_with_new_connection re-establishing connection with old settings: #{old_settings.inspect}",
                             -> { release_connection }) do
           self._settings = old_settings
@@ -150,16 +149,16 @@ module ActiveTableSet
       end
 
       establish_connection
-      override_reset
+      proxy_for_reset
     rescue
-      ensure_safe("override_with_new_connection: resetting") { override_reset.reset }
+      ensure_safe("override_with_new_connection: resetting") { proxy_for_reset.reset }
       raise
     end
 
     def override_with_new_access_policy(new_settings)
       old_settings   = self._settings
       self._settings = new_settings
-      OverrideReset.new { self._settings = old_settings }
+      ProxyForReset.new { self._settings = old_settings }
     end
 
     include ValueClass::ThreadLocalAttribute

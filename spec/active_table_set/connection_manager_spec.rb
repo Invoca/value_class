@@ -130,7 +130,7 @@ describe ActiveTableSet::ConnectionManager do
         connection_manager.using(table_set: :sharded, partition_key: "alpha") do
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
 
-          expect(ExceptionHandling).to receive(:log_error) # .with(instance_of(RuntimeError), /re-establishing connection with old settings/)
+          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /using resetting with old settings/)
           raise_count = 0
           expect(connection_manager).to receive(:establish_connection) { raise RuntimeError if (raise_count += 1) == 2 }.exactly(3).times
           expect(-> do
