@@ -114,11 +114,11 @@ describe ActiveTableSet::ConnectionManager do
         connection_manager.using(table_set: :sharded, partition_key: "alpha") do
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
 
-          expect(-> do
+          expect do
             connection_manager.using(table_set: :common) do
               raise ArgumentError, "boom"
             end
-          end).to raise_exception(ArgumentError)
+          end.to raise_exception(ArgumentError)
 
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
         end
@@ -132,9 +132,9 @@ describe ActiveTableSet::ConnectionManager do
 
           raise_count = 0
           expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) == 1 }.exactly(3).times
-          expect(-> do
+          expect do
             connection_manager.using(table_set: :common) { }
-          end).to raise_exception(RuntimeError, /establish error/)
+          end.to raise_exception(RuntimeError, /establish error/)
         end
       end
 
@@ -146,9 +146,9 @@ describe ActiveTableSet::ConnectionManager do
 
           raise_count = 0
           expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) <= 2 }.exactly(3).times
-          expect(-> do
+          expect do
             connection_manager.using(table_set: :common) { }
-          end).to raise_exception(RuntimeError, /establish error/)
+          end.to raise_exception(RuntimeError, /establish error/)
         end
       end
 
@@ -159,11 +159,11 @@ describe ActiveTableSet::ConnectionManager do
           expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /using resetting with old settings/)
           raise_count = 0
           expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) == 2 }.exactly(3).times
-          expect(-> do
+          expect do
             connection_manager.using(table_set: :common) do
               raise ArgumentError, "boom"
             end
-          end).to raise_exception(ArgumentError)
+          end.to raise_exception(ArgumentError)
         end
       end
 
@@ -171,14 +171,14 @@ describe ActiveTableSet::ConnectionManager do
         connection_manager
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
 
-        expect(-> do
+        expect do
           connection_manager.using(table_set: :sharded, partition_key: "alpha") do
             expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
             connection_manager.using(table_set: :common) do
               raise ArgumentError, "boom"
             end
           end
-        end).to raise_exception(ArgumentError)
+        end.to raise_exception(ArgumentError)
 
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
       end
