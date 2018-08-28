@@ -151,7 +151,7 @@ module ActiveTableSet
       establish_connection
       proxy_for_reset
     rescue
-      ensure_safe("override_with_new_connection: resetting") { proxy_for_reset.reset }
+      ExceptionHandling.ensure_safe("override_with_new_connection: resetting") { proxy_for_reset.reset }
       raise
     end
 

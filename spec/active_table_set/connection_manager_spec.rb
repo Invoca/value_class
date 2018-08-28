@@ -107,7 +107,7 @@ describe ActiveTableSet::ConnectionManager do
         end
       end
 
-      it "resets connections if exceptions happen" do
+      it "resets the connection if an exception is raised in using block" do
         connection_manager
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
 
@@ -126,13 +126,39 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
       end
 
-      it "wraps reestablishing connection with ensure_safe" do
+      it "should pass through exception from establish_connection" do
+        connection_manager.using(table_set: :sharded, partition_key: "alpha") do
+          expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
+
+          raise_count = 0
+          expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) == 1 }.exactly(3).times
+          expect(-> do
+            connection_manager.using(table_set: :common) { }
+          end).to raise_exception(RuntimeError, /establish error/)
+        end
+      end
+
+      it "passes through exception from establish_connection and ensure_safe around reset" do
+        connection_manager.using(table_set: :sharded, partition_key: "alpha") do
+          expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
+
+          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/)
+
+          raise_count = 0
+          expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) <= 2 }.exactly(3).times
+          expect(-> do
+            connection_manager.using(table_set: :common) { }
+          end).to raise_exception(RuntimeError, /establish error/)
+        end
+      end
+
+      it "wraps ensure_safe around reestablish if exception happens from reset" do
         connection_manager.using(table_set: :sharded, partition_key: "alpha") do
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
 
           expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /using resetting with old settings/)
           raise_count = 0
-          expect(connection_manager).to receive(:establish_connection) { raise RuntimeError if (raise_count += 1) == 2 }.exactly(3).times
+          expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) == 2 }.exactly(3).times
           expect(-> do
             connection_manager.using(table_set: :common) do
               raise ArgumentError, "boom"
