@@ -7,10 +7,10 @@ GIT
 
 GIT
   remote: git@github.com:Invoca/exception_handling
-  revision: 2eab7a60b05c9156f1082859acfef334f451626e
-  ref: 2eab7a60b05c9156f1082859acfef334f451626e
+  revision: 4faa99a2e9dae6b33b8b1299058bee3ff439d505
+  ref: 4faa99a2e9dae6b33b8b1299058bee3ff439d505
   specs:
-    exception_handling (1.2.9)
+    exception_handling (1.3.0)
       actionmailer (~> 4.0)
       actionpack (~> 4.0)
       activesupport (~> 4.0)
@@ -29,7 +29,7 @@ GIT
 PATH
   remote: .
   specs:
-    active_table_set (0.1.0)
+    active_table_set (0.2.0)
       attr_comparable
       exception_handling
       minitest (>= 4.7.5)
@@ -79,7 +79,7 @@ GEM
     concurrent-ruby (1.0.5)
     diff-lcs (1.3)
     erubis (2.7.0)
-    eventmachine (1.2.5)
+    eventmachine (1.2.7)
     globalid (0.4.0)
       activesupport (>= 4.2.0)
     hobo_support (2.2.6)
@@ -164,7 +164,7 @@ DEPENDENCIES
   active_table_set!
   attr_comparable!
   bundler (~> 1.8)
-  exception_handling (~> 1.2.8)!
+  exception_handling (~> 1.3.0)!
   mysql2 (= 0.4.5)
   process_flags!
   pry
