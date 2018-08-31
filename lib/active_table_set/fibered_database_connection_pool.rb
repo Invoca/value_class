@@ -130,6 +130,26 @@ module ActiveTableSet
       ExceptionHandling.log_info("#{method}: Table set-timeout #{table_set_with_timeout} for Fiber #{Fiber.current.object_id} [#{@reserved_connections.size}, #{@connections.size}, #{@size}]: #{message}")
     end
 
+    def connection
+      # this is correctly done double-checked locking
+      # (ThreadSafe::Cache's lookups have volatile semantics)
+      if (result = @reserved_connections[current_connection_id])
+        log_with_counts("A. connection()", "no mutex synchronize: got connection from @reserved_connections ")
+        result
+      else
+        log_with_counts("B. connection()", "before mutex synchronize")
+        synchronize do
+          if (result = @reserved_connections[current_connection_id])
+            log_with_counts("C. connection()", "after mutex synchronize: got connection from @reserved_connections")
+            result
+          else
+            log_with_counts("D. connection()", "after mutex synchronize: about to checkout new connection ")
+            @reserved_connections[current_connection_id] = checkout
+          end
+        end
+      end
+    end
+
     def acquire_connection
       log_with_counts("0. acquire_connection", "about to @available_poll")
       if connection = @available.poll

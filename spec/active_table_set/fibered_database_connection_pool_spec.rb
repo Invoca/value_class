@@ -364,6 +364,8 @@ describe ActiveTableSet::FiberedDatabaseConnectionPool do
       c2 = nil
       fiber2 = Fiber.new { c2 = ActiveRecord::Base.connection }
 
+      expect(ExceptionHandling).to receive(:log_info).with(/B\. connection.*before mutex synchronize/).at_least(1).times
+      expect(ExceptionHandling).to receive(:log_info).with(/D\. connection.*after mutex synchronize: about to checkout new connection/).at_least(1).times
       expect(ExceptionHandling).to receive(:log_info).with(/reap_connections: Table set ringswitch-110 connection still in use for Fiber #{Fiber.current.object_id}/)
       expect(ExceptionHandling).to receive(:log_info).with(satisfy { |arg| arg =~ /0\. acquire_connection:/ }).exactly(2).times
       expect(ExceptionHandling).to receive(:log_info).with("checkout: Table set ringswitch-110 checking out connection for Fiber #{fiber1.object_id}")
