@@ -134,16 +134,16 @@ module ActiveTableSet
       # this is correctly done double-checked locking
       # (ThreadSafe::Cache's lookups have volatile semantics)
       if (result = @reserved_connections[current_connection_id])
-        log_with_counts("A. connection()", "no mutex synchronize: got connection from @reserved_connections ")
+#        log_with_counts("A. connection()", "no mutex synchronize: got connection from @reserved_connections ")
         result
       else
         log_with_counts("B. connection()", "before mutex synchronize")
         synchronize do
           if (result = @reserved_connections[current_connection_id])
-            log_with_counts("C. connection()", "after mutex synchronize: got connection from @reserved_connections")
+            ExceptionHandling.log_info("C. connection(): after mutex synchronize: got connection from @reserved_connections")
             result
           else
-            log_with_counts("D. connection()", "after mutex synchronize: about to checkout new connection ")
+            ExceptionHandling.log_info("D. connection(): after mutex synchronize: about to checkout new connection ")
             @reserved_connections[current_connection_id] = checkout
           end
         end
