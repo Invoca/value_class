@@ -137,13 +137,13 @@ module ActiveTableSet
 #        log_with_counts("A. connection()", "no mutex synchronize: got connection from @reserved_connections ")
         result
       else
-        log_with_counts("B. connection()", "before mutex synchronize")
+#        log_with_counts("B. connection()", "before mutex synchronize")
         synchronize do
           if (result = @reserved_connections[current_connection_id])
-            ExceptionHandling.log_info("C. connection(): after mutex synchronize: got connection from @reserved_connections")
+#            ExceptionHandling.log_info("C. connection(): after mutex synchronize: got connection from @reserved_connections")
             result
           else
-            ExceptionHandling.log_info("D. connection(): after mutex synchronize: about to checkout new connection ")
+#            ExceptionHandling.log_info("D. connection(): after mutex synchronize: about to checkout new connection ")
             @reserved_connections[current_connection_id] = checkout
           end
         end
