@@ -36,7 +36,7 @@ GIT
 PATH
   remote: .
   specs:
-    active_table_set (0.2.0)
+    active_table_set (0.3.0)
       attr_comparable
       exception_handling
       rails (~> 4.2.10)
