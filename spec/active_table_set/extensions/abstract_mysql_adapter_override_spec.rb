@@ -12,7 +12,7 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
     end
 
     context "when a row lock timeout occurs" do
-      it "log the engine status when a row lock timeout exception occurs and logging is enabled" do
+      it "log the engine status when logging is enabled" do
         timeout_exception = ActiveRecord::StatementInvalid.new("Lock wait timeout exceeded; try restarting transaction: ...")
         expect(@connection).to receive(:log).with("some sql command", any_args).and_raise(timeout_exception)
         expect(@connection).to receive(:log).with("SHOW ENGINE INNODB STATUS;", any_args)
@@ -45,7 +45,7 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
         end
       end
 
-      it "doesn't log the engine status when a row lock timeout exception occurs and logging is disabled" do
+      it "doesn't log the engine status when logging is disabled" do
         timeout_exception = ActiveRecord::StatementInvalid.new("Lock wait timeout exceeded; try restarting transaction: ...")
         expect(@connection).to receive(:non_nil_connection).and_return(@connection)
         expect(@connection).to receive(:query).with("some sql command").and_raise(timeout_exception)
