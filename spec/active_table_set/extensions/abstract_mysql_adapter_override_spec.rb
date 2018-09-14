@@ -14,8 +14,8 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
     context "when a row lock timeout occurs" do
       it "log the engine status when logging is enabled" do
         timeout_exception = ActiveRecord::StatementInvalid.new("Lock wait timeout exceeded; try restarting transaction: ...")
-        expect(@connection).to receive(:log).with("some sql command", any_args).and_raise(timeout_exception)
-        expect(@connection).to receive(:log).with("SHOW ENGINE INNODB STATUS;", any_args)
+        expect(@connection).to receive(:log).with("some sql command", "SQL").and_raise(timeout_exception)
+        expect(@connection).to receive(:log).with("SHOW ENGINE INNODB STATUS;")
 
         begin
           @connection.exec_query("some sql command")
@@ -26,16 +26,16 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
       end
 
       it "doesn't log the engine status when a the query succeeds" do
-        expect(@connection).to receive(:log).with("some sql command", any_args).and_return(Struct.new(:fields, :to_a).new([], []))
-        expect(@connection).to_not receive(:log).with("SHOW ENGINE INNODB STATUS;", any_args)
+        expect(@connection).to receive(:log).with("some sql command", "SQL").and_return(Struct.new(:fields, :to_a).new([], []))
+        expect(@connection).to_not receive(:log).with("SHOW ENGINE INNODB STATUS;")
 
         @connection.exec_query("some sql command")
       end
 
       it "doesn't log the engine status when a different exception is raised" do
         timeout_exception = ActiveRecord::StatementInvalid.new("Got timeout reading communication packets: ...")
-        expect(@connection).to receive(:log).with("some sql command", any_args).and_raise(timeout_exception)
-        expect(@connection).to_not receive(:log).with("SHOW ENGINE INNODB STATUS;", any_args)
+        expect(@connection).to receive(:log).with("some sql command", "SQL").and_raise(timeout_exception)
+        expect(@connection).to_not receive(:log).with("SHOW ENGINE INNODB STATUS;")
 
         begin
           @connection.exec_query("some sql command")
@@ -49,7 +49,7 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
         timeout_exception = ActiveRecord::StatementInvalid.new("Lock wait timeout exceeded; try restarting transaction: ...")
         expect(@connection).to receive(:non_nil_connection).and_return(@connection)
         expect(@connection).to receive(:query).with("some sql command").and_raise(timeout_exception)
-        expect(@connection).to_not receive(:log).with("SHOW ENGINE INNODB STATUS;", any_args)
+        expect(@connection).to_not receive(:log).with("SHOW ENGINE INNODB STATUS;")
 
         begin
           @connection.exec_query("some sql command", :skip_logging)
