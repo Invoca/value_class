@@ -12,6 +12,13 @@ module ActiveTableSet
       rescue ActiveRecord::StatementInvalid => exception
         if exception.message.split(":").first =~ /Packets out of order/
           raise ActiveRecord::StatementInvalid, "'Packets out of order' error was received from the database. Please update your mysql bindings (gem install mysql) and read http://dev.mysql.com/doc/mysql/en/password-hashing.html for more information. If you're on Windows, use the Instant Rails installer to get the updated mysql bindings."
+        elsif exception.message.split(":").first =~ /Lock wait timeout exceeded/
+          unless name == :skip_logging
+            # Not a recursive `execute` because I'm afraid of causing an exception loop
+            sql = "SHOW ENGINE INNODB STATUS;"
+            log(sql) { non_nil_connection.query(sql) }
+          end
+          raise
         else
           raise
         end
