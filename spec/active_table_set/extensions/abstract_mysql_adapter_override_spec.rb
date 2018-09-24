@@ -14,13 +14,13 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
     subject(:sql_query) { @connection.exec_query("some sql command") }
 
     context "on ActiveRecord::StatementInvalid" do
-      let(:timeout_exception) { ActiveRecord::StatementInvalid.new("Got timeout reading communication packets: ...") }
+      let(:exception) { ActiveRecord::StatementInvalid.new("Got timeout reading communication packets: ...") }
       let(:raise_expected_error) do
-        raise_error(timeout_exception.class, timeout_exception.message)
+        raise_error(exception.class, /#{exception.message}/)
       end
 
       context "packets out of order" do
-        let(:timeout_exception) { ActiveRecord::StatementInvalid.new("Packets out of order") }
+        let(:exception) { ActiveRecord::StatementInvalid.new("Packets out of order") }
         let(:raise_expected_error) do
           error = "'Packets out of order' error was received from the database. " \
                   "Please update your mysql bindings (gem install mysql) and read http://dev.mysql.com/doc/mysql/en/password-hashing.html for more information. " \
@@ -29,16 +29,23 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
         end
 
         it "wraps the exception message into a more helpful update for mysql bindings" do
-          expect(@connection).to receive(:log).with("some sql command", "SQL").and_raise(timeout_exception)
+          expect(@connection).to receive(:log).with("some sql command", "SQL").and_raise(exception)
+          expect { sql_query }.to raise_expected_error
+        end
+
+        it "handles wrapped exceptions" do
+          expect(@connection).to receive(:non_nil_connection).and_return(@connection)
+          expect(@connection).to receive(:query).with("some sql command").and_raise(exception)
+
           expect { sql_query }.to raise_expected_error
         end
       end
 
       context "row lock timeout" do
-        let(:timeout_exception) { ActiveRecord::StatementInvalid.new("Lock wait timeout exceeded; try restarting transaction: ...") }
+        let(:exception) { ActiveRecord::StatementInvalid.new("Lock wait timeout exceeded; try restarting transaction: ...") }
 
         it "log the mysql status context when logging is enabled" do
-          expect(@connection).to receive(:log).with("some sql command", "SQL").and_raise(timeout_exception)
+          expect(@connection).to receive(:log).with("some sql command", "SQL").and_raise(exception)
           expect(@connection).to receive(:log).with("SHOW ENGINE INNODB STATUS;")
           expect(@connection).to receive(:log).with("SHOW FULL PROCESSLIST;")
 
@@ -53,12 +60,22 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
           @connection.exec_query("some sql command")
         end
 
+        it "handles wrapped exceptions" do
+          expect(@connection).to receive(:log).with("some sql command", "SQL").and_call_original
+          expect(@connection).to receive(:non_nil_connection).and_return(@connection)
+          expect(@connection).to receive(:query).with("some sql command").and_raise(exception)
+          expect(@connection).to receive(:log).with("SHOW ENGINE INNODB STATUS;")
+          expect(@connection).to receive(:log).with("SHOW FULL PROCESSLIST;")
+
+          expect { sql_query }.to raise_expected_error
+        end
+
         context "skip logging" do
           subject(:sql_query) { @connection.exec_query("some sql command", :skip_logging) }
 
           it "doesn't log the engine status" do
             expect(@connection).to receive(:non_nil_connection).and_return(@connection)
-            expect(@connection).to receive(:query).with("some sql command").and_raise(timeout_exception)
+            expect(@connection).to receive(:query).with("some sql command").and_raise(exception)
             expect(@connection).to_not receive(:log).with("SHOW ENGINE INNODB STATUS;")
             expect(@connection).to_not receive(:log).with("SHOW FULL PROCESSLIST;")
 
@@ -69,7 +86,7 @@ describe ActiveTableSet::Extensions::AbstractMysqlAdapterOverride do
 
       context "other exception" do
         it "doesn't log the mysql status context" do
-          expect(@connection).to receive(:log).with("some sql command", "SQL").and_raise(timeout_exception)
+          expect(@connection).to receive(:log).with("some sql command", "SQL").and_raise(exception)
           expect(@connection).to_not receive(:log).with("SHOW ENGINE INNODB STATUS;")
           expect(@connection).to_not receive(:log).with("SHOW FULL PROCESSLIST;")
 
