@@ -153,7 +153,8 @@ describe ActiveTableSet::QueryParser do
           'SHOW FULL FIELDS FROM `outbound_integration_costs`',
           'SET SQL_AUTO_IS_NULL=0, NAMES \'utf8\', @@wait_timeout = 2147483',
           'SHOW TABLES LIKE',
-          'alter table access_tokens auto_increment = 1'
+          'ALTER TABLE access_tokens auto_increment = 1',
+          'RENAME TABLE users TO users_old'
       ].each do |command|
         it "parse misc sql command #{command}" do
           qp = ActiveTableSet::QueryParser.new(command)
