@@ -36,7 +36,7 @@ GIT
 PATH
   remote: .
   specs:
-    active_table_set (0.4.0)
+    active_table_set (0.4.2)
       attr_comparable
       exception_handling
       rails (~> 4.2)
@@ -185,4 +185,4 @@ DEPENDENCIES
   rspec-mocks (~> 3.7)
 
 BUNDLED WITH
-   1.16.1
+   1.16.4

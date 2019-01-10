@@ -96,6 +96,7 @@ module SpecHelper
 
       conf.table_set do |ts|
         ts.name = :common
+        ts.wait_timeout = 28800
 
         ts.access_policy do |ap|
           ap.disallow_read  'cf_%'

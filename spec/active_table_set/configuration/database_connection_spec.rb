@@ -26,6 +26,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
           "username"=>"test_user",
           "password"=>"secure_pwd",
           "connect_timeout"=>5,
+          "wait_timeout"=>2147483,
           "read_timeout"=>30,
           "write_timeout"=>30,
           "encoding"=>"utf8",
