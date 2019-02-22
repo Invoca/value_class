@@ -88,8 +88,19 @@ module ActiveTableSet
     end
 
     def access_policy
-      unless _access_policy_disabled
-        @config.enforce_access_policy && connection_attributes(settings).access_policy
+      if !_access_policy_disabled && @config.enforce_access_policy
+        orig_access_policy = connection_attributes(settings).access_policy
+        if settings.access == :leader
+          orig_access_policy
+        else
+          # Disallow all writes on follower or balanced access.
+          ActiveTableSet::Configuration::AccessPolicy.new(
+            allow_read: orig_access_policy.allow_read,
+            allow_write: '',
+            disallow_read: orig_access_policy.disallow_read,
+            disallow_write: '%'
+          )
+        end
       end
     end
 
@@ -126,8 +137,7 @@ module ActiveTableSet
         current_connection_attributes = connection_attributes(settings)
 
         if new_connection_attributes == current_connection_attributes
-          ProxyForReset.new
-        elsif new_connection_attributes.pool_key == current_connection_attributes.pool_key
+          # Tests use the same connection attributes, so override the access policy just in case.
           override_with_new_access_policy(new_settings)
         else
           override_with_new_connection(new_settings)

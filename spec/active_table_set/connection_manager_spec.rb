@@ -232,6 +232,11 @@ describe ActiveTableSet::ConnectionManager do
             expect(connection_handler.current_config["host"]).to eq("12.0.0.1")
             expect(connection_manager.access_policy.disallow_read).to eq("cf_%")
 
+            connection_manager.using(access: :follower) do
+              expect(connection_handler.current_config["host"]).to eq("12.0.0.1")
+              expect(connection_manager.access_policy.disallow_write).to eq("%")
+            end
+
             connection_manager.allow_test_access do
               expect(connection_manager.access_policy).to eq(nil)
             end
