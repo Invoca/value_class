@@ -53,10 +53,19 @@ module ActiveTableSet
       def find_value(name, alternates, context)
         ([self] + alternates + [DEFAULT]).each do |config|
           unless (v = config.send(name)).nil?
-            return v
+            return call_if_proc(v)
           end
         end
+
         raise ArgumentError, "could not resolve #{name} value for #{context.inspect}"
+      end
+
+      def call_if_proc(value)
+        if value.respond_to?(:call)
+          value.call
+        else
+          value
+        end
       end
     end
   end
