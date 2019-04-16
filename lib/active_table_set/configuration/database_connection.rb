@@ -44,7 +44,8 @@ module ActiveTableSet
           collation:       find_value(:collation, alternates, context),
           adapter:         find_value(:adapter, alternates, context),
           pool:            find_value(:pool_size, alternates, context),
-          reconnect:       find_value(:reconnect, alternates, context))
+          reconnect:       find_value(:reconnect, alternates, context)
+        )
       end
 
       private

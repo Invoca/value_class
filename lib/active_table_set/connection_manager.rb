@@ -201,9 +201,10 @@ module ActiveTableSet
     end
 
     def establish_connection_using_spec(connection_specification)
-      if blk = @config.before_enable(settings)
+      if (blk = @config.before_enable(settings))
         blk.call
       end
+
       @connection_handler.current_spec = connection_specification
       test_connection
     end
@@ -213,7 +214,7 @@ module ActiveTableSet
     end
 
     def failover_specification
-      if connection_attributes(settings).failover_pool_key
+      if failover_available?
         connection_attributes(settings).failover_pool_key.connection_spec(settings.table_set)
       end
     end
