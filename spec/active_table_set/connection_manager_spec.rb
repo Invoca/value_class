@@ -477,6 +477,30 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_handler.current_config["host"]).to eq(@new_host)
       end
     end
+
+    it "should remember the original host if the lambda returns nil" do
+      @dynamic_host_lambda = -> { @new_host }
+      @new_host = "original"
+
+      Time.now_override = Time.now
+
+      TestLog.clear_log
+      connection_manager
+
+      expect(
+        connection_handler.current_config["host"]
+      ).to eq("original")
+
+      # Escape the quarantine
+      Time.now_override = Time.now + 120
+
+      @new_host = nil
+      ActiveRecord::Base.set_next_client_exception(ArgumentError, "boom-boom")
+      connection_manager.using(access: :balanced) do
+        expect(TestLog.logged_lines.second).to match(/boom\-boom/)
+        expect(connection_handler.current_config["host"]).to eq("original")
+      end
+    end
   end
 
   def dynamic_host_config
