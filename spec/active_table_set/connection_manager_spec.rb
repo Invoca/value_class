@@ -453,6 +453,8 @@ describe ActiveTableSet::ConnectionManager do
   end
 
   context "with a stubbed pool manager and dynamic_host_config" do
+    subject { -> { @new_host } }
+
     let(:connection_pool)    { StubConnectionPool.new }
     let(:connection_handler) { StubConnectionHandler.new }
     let(:connection_manager) do
@@ -461,14 +463,12 @@ describe ActiveTableSet::ConnectionManager do
     end
 
     it "should call the lambda when host is a proc" do
-      @dynamic_host_lambda = -> { @new_host || "old_leader_host" }
-
       TestLog.clear_log
       connection_manager
 
       expect(
         connection_handler.current_config["host"]
-      ).to eq(@dynamic_host_lambda.call)
+      ).to eq(subject.call)
 
       ActiveRecord::Base.set_next_client_exception(ArgumentError, "boom-boom")
       @new_host = "192.168.1.1"
@@ -479,7 +479,6 @@ describe ActiveTableSet::ConnectionManager do
     end
 
     it "should remember the original host if the lambda returns nil" do
-      @dynamic_host_lambda = -> { @new_host }
       @new_host = "original"
 
       Time.now_override = Time.now
@@ -527,7 +526,7 @@ describe ActiveTableSet::ConnectionManager do
 
         ts.partition do |part|
           part.leader do |leader|
-            leader.host @dynamic_host_lambda || "10.0.0.1"
+            leader.host subject
             leader.read_write_username "tester"
             leader.read_write_password "verysecure"
             leader.read_only_username "read_only_tester_part"
@@ -536,7 +535,7 @@ describe ActiveTableSet::ConnectionManager do
           end
 
           part.follower do |follower|
-            follower.host @dynamic_host_lambda || "10.0.0.2"
+            follower.host subject
             follower.read_write_username "tester1"
             follower.read_write_password "verysecure1"
             follower.read_only_username "read_only_tester_follower"
@@ -545,7 +544,7 @@ describe ActiveTableSet::ConnectionManager do
           end
 
           part.follower do |follower|
-            follower.host @dynamic_host_lambda || "10.0.0.3"
+            follower.host subject
             follower.read_write_username "tester2"
             follower.read_write_password "verysecure2"
             follower.database "replication2"
