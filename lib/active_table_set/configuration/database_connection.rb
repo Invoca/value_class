@@ -81,11 +81,11 @@ module ActiveTableSet
       end
 
       def previous_value(name)
-        send("_previous_#{name}".to_sym)
+        send("_previous_#{name}")
       end
 
       def set_previous_value(name, value)
-        send("_previous_#{name}=".to_sym, value)
+        send("_previous_#{name}=", value)
       end
     end
   end
