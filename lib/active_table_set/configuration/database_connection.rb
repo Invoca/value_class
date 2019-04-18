@@ -63,20 +63,10 @@ module ActiveTableSet
 
       def call_if_proc(value)
         if value.respond_to?(:call)
-          nil_on_raise { value.call }
+          ExceptionHandling.ensure_safe("calling a pool_key proc") { value.call }
         else
           value
         end
-      end
-
-      def nil_on_raise
-        # rubocop:disable Style/RescueStandardError
-        begin
-          yield
-        rescue => e
-          nil
-        end
-        # rubocop:enable Style/RescueStandardError
       end
     end
   end
