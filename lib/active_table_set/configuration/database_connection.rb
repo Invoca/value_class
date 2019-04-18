@@ -20,8 +20,6 @@ module ActiveTableSet
       value_attr :encoding
       value_attr :reconnect
 
-      thread_local_instance_attr :_previous_host
-
       DEFAULT = DatabaseConnection.new(
         host:            "localhost",
         connect_timeout: 5,
@@ -35,7 +33,7 @@ module ActiveTableSet
 
       def pool_key(alternates:, timeout:, access: :leader, context: "")
         PoolKey.new(
-          host:            new_value_or_previous(:host, alternates, context),
+          host:            find_value(:host, alternates, context),
           database:        find_value(:database, alternates, context),
           username:        find_value(access == :leader ? :read_write_username : :read_only_username, alternates, context),
           password:        find_value(access == :leader ? :read_write_password : :read_only_password, alternates, context),
@@ -53,15 +51,6 @@ module ActiveTableSet
 
       private
 
-      def new_value_or_previous(name, alternates, context)
-        if (value = find_value(name, alternates, context))
-          set_previous_value(name, value)
-          value
-        else
-          previous_value(name)
-        end
-      end
-
       def find_value(name, alternates, context)
         ([self] + alternates + [DEFAULT]).each do |config|
           unless (v = config.send(name)).nil?
@@ -78,14 +67,6 @@ module ActiveTableSet
         else
           value
         end
-      end
-
-      def previous_value(name)
-        send("_previous_#{name}")
-      end
-
-      def set_previous_value(name, value)
-        send("_previous_#{name}=", value)
       end
 
       def nil_on_raise

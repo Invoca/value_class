@@ -478,29 +478,6 @@ describe ActiveTableSet::ConnectionManager do
       end
     end
 
-    it "should remember the original host if the lambda returns nil" do
-      @new_host = "original"
-
-      Time.now_override = Time.now
-
-      TestLog.clear_log
-      connection_manager
-
-      expect(
-        connection_handler.current_config["host"]
-      ).to eq("original")
-
-      # Escape the quarantine
-      Time.now_override = Time.now + 120
-
-      @new_host = nil
-      ActiveRecord::Base.set_next_client_exception(ArgumentError, "boom-boom")
-      connection_manager.using(access: :balanced) do
-        expect(TestLog.logged_lines.second).to match(/boom\-boom/)
-        expect(connection_handler.current_config["host"]).to eq("original")
-      end
-    end
-
     context "when service discovery raises an error" do
       subject { -> { raise "ConsulFail" } }
 
