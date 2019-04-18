@@ -500,6 +500,20 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_handler.current_config["host"]).to eq("original")
       end
     end
+
+    context "when service discovery raises an error" do
+      subject { -> { raise "ConsulFail" } }
+
+      it "should have error handling when the lambda raises" do
+        @new_host = "original"
+
+        connection_manager
+
+        expect(
+          connection_handler.current_config["host"]
+        ).to eq(nil)
+      end
+    end
   end
 
   def dynamic_host_config

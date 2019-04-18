@@ -74,7 +74,7 @@ module ActiveTableSet
 
       def call_if_proc(value)
         if value.respond_to?(:call)
-          value.call
+          nil_on_raise { value.call }
         else
           value
         end
@@ -86,6 +86,16 @@ module ActiveTableSet
 
       def set_previous_value(name, value)
         send("_previous_#{name}=", value)
+      end
+
+      def nil_on_raise
+        # rubocop:disable Style/RescueStandardError
+        begin
+          yield
+        rescue => e
+          nil
+        end
+        # rubocop:enable Style/RescueStandardError
       end
     end
   end
