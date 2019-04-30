@@ -392,6 +392,21 @@ describe ActiveTableSet::ConnectionManager do
           expect(connection_handler.current_config["host"]).to eq("10.0.0.2")
         end
       end
+
+      it "should error all the way out when the failover connection also fails" do
+        connection_manager
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+        allow(connection_manager).to receive(:establish_connection_using_spec) do
+          raise "BoomBoom"
+        end
+
+        expect do
+          connection_manager.using(access: :balanced) do
+            # This should fail
+          end
+        end.to raise_error("BoomBoom")
+      end
     end
 
     describe "connection_pool_stats" do
