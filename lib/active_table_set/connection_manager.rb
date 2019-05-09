@@ -209,7 +209,7 @@ module ActiveTableSet
       establish_connection_using_spec(spec)
 
     rescue => ex
-      ExceptionHandling.log_error(ex, "Failure checking out alternate database connection")
+      ExceptionHandling.log_error(ex, "Failure establishing database connection using spec: #{spec.inspect}")
       reload_pool_key_on_next_try
 
       if quarantine_failed

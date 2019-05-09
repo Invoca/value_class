@@ -401,6 +401,11 @@ describe ActiveTableSet::ConnectionManager do
           raise "BoomBoom"
         end
 
+        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/)
+
+        log_error_message = /Failure establishing database connection using spec: .*"host"=>"10\.0\.0\./
+        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), log_error_message).twice
+
         expect do
           connection_manager.using(access: :balanced) do
             # This should fail
