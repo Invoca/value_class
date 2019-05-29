@@ -38,19 +38,21 @@ module ActiveTableSet
       # Overwrites the connection handler method.
       # Extends the connection class if needed.
       def retrieve_connection(klass)
-        connection = super
+        reset_connection_pools_on_retry do
+          connection = super
 
-        # include into connection class (which could be one of several classes depending on the 'adapter' setting)
-        connection.is_a?(ActiveTableSet::Extensions::ConnectionExtension) or
-          connection.class.send(:include, ActiveTableSet::Extensions::ConnectionExtension)
+          # include into connection class (which could be one of several classes depending on the 'adapter' setting)
+          connection.is_a?(ActiveTableSet::Extensions::ConnectionExtension) or
+            connection.class.send(:include, ActiveTableSet::Extensions::ConnectionExtension)
 
-        if ActiveTableSet.enforce_access_policy?
-          # extend just the eigenclass for this connection instance--not the common class for all connections
-          connection.is_a?(ActiveTableSet::Extensions::MysqlConnectionMonitor) or
-            connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
+          if ActiveTableSet.enforce_access_policy?
+            # extend just the eigenclass for this connection instance--not the common class for all connections
+            connection.is_a?(ActiveTableSet::Extensions::MysqlConnectionMonitor) or
+              connection.extend(ActiveTableSet::Extensions::MysqlConnectionMonitor)
+          end
+
+          connection
         end
-
-        connection
       end
 
       def normalize_config(config)
@@ -101,6 +103,19 @@ module ActiveTableSet
 
       def reap_connections
         connection_pools.each_value { |connection_pool| connection_pool.try(:reap_connections) }
+      end
+
+      private
+
+      def reset_connection_pools_on_retry
+        begin
+          yield
+        rescue => e
+          ActiveTableSet.manager.reload_pool_key
+          @connection_pools.clear
+
+          yield
+        end
       end
     end
   end

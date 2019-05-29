@@ -121,6 +121,13 @@ module ActiveTableSet
       @connection_handler.reap_connections
     end
 
+    # If host is set as a lambda, this removes the cached pool key
+    # So the lambda will be called again
+    def reload_pool_key
+      @connection_specs.clear
+      @current_pool_keys[settings] = nil
+    end
+
     private
 
     def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
@@ -210,7 +217,7 @@ module ActiveTableSet
 
     rescue => ex
       ExceptionHandling.log_error(ex, "Failure establishing database connection using spec: #{spec.inspect}")
-      reload_pool_key_on_next_try
+      reload_pool_key
 
       if quarantine_failed
         quarantine_connection(spec)
@@ -271,12 +278,6 @@ module ActiveTableSet
 
     def connection_attributes(settings)
       @connection_specs[settings] ||= @config.connection_attributes(settings)
-    end
-
-    # If host is set as a lambda, this removes the cached pool key
-    # So the lambda will be called again
-    def reload_pool_key_on_next_try
-      @current_pool_keys[settings] = nil
     end
   end
 end
