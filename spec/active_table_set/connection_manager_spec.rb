@@ -371,9 +371,9 @@ describe ActiveTableSet::ConnectionManager do
         Time.now_override = Time.now
 
         # First connection fails, log an exception and revert to previous setting
-        ActiveRecord::Base.set_next_client_exception(ArgumentError, "badaboom")
+        ActiveRecord::Base.set_next_client_exception(ArgumentError, "Can't connect cause boom boom")
         connection_manager.using(access: :balanced) do
-          expect(TestLog.logged_lines.second).to match(/badaboom/)
+          expect(TestLog.logged_lines.second).to match(/Can\'t connect/)
           expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
         end
 
@@ -398,7 +398,7 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
 
         allow(connection_manager).to receive(:establish_connection_using_spec) do
-          raise "BoomBoom"
+          raise "Can't connect because boom"
         end
 
         expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/)
@@ -410,7 +410,7 @@ describe ActiveTableSet::ConnectionManager do
           connection_manager.using(access: :balanced) do
             # This should fail
           end
-        end.to raise_error("BoomBoom")
+        end.to raise_error("Can't connect because boom")
       end
     end
 

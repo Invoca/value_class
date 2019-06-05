@@ -216,16 +216,23 @@ module ActiveTableSet
       establish_connection_using_spec(spec)
 
     rescue => ex
-      ExceptionHandling.log_error(ex, "Failure establishing database connection using spec: #{spec.inspect}")
-      reload_pool_key
+      ExceptionHandling.log_error(ex, "Failure establishing database connection using spec: #{spec.inspect} because of #{ex.message}")
 
-      if quarantine_failed
-        quarantine_connection(spec)
-      end
+      if exception_should_retry(ex)
+        reload_pool_key
 
-      if spec_when_error
-        establish_connection_using_spec(spec_when_error)
+        if quarantine_failed
+          quarantine_connection(spec)
+        end
+
+        if spec_when_error
+          establish_connection_using_spec(spec_when_error)
+        end
       end
+    end
+
+    def exception_should_retry(ex)
+      ex.message =~ /Can\'t connect/
     end
 
     def establish_connection_using_spec(connection_specification)
