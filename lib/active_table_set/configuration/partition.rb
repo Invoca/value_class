@@ -11,9 +11,9 @@ module ActiveTableSet
         super
         leader or raise ArgumentError, "must provide a leader"
 
-        # Balanced - choose a follower based on the process id
+        # Balanced - choose a follower randomly - once per partition instance
         available_database_configs = [leader] + followers
-        selected_index = self.class.pid % (available_database_configs.count)
+        selected_index            = self.class.random_database_config_index(available_database_configs.count)
         @balanced_config          = available_database_configs[selected_index]
         @balanced_config_failover = selected_index > 0 ? leader          : nil
         @follower_config          = followers.any?     ? followers.first : leader
@@ -53,8 +53,10 @@ module ActiveTableSet
         end
       end
 
-      def self.pid
-        $$
+      class << self
+        def random_database_config_index(config_count)
+          rand(config_count)
+        end
       end
     end
   end
