@@ -13,7 +13,7 @@ describe ActiveTableSet::ConnectionManager do
     let(:connection_pool)    { StubConnectionPool.new }
     let(:connection_handler) { StubConnectionHandler.new }
     let(:connection_manager) do
-      allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
+      allow(ActiveTableSet::Configuration::Partition).to receive(:random_database_config_index).and_return(1)
       ActiveTableSet::ConnectionManager.new(config: large_table_set, connection_handler: connection_handler )
     end
 

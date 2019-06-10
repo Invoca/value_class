@@ -128,7 +128,7 @@ describe ActiveTableSet::Configuration::Partition do
     end
 
     it "provides a chosen database config for balanced read access (when leader is chosen)" do
-      allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(0)
+      allow(ActiveTableSet::Configuration::Partition).to receive(:random_database_config_index).and_return(0)
 
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :balanced, timeout: 100)
@@ -141,7 +141,7 @@ describe ActiveTableSet::Configuration::Partition do
     end
 
     it "provides a chosen database config for balanced read access (when follower is chosen)" do
-      allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
+      allow(ActiveTableSet::Configuration::Partition).to receive(:random_database_config_index).and_return(1)
 
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :balanced, timeout: 100)
@@ -156,7 +156,7 @@ describe ActiveTableSet::Configuration::Partition do
     end
 
     it "provides a chosen database config for balanced access (when no followers)" do
-      allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
+      allow(ActiveTableSet::Configuration::Partition).to receive(:random_database_config_index).and_return(0)
 
       part = large_table_set.table_sets.first.partitions.first.clone_config { |clone| clone.followers = [] }
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :balanced, timeout: 100)
