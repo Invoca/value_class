@@ -40,6 +40,9 @@ module ActiveTableSet
 
     JOIN_MATCH = /(?:left\souter)?\sjoin\s[`]?([0-9,a-z,A-Z$_.]+)[`]?/im
 
+    # This will only grab /* */ comments that start at the beginning of the query.  (I am concerned about matching within strings)
+    LEADING_C_COMMENT = /\A\s*\/\*[\s\S]*?\*\//m
+
     # returns the operation
     def parse_query(query)
       clean_query = strip_comments(query)
@@ -77,6 +80,7 @@ module ActiveTableSet
     def strip_comments(source_query)
       source_query
         .scrub("*")
+        .gsub(LEADING_C_COMMENT,'')
         .split("\n")
         .map { |row| row unless row.strip.starts_with?("#") }
         .compact

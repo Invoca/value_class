@@ -129,7 +129,8 @@ describe ActiveTableSet::QueryParser do
 
     context "queries with comments" do
       {
-        leading_comment_large_query: ["cf_advertiser_campaign_date_aggregate_pts", "cf_advertiser_campaign_dimensions"]
+        leading_block_comment_large_query: ["cf_advertiser_campaign_date_aggregate_pts", "cf_advertiser_campaign_dimensions"],
+        leading_c_comment_large_query: ["cf_advertiser_campaign_date_aggregate_pts", "cf_advertiser_campaign_dimensions"]
       }.each do |query_file, expected_reads|
 
         it "parses #{query_file}" do
