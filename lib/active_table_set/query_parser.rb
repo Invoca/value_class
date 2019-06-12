@@ -40,8 +40,8 @@ module ActiveTableSet
 
     JOIN_MATCH = /(?:left\souter)?\sjoin\s[`]?([0-9,a-z,A-Z$_.]+)[`]?/im
 
-    # This will only grab /* */ comments that start at the beginning of a line.  (I am concerned about matching within strings)
-    LEADING_C_COMMENT = /^\s*\/\*[\s\S]*?\*\//m
+    # This will only grab /* */ comments that start at the beginning of the query.  (I am concerned about matching within strings)
+    LEADING_C_COMMENT = /\A\s*\/\*[\s\S]*?\*\//m
 
     # returns the operation
     def parse_query(query)
