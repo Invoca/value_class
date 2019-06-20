@@ -125,7 +125,11 @@ module ActiveTableSet
     # So the lambda will be called again
     def reload_pool_key
       @connection_specs.clear
-      @current_pool_keys[settings] = nil
+      @current_pool_keys.clear
+    end
+
+    def current_specification
+      pool_key_for_settings(settings).connection_spec(settings.table_set)
     end
 
     private
@@ -242,10 +246,6 @@ module ActiveTableSet
 
       @connection_handler.current_spec = connection_specification
       test_connection
-    end
-
-    def current_specification
-      pool_key_for_settings(settings).connection_spec(settings.table_set)
     end
 
     def pool_key_for_settings(settings)
