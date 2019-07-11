@@ -111,11 +111,21 @@ module ActiveTableSet
         begin
           yield
         rescue => e
-          ActiveTableSet.manager.reload_pool_key
-          @connection_pools.clear
+          clear_cached_pools
+          reload_default_spec
 
           yield
         end
+      end
+
+      def clear_cached_pools
+        @class_to_pool&.clear
+        @owner_to_pool&.clear
+      end
+
+      def reload_default_spec
+        ActiveTableSet.manager.reload_pool_key
+        default_spec(ActiveTableSet.manager.current_specification)
       end
     end
   end
