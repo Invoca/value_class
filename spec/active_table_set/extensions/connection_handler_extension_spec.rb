@@ -80,6 +80,18 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
       expect(connection_handler.remove_calls).to eq(["ActiveTableSet"])
     end
 
+    context "retrying connections" do
+      it "should retry once and raise if the second try also fails" do
+        allow(connection_handler).to receive(:retrieve_connection_pool).and_raise(RuntimeError.new("Boom"), RuntimeError.new("BoomBoom"))
+
+        connection_handler.default_spec(default_spec)
+
+        expect {
+          connection_handler.retrieve_connection(ActiveRecord::Base)
+        }.to raise_error(RuntimeError, "BoomBoom")
+      end
+    end
+
     context "reap_connections" do
       it "calls reap_connections on each connection pool when defined" do
         2.times do |i|

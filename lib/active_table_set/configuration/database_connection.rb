@@ -4,6 +4,7 @@ module ActiveTableSet
   module Configuration
     class DatabaseConnection
       include ValueClass::Constructable
+      include ValueClass::ThreadLocalAttribute
 
       value_attr :host
       value_attr :read_write_username
@@ -44,7 +45,8 @@ module ActiveTableSet
           collation:       find_value(:collation, alternates, context),
           adapter:         find_value(:adapter, alternates, context),
           pool:            find_value(:pool_size, alternates, context),
-          reconnect:       find_value(:reconnect, alternates, context))
+          reconnect:       find_value(:reconnect, alternates, context)
+        )
       end
 
       private
@@ -52,10 +54,19 @@ module ActiveTableSet
       def find_value(name, alternates, context)
         ([self] + alternates + [DEFAULT]).each do |config|
           unless (v = config.send(name)).nil?
-            return v
+            return call_if_proc(v)
           end
         end
+
         raise ArgumentError, "could not resolve #{name} value for #{context.inspect}"
+      end
+
+      def call_if_proc(value)
+        if value.respond_to?(:call)
+          ExceptionHandling.ensure_safe("calling a pool_key proc") { value.call }
+        else
+          value
+        end
       end
     end
   end

@@ -29,15 +29,15 @@ module ActiveTableSet
         config[:flags]    = Mysql2::Client::FOUND_ROWS if Mysql2::Client.const_defined?(:FOUND_ROWS)
 
         client =
-            begin
-              Mysql2::EM::Client.new(config)
-            rescue Mysql2::Error => error
-              if error.message.include?("Unknown database")
-                raise ActiveRecord::NoDatabaseError.new(error.message, error)
-              else
-                raise
-              end
+          begin
+            Mysql2::EM::Client.new(config)
+          rescue Mysql2::Error => error
+            if error.message.include?("Unknown database")
+              raise ActiveRecord::NoDatabaseError.new(error.message, error)
+            else
+              raise
             end
+          end
 
         options = [config[:host], config[:username], config[:password], config[:database], config[:port], config[:socket], 0]
         FiberedMysql2Adapter.new(client, logger, options, config)

@@ -39,7 +39,7 @@ Style/IfUnlessModifier:
 Style/SignalException:
   Enabled: false
 
-Style/SingleSpaceBeforeFirstArg:
+Layout/SpaceBeforeFirstArg:
   Enabled: false
 
 Style/StringLiterals:

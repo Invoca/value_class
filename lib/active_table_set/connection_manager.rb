@@ -19,6 +19,7 @@ module ActiveTableSet
       @config             = config
       @connection_handler = connection_handler
       @connection_specs   = {}
+      @current_pool_keys  = {}
       @quarantine_until   = {}
 
       connection_handler.default_spec(current_specification)
@@ -120,6 +121,17 @@ module ActiveTableSet
       @connection_handler.reap_connections
     end
 
+    # If host is set as a lambda, this removes the cached pool key
+    # So the lambda will be called again
+    def reload_pool_key
+      @connection_specs.clear
+      @current_pool_keys.clear
+    end
+
+    def current_specification
+      pool_key_for_settings(settings).connection_spec(settings.table_set)
+    end
+
     private
 
     def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
@@ -182,38 +194,66 @@ module ActiveTableSet
 
     def establish_connection
       if failover_available?
-        if connection_quarantined?(current_specification)
-          establish_connection_using_spec(failover_specification)
-        else
-          begin
-            establish_connection_using_spec(current_specification)
-          rescue => ex
-            ExceptionHandling.log_error(ex, "Failure checking out alternate database connection")
-
-            quarantine_connection(current_specification)
-
-            establish_connection_using_spec(failover_specification)
-          end
-        end
+        connect_using_preferred_spec
       else
-        establish_connection_using_spec(current_specification)
+        safely_establish_connection(
+          spec: current_specification,
+          spec_when_error: current_specification,
+          quarantine_failed: false
+        )
       end
     end
 
+    def connect_using_preferred_spec
+      if connection_quarantined?(current_specification)
+        establish_connection_using_spec(failover_specification)
+      else
+        safely_establish_connection(
+          spec: current_specification,
+          spec_when_error: failover_specification,
+          quarantine_failed: true
+        )
+      end
+    end
+
+    def safely_establish_connection(spec:, spec_when_error:, quarantine_failed:)
+      establish_connection_using_spec(spec)
+
+    rescue => ex
+      ExceptionHandling.log_error(ex, "Failure establishing database connection using spec: #{spec.inspect} because of #{ex.message}")
+
+      if exception_should_retry(ex)
+        reload_pool_key
+
+        if quarantine_failed
+          quarantine_connection(spec)
+        end
+
+        if spec_when_error
+          establish_connection_using_spec(spec_when_error)
+        end
+      end
+    end
+
+    def exception_should_retry(ex)
+      ex.message =~ /Can\'t connect/
+    end
+
     def establish_connection_using_spec(connection_specification)
-      if blk = @config.before_enable(settings)
+      if (blk = @config.before_enable(settings))
         blk.call
       end
+
       @connection_handler.current_spec = connection_specification
       test_connection
     end
 
-    def current_specification
-      connection_attributes(settings).pool_key.connection_spec(settings.table_set)
+    def pool_key_for_settings(settings)
+      @current_pool_keys[settings] ||= connection_attributes(settings).pool_key
     end
 
     def failover_specification
-      if connection_attributes(settings).failover_pool_key
+      if failover_available?
         connection_attributes(settings).failover_pool_key.connection_spec(settings.table_set)
       end
     end

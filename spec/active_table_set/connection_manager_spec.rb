@@ -371,9 +371,9 @@ describe ActiveTableSet::ConnectionManager do
         Time.now_override = Time.now
 
         # First connection fails, log an exception and revert to previous setting
-        ActiveRecord::Base.set_next_client_exception(ArgumentError, "badaboom")
+        ActiveRecord::Base.set_next_client_exception(ArgumentError, "Can't connect cause boom boom")
         connection_manager.using(access: :balanced) do
-          expect(TestLog.logged_lines.second).to match(/badaboom/)
+          expect(TestLog.logged_lines.second).to match(/Can\'t connect/)
           expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
         end
 
@@ -391,6 +391,26 @@ describe ActiveTableSet::ConnectionManager do
           expect(TestLog.logged_lines.first).to eq(nil)
           expect(connection_handler.current_config["host"]).to eq("10.0.0.2")
         end
+      end
+
+      it "should error all the way out when the failover connection also fails" do
+        connection_manager
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+        allow(connection_manager).to receive(:establish_connection_using_spec) do
+          raise "Can't connect because boom"
+        end
+
+        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/)
+
+        log_error_message = /Failure establishing database connection using spec: .*"host"=>"10\.0\.0\./
+        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), log_error_message).twice
+
+        expect do
+          connection_manager.using(access: :balanced) do
+            # This should fail
+          end
+        end.to raise_error("Can't connect because boom")
       end
     end
 
@@ -448,6 +468,99 @@ describe ActiveTableSet::ConnectionManager do
         ActiveTableSet.manager.reap_connections
 
         expect(reap_count).to eq(2)
+      end
+    end
+  end
+
+  context "with a stubbed pool manager and dynamic_host_config" do
+    subject { -> { @new_host } }
+
+    let(:connection_pool)    { StubConnectionPool.new }
+    let(:connection_handler) { StubConnectionHandler.new }
+    let(:connection_manager) do
+      allow(ActiveTableSet::Configuration::Partition).to receive(:pid).and_return(1)
+      ActiveTableSet::ConnectionManager.new(config: dynamic_host_config, connection_handler: connection_handler)
+    end
+
+    it "should call the lambda when host is a proc" do
+      TestLog.clear_log
+      connection_manager
+
+      expect(
+        connection_handler.current_config["host"]
+      ).to eq(subject.call)
+
+      ActiveRecord::Base.set_next_client_exception(ArgumentError, "boom-boom")
+      @new_host = "192.168.1.1"
+      connection_manager.using(access: :balanced) do
+        expect(TestLog.logged_lines.second).to match(/boom\-boom/)
+        expect(connection_handler.current_config["host"]).to eq(@new_host)
+      end
+    end
+
+    context "when service discovery raises an error" do
+      subject { -> { raise "ConsulFail" } }
+
+      it "should have error handling when the lambda raises" do
+        @new_host = "original"
+
+        connection_manager
+
+        expect(
+          connection_handler.current_config["host"]
+        ).to eq(nil)
+      end
+    end
+  end
+
+  def dynamic_host_config
+    ActiveTableSet::Configuration::Config.config do |conf|
+      conf.enforce_access_policy true
+      conf.environment           'test'
+      conf.default = { table_set: :common }
+
+      conf.read_only_username  "read_only_tester"
+      conf.read_only_password  "verysecure_too"
+      conf.adapter             "stub_client"
+
+      conf.timeout name: :web, timeout: 110.seconds
+      conf.timeout name: :batch, timeout: 30.minutes
+
+      conf.table_set do |ts|
+        ts.name = :common
+        ts.wait_timeout = 28800
+
+        ts.access_policy do |ap|
+          ap.disallow_read  'cf_%'
+          ap.disallow_write 'cf_%'
+        end
+
+        ts.partition do |part|
+          part.leader do |leader|
+            leader.host subject
+            leader.read_write_username "tester"
+            leader.read_write_password "verysecure"
+            leader.read_only_username "read_only_tester_part"
+            leader.read_only_password "verysecure_too_part"
+            leader.database "main"
+          end
+
+          part.follower do |follower|
+            follower.host subject
+            follower.read_write_username "tester1"
+            follower.read_write_password "verysecure1"
+            follower.read_only_username "read_only_tester_follower"
+            follower.read_only_password "verysecure_too_follower"
+            follower.database  "replication1"
+          end
+
+          part.follower do |follower|
+            follower.host subject
+            follower.read_write_username "tester2"
+            follower.read_write_password "verysecure2"
+            follower.database "replication2"
+          end
+        end
       end
     end
   end

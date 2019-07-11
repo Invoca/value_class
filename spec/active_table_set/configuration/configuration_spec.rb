@@ -252,6 +252,35 @@ describe ActiveTableSet::Configuration::Config do
     end
   end
 
+  context "dynamic host" do
+    it "allows leader.host to be a lambda" do
+      expected_host_lambda = -> { "very lambda" }
+
+      ats_config = ActiveTableSet::Configuration::Config.config do |conf|
+        conf.enforce_access_policy true
+        conf.environment           'test'
+        conf.default  =  { table_set: :common }
+
+        conf.table_set do |ts|
+          ts.name = :common
+
+          ts.partition do |part|
+            part.leader do |leader|
+              leader.host                 expected_host_lambda
+              leader.read_write_username  "tester"
+              leader.read_write_password  "verysecure"
+              leader.database             "main"
+            end
+          end
+
+          ts.before_enable = -> { "lambda" }
+        end
+      end
+
+      expect(ats_config.table_sets.first.partitions.first.leader.host).to eq(expected_host_lambda)
+    end
+  end
+
   context "defaults" do
 
     it "uses the specified default when constructed" do
