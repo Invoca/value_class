@@ -2,6 +2,9 @@
 
 # This class behaves the same as ActiveRecord's ConnectionPool, but synchronizes with fibers rather than threads.
 
+# Note - trace statements have been commented out.  This is useful trace but we do not want it on by default.
+#        When we have configurable logging we can put this back and have it off by default.
+
 require 'em-synchrony'
 require 'em-synchrony/thread'
 require 'active_table_set/extensions/fibered_mutex_with_waiter_priority'
@@ -127,7 +130,7 @@ module ActiveTableSet
     end
 
     def log_with_counts(method, message)
-      ExceptionHandling.log_info("#{method}: Table set-timeout #{table_set_with_timeout} for Fiber #{Fiber.current.object_id} [#{@reserved_connections.size}, #{@connections.size}, #{@size}]: #{message}")
+#      ExceptionHandling.log_info("#{method}: Table set-timeout #{table_set_with_timeout} for Fiber #{Fiber.current.object_id} [#{@reserved_connections.size}, #{@connections.size}, #{@size}]: #{message}")
     end
 
     def connection
@@ -175,22 +178,22 @@ module ActiveTableSet
     end
 
     def checkin(connection)
-      ExceptionHandling.log_info("checkin: Table set #{table_set_with_timeout} checking in connection for Fiber #{Fiber.current.object_id}")
+#     ExceptionHandling.log_info("checkin: Table set #{table_set_with_timeout} checking in connection for Fiber #{Fiber.current.object_id}")
       super
     end
 
     def checkout
       ExceptionHandling.ensure_safe("reap_connections") { reap_connections }
-      ExceptionHandling.log_info("checkout: Table set #{table_set_with_timeout} checking out connection for Fiber #{Fiber.current.object_id}")
+#      ExceptionHandling.log_info("checkout: Table set #{table_set_with_timeout} checking out connection for Fiber #{Fiber.current.object_id}")
       super
     end
 
     def reap_connections
       @reserved_connections.values.each do |connection|
         if connection.owner.alive?
-          ExceptionHandling.log_info("reap_connections: Table set #{table_set_with_timeout} connection still in use for Fiber #{connection.owner.object_id}")
+#          ExceptionHandling.log_info("reap_connections: Table set #{table_set_with_timeout} connection still in use for Fiber #{connection.owner.object_id}")
         else
-          ExceptionHandling.log_info("reap_connections: Table set #{table_set_with_timeout} reaping connection for Fiber #{connection.owner.object_id}")
+#          ExceptionHandling.log_info("reap_connections: Table set #{table_set_with_timeout} reaping connection for Fiber #{connection.owner.object_id}")
           checkin(connection)
         end
       end
