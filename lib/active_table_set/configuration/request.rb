@@ -8,6 +8,7 @@ module ActiveTableSet
       value_attr :access, limit: [:leader, :follower, :balanced]
       value_attr :partition_key
       value_attr :timeout
+      value_attr :net_read_timeout
       value_attr :test_scenario
 
       def merge(other_or_hash)
@@ -31,11 +32,12 @@ module ActiveTableSet
           end
 
         self.class.new(
-          table_set:     other.table_set || table_set,
-          access:        other.access || access,
-          partition_key: new_partition_key,
-          timeout:       other.timeout || timeout,
-          test_scenario: other.test_scenario || test_scenario
+          table_set:        other.table_set || table_set,
+          access:           other.access || access,
+          partition_key:    new_partition_key,
+          timeout:          other.timeout || timeout,
+          net_read_timeout: other.net_read_timeout || net_read_timeout,
+          test_scenario:    other.test_scenario || test_scenario
         )
       end
     end

@@ -17,11 +17,13 @@ describe ActiveTableSet::Configuration::Request do
           access: :leader,
           partition_key: nil,
           timeout: 10,
+          net_read_timeout: 100,
           test_scenario: nil
         )
 
         replacement = ActiveTableSet::Configuration::Request.new(
-          timeout: 110
+          timeout: 110,
+          net_read_timeout: 600
         )
 
         merged = orig.merge(replacement)
@@ -30,6 +32,7 @@ describe ActiveTableSet::Configuration::Request do
         expect(merged.access).to eq(:leader)
         expect(merged.partition_key).to eq(nil)
         expect(merged.timeout).to eq(110)
+        expect(merged.net_read_timeout).to eq(600)
         expect(merged.test_scenario).to eq(nil)
       end
 
@@ -64,12 +67,13 @@ describe ActiveTableSet::Configuration::Request do
           test_scenario: nil
         )
 
-        merged = orig.merge(timeout: 110)
+        merged = orig.merge(timeout: 110, net_read_timeout: 600)
 
         expect(merged.table_set).to eq(:common)
         expect(merged.access).to eq(:leader)
         expect(merged.partition_key).to eq(nil)
         expect(merged.timeout).to eq(110)
+        expect(merged.net_read_timeout).to eq(600)
         expect(merged.test_scenario).to eq(nil)
       end
 
