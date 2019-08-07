@@ -58,7 +58,7 @@ module SpecHelper
   end
 
   def small_table_set
-    ActiveTableSet::Configuration::Config.config do |conf|
+    ActiveTableSet.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
       conf.default  =  { table_set: :common }
