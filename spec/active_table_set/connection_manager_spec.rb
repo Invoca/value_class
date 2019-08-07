@@ -57,6 +57,24 @@ describe ActiveTableSet::ConnectionManager do
         expect(connection_handler.current_config["write_timeout"]).to eq(110)
       end
 
+      it "allows named timeouts to specify net_read_timeout" do
+        connection_manager
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        expect(connection_handler.current_config["read_timeout"]).to eq(110)
+        expect(connection_handler.current_config["write_timeout"]).to eq(110)
+
+        connection_manager.using(timeout: :batch) do
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+          expect(connection_handler.current_config["read_timeout"]).to eq(1800)
+          expect(connection_handler.current_config["write_timeout"]).to eq(1800)
+          expect(connection_handler.current_config["net_read_timeout"]).to eq(1800)
+        end
+
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        expect(connection_handler.current_config["read_timeout"]).to eq(110)
+        expect(connection_handler.current_config["write_timeout"]).to eq(110)
+      end
+
       it "allows connections to different table sets" do
         connection_manager
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")

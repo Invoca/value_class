@@ -3,7 +3,7 @@
 module ActiveTableSet
   # these match the active record connection attributes.
   class PoolKey < ValueClass.struct(
-    :host, :database, :username, :password, :connect_timeout, :wait_timeout,
+    :host, :database, :username, :password, :connect_timeout, :wait_timeout, :net_read_timeout,
     :read_timeout, :write_timeout, :encoding, :collation, :adapter, :pool, :reconnect)
 
     def connector_name

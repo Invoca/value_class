@@ -21,19 +21,20 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
       specification = connection.pool_key(alternates: [], timeout: 30)
 
       expected = {
-          "host"=>"some.ip",
-          "database"=>"my_database",
-          "username"=>"test_user",
-          "password"=>"secure_pwd",
-          "connect_timeout"=>5,
-          "wait_timeout"=>2147483,
-          "read_timeout"=>30,
-          "write_timeout"=>30,
-          "encoding"=>"utf8",
-          "collation"=>"utf8_general_ci",
-          "adapter"=>"mysql2",
-          "pool"=>5,
-          "reconnect"=>true
+        "host"             => "some.ip",
+        "database"         => "my_database",
+        "username"         => "test_user",
+        "password"         => "secure_pwd",
+        "connect_timeout"  => 5,
+        "wait_timeout"     => 2147483,
+        "read_timeout"     => 30,
+        "write_timeout"    => 30,
+        "net_read_timeout" => nil,
+        "encoding"         => "utf8",
+        "collation"        => "utf8_general_ci",
+        "adapter"          => "mysql2",
+        "pool"             => 5,
+        "reconnect"        => true
       }
 
       expect(specification.to_hash).to eq(expected)

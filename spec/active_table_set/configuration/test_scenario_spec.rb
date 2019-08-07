@@ -3,17 +3,19 @@
 require 'spec_helper'
 
 describe ActiveTableSet::Configuration::TestScenario do
+  subject(:test_scenario) { ActiveTableSet::Configuration::TestScenario.new(scenario_name: scenario_name, host: ip, timeout: timeout, net_read_timeout: net_read_timeout) }
+  let(:scenario_name) { "main" }
   let(:ip)       { "127.0.0.1" }
   let(:username) { "test_user" }
   let(:password) { "test_password" }
   let(:timeout)  { 5 }
+  let(:net_read_timeout)  { 15 }
 
   context "allows construction" do
     it "can be constructed" do
-      test_scenario = ActiveTableSet::Configuration::TestScenario.new(scenario_name: 'main', host: ip, timeout: 40)
-
       expect(test_scenario.scenario_name).to eq('main')
-      expect(test_scenario.timeout).to       eq(40)
+      expect(test_scenario.timeout).to eq(5)
+      expect(test_scenario.net_read_timeout).to eq(15)
     end
   end
 
@@ -24,7 +26,7 @@ describe ActiveTableSet::Configuration::TestScenario do
         access: :leader,
         partition_key: nil,
         test_scenario: nil,
-        timeout: 100 )
+        timeout: 100)
 
       prev_con_attributes = large_table_set.connection_attributes(prev_request)
 
