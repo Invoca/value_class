@@ -5,17 +5,17 @@ module ActiveTableSet
     class TestScenario < DatabaseConnection
       value_attr :scenario_name, required: true
       value_attr :timeout,       required: true, default: 110
-      value_attr :net_read_timeout
 
-      def connection_attributes(request, database_connections, connection_name_prefix, previous_spec)
+      # We ignore the request connection attribute settings here since tests do all of their setup inside of a transaction
+      # so all test scenario settings need to be the same so they can share the same connection
+      def connection_attributes(_request, database_connections, connection_name_prefix, previous_spec)
         context = "#{connection_name_prefix}_#{scenario_name}"
 
         pool_key = pool_key(
           alternates:       database_connections,
           context:          context,
           access:           :leader,
-          timeout:          timeout,
-          net_read_timeout: request.net_read_timeout
+          timeout:          timeout
         )
 
         ConnectionAttributes.new(
