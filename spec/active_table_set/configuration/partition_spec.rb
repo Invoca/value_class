@@ -96,7 +96,7 @@ describe ActiveTableSet::Configuration::Partition do
       expect(con_attributes.pool_key.username).to eq(part.leader.read_write_username)
     end
 
-    it "passes through the timeout, access policy and connection_name" do
+    it "passes through access policy" do
       part = large_table_set.table_sets.first.partitions.first
       request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :leader, timeout: 100)
 
@@ -105,6 +105,16 @@ describe ActiveTableSet::Configuration::Partition do
       expect(con_attributes.access_policy).to eq("access_policy")
     end
 
+    it "passes through request timeout and wait_tiemout to the connection attributes" do
+      part = large_table_set.table_sets.first.partitions.first
+      request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :leader, timeout: 100, net_read_timeout: 300)
+
+      con_attributes = part.connection_attributes(request, [], "foo", "access_policy")
+
+      expect(con_attributes.pool_key.read_timeout).to eq(100)
+      expect(con_attributes.pool_key.write_timeout).to eq(100)
+      expect(con_attributes.pool_key.net_read_timeout).to eq(300)
+    end
 
     it "provides a follower connection key for read access" do
       part = large_table_set.table_sets.first.partitions.first

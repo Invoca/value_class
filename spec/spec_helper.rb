@@ -58,7 +58,7 @@ module SpecHelper
   end
 
   def small_table_set
-    ActiveTableSet::Configuration::Config.config do |conf|
+    ActiveTableSet.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
       conf.default  =  { table_set: :common }
@@ -92,11 +92,12 @@ module SpecHelper
       conf.adapter             "stub_client"
 
       conf.timeout name: :web, timeout: 110.seconds
-      conf.timeout name: :batch, timeout: 30.minutes
+      conf.timeout name: :batch, timeout: 30.minutes, net_read_timeout: 30.minutes
 
       conf.table_set do |ts|
         ts.name = :common
         ts.wait_timeout = 28800
+        ts.net_read_timeout = 600
 
         ts.access_policy do |ap|
           ap.disallow_read  'cf_%'
@@ -236,4 +237,6 @@ end
 
 RSpec.configure do |c|
   c.include SpecHelper
+  c.filter_run focus: true
+  c.run_all_when_everything_filtered = true
 end

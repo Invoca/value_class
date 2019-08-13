@@ -2,6 +2,12 @@
 
 module ActiveTableSet
   module Configuration
-    NamedTimeout = ValueClass.struct(:name, :timeout, required: true)
+    class NamedTimeout
+      include ValueClass::Constructable
+
+      value_attr :name,    required: true
+      value_attr :timeout, required: true
+      value_attr :net_read_timeout
+    end
   end
 end
