@@ -160,7 +160,7 @@ describe ActiveTableSet::ConnectionManager do
         connection_manager.using(table_set: :sharded, partition_key: "alpha") do
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
 
-          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/)
+          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/, {})
 
           raise_count = 0
           expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) <= 2 }.exactly(3).times
@@ -174,7 +174,7 @@ describe ActiveTableSet::ConnectionManager do
         connection_manager.using(table_set: :sharded, partition_key: "alpha") do
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
 
-          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /using resetting with old settings/)
+          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /using resetting with old settings/, {})
           raise_count = 0
           expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) == 2 }.exactly(3).times
           expect do
@@ -391,7 +391,7 @@ describe ActiveTableSet::ConnectionManager do
         # First connection fails, log an exception and revert to previous setting
         ActiveRecord::Base.set_next_client_exception(ArgumentError, "Can't connect cause boom boom")
         connection_manager.using(access: :balanced) do
-          expect(TestLog.logged_lines.second).to match(/Can\'t connect/)
+          expect(JSON.parse(TestLog.logged_lines.first)["message"]).to match(/Can\'t connect/)
           expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
         end
 
@@ -419,7 +419,7 @@ describe ActiveTableSet::ConnectionManager do
           raise "Can't connect because boom"
         end
 
-        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/)
+        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/, {})
 
         log_error_message = /Failure establishing database connection using spec: .*"host"=>"10\.0\.0\./
         expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), log_error_message).twice
@@ -511,7 +511,7 @@ describe ActiveTableSet::ConnectionManager do
       ActiveRecord::Base.set_next_client_exception(ArgumentError, "boom-boom")
       @new_host = "192.168.1.1"
       connection_manager.using(access: :balanced) do
-        expect(TestLog.logged_lines.second).to match(/boom\-boom/)
+        expect(JSON.parse(TestLog.logged_lines.first)["message"]).to match(/boom\-boom/)
         expect(connection_handler.current_config["host"]).to eq(@new_host)
       end
     end

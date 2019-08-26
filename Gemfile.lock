@@ -14,16 +14,17 @@ GIT
 
 GIT
   remote: git@github.com:Invoca/exception_handling
-  revision: 4faa99a2e9dae6b33b8b1299058bee3ff439d505
-  ref: 4faa99a2e9dae6b33b8b1299058bee3ff439d505
+  revision: 14145b930ef1cc059a46db14854f467b7bc0dc78
+  ref: 14145b930ef1cc059a46db14854f467b7bc0dc78
   specs:
-    exception_handling (1.3.0)
-      actionmailer (~> 4.0)
-      actionpack (~> 4.0)
-      activesupport (~> 4.0)
-      eventmachine (>= 0.12.10)
+    exception_handling (2.2.1)
+      actionmailer (~> 4.2)
+      actionpack (~> 4.2)
+      activesupport (~> 4.2)
+      contextual_logger
+      eventmachine (~> 1.0)
       hobo_support
-      invoca-utils (~> 0.0.2)
+      invoca-utils (~> 0.0)
 
 GIT
   remote: git@github.com:Invoca/process_flags
@@ -36,7 +37,7 @@ GIT
 PATH
   remote: .
   specs:
-    active_table_set (0.4.3)
+    active_table_set (0.4.4)
       attr_comparable
       exception_handling
       rails (~> 4.2)
@@ -83,6 +84,9 @@ GEM
     byebug (10.0.2)
     coderay (1.1.2)
     concurrent-ruby (1.0.5)
+    contextual_logger (0.3.1)
+      activesupport
+      json
     crass (1.0.4)
     diff-lcs (1.3)
     em-synchrony (1.0.6)
@@ -94,7 +98,8 @@ GEM
       rails (~> 4.2.6)
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
-    invoca-utils (0.0.2)
+    invoca-utils (0.0.3)
+    json (2.2.0)
     loofah (2.2.2)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -175,7 +180,7 @@ DEPENDENCIES
   bundler (~> 1.8)
   em-synchrony
   eventmachine (= 1.0.9.1)!
-  exception_handling (~> 1.3.0)!
+  exception_handling (~> 2.2)!
   mysql2 (= 0.4.5)
   process_flags!
   pry
@@ -185,4 +190,4 @@ DEPENDENCIES
   rspec-mocks (~> 3.7)
 
 BUNDLED WITH
-   1.16.4
+   1.16.1
