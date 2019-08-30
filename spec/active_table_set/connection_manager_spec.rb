@@ -160,7 +160,7 @@ describe ActiveTableSet::ConnectionManager do
         connection_manager.using(table_set: :sharded, partition_key: "alpha") do
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
 
-          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/, {})
+          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/, database: "main")
 
           raise_count = 0
           expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) <= 2 }.exactly(3).times
@@ -174,7 +174,7 @@ describe ActiveTableSet::ConnectionManager do
         connection_manager.using(table_set: :sharded, partition_key: "alpha") do
           expect(connection_handler.current_config["host"]).to eq("11.0.1.1")
 
-          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /using resetting with old settings/, {})
+          expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /using resetting with old settings/, database: "main")
           raise_count = 0
           expect(connection_manager).to receive(:establish_connection) { raise RuntimeError, "establish error" if (raise_count += 1) == 2 }.exactly(3).times
           expect do
@@ -419,10 +419,11 @@ describe ActiveTableSet::ConnectionManager do
           raise "Can't connect because boom"
         end
 
-        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/, {})
+        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), /override_with_new_connection: resetting/, database: "replication1")
 
         log_error_message = /Failure establishing database connection using spec: .*"host"=>"10\.0\.0\./
-        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), log_error_message).twice
+        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), log_error_message, database: "replication1")
+        expect(ExceptionHandling).to receive(:log_error).with(instance_of(RuntimeError), log_error_message, database: "main")
 
         expect do
           connection_manager.using(access: :balanced) do

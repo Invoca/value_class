@@ -44,7 +44,7 @@ module ActiveTableSet
     def ensure_safe_cleanup(context, block, &cleanup_block)
       result = block.call
     rescue Exception
-      ExceptionHandling.ensure_safe(context, &cleanup_block)
+      ExceptionHandling.ensure_safe(context, database: current_specification.config["database"]) { cleanup_block.call }
       raise
     else
       cleanup_block.call
@@ -173,7 +173,7 @@ module ActiveTableSet
       establish_connection
       proxy_for_reset
     rescue
-      ExceptionHandling.ensure_safe("override_with_new_connection: resetting") { proxy_for_reset.reset }
+      ExceptionHandling.ensure_safe("override_with_new_connection: resetting", database: current_specification.config["database"]) { proxy_for_reset.reset }
       raise
     end
 
@@ -218,9 +218,8 @@ module ActiveTableSet
 
     def safely_establish_connection(spec:, spec_when_error:, quarantine_failed:)
       establish_connection_using_spec(spec)
-
     rescue => ex
-      ExceptionHandling.log_error(ex, "Failure establishing database connection using spec: #{spec.inspect} because of #{ex.message}")
+      ExceptionHandling.log_error(ex, "Failure establishing database connection using spec: #{spec.inspect} because of #{ex.message}", database: spec&.config["database"])
 
       if exception_should_retry(ex)
         reload_pool_key
