@@ -14,7 +14,7 @@ def assert_equal_ignoring_whitespace(expected, value)
   fixed_expected = simplify_formatting(expected)
   fixed_value = simplify_formatting(strip_escaping(value))
   if fixed_expected != fixed_value
-    fail "No match even after ignoring whitespace\nExpected:\n#{expected}\nReceived:\n#{value }"
+    fail "No match even after ignoring whitespace\nExpected:\n#{expected}\nReceived:\n#{value}"
   end
 end
 
