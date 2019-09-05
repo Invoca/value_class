@@ -20,6 +20,7 @@ module ActiveTableSet
       value_attr :collation
       value_attr :encoding
       value_attr :reconnect
+      value_attr :checkout_timeout
 
       DEFAULT = DatabaseConnection.new(
         host:            "localhost",
@@ -47,7 +48,8 @@ module ActiveTableSet
           collation:        find_value(:collation, alternates, context),
           adapter:          find_value(:adapter, alternates, context),
           pool:             find_value(:pool_size, alternates, context),
-          reconnect:        find_value(:reconnect, alternates, context)
+          reconnect:        find_value(:reconnect, alternates, context),
+          checkout_timeout: find_value(:checkout_timeout, alternates, context, allow_nil: true)
         )
       end
 
