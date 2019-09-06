@@ -65,6 +65,7 @@ module SpecHelper
 
       conf.table_set do |ts|
         ts.name = :common
+        ts.checkout_timeout = 2
 
         ts.database "main"
 
@@ -98,6 +99,7 @@ module SpecHelper
         ts.name = :common
         ts.wait_timeout = 28800
         ts.net_read_timeout = 600
+        ts.checkout_timeout = 2
 
         ts.access_policy do |ap|
           ap.disallow_read  'cf_%'
@@ -134,6 +136,7 @@ module SpecHelper
 
       conf.table_set do |ts|
         ts.name = :sharded
+        ts.checkout_timeout = 2
 
         ts.access_policy do |ap|
           ap.allow_write    'cf_%'
@@ -204,6 +207,7 @@ module SpecHelper
       conf.table_set do |ts|
         ts.name :ringswitch
         ts.adapter 'fibered_mysql2'
+        ts.checkout_timeout = 2
         ts.access_policy do |ap|
           ap.disallow_read  'cf_%'
           ap.disallow_write 'cf_%'
@@ -222,6 +226,7 @@ module SpecHelper
         ts.name :ringswitch_jobs
         ts.adapter 'fibered_mysql2'
         ts.pool_size 1
+        ts.checkout_timeout = 2
         ts.partition do |part|
           part.leader do |leader|
             leader.host                 "10.0.0.1"

@@ -16,7 +16,8 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
           host: "some.ip",
           read_write_username: "test_user",
           read_write_password: "secure_pwd",
-          database: "my_database")
+          database: "my_database",
+          checkout_timeout: 2)
 
       specification = connection.pool_key(alternates: [], timeout: 30)
 
@@ -34,7 +35,8 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
         "collation"        => "utf8_general_ci",
         "adapter"          => "mysql2",
         "pool"             => 5,
-        "reconnect"        => true
+        "reconnect"        => true,
+        "checkout_timeout" => 2
       }
 
       expect(specification.to_hash).to eq(expected)
@@ -47,7 +49,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
           read_only_password: "secure_pwd",
           read_write_username: "not this one",
           read_write_password: "don't pick me",
-          database: "my_database" )
+          database: "my_database")
 
       specification = connection.pool_key(alternates: [], access: :read, timeout: 10)
 
@@ -72,7 +74,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
       connection = ActiveTableSet::Configuration::DatabaseConnection.new(
           host: "some.ip",
           read_write_username: "test_user",
-          read_write_password: "secure_pwd" )
+          read_write_password: "secure_pwd")
 
       alternate = ActiveTableSet::Configuration::DatabaseConnection.new(database: "my_database")
 

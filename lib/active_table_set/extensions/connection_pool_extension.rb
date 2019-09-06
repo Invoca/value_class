@@ -8,7 +8,7 @@ module ActiveTableSet
       def initialize(spec, table_set: nil)
         super(spec)
 
-        @table_set = table_set ||  "_none_"
+        @table_set = table_set || "_none_"
       end
 
       # ActiveTableSet allows just one timeout to be configured so the read_timeout will always be the same as write_timeout
