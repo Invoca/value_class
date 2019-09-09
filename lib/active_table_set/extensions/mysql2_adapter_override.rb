@@ -24,31 +24,46 @@ module ActiveTableSet
       end
 
       private
-        def configure_connection
-          non_nil_connection.query_options.merge!(as: :array)
 
-          # By default, MySQL 'where id is null' selects the last inserted id.
-          # Turn this off. http://dev.rubyonrails.org/ticket/6778
-          variable_assignments = ['SQL_AUTO_IS_NULL=0']
-          encoding = @config[:encoding]
+      TIMEOUT_VARIALBES = [
+        { "name" => :wait_timeout, "default_value" => 2147483 },
+        { "name" => :net_read_timeout },
+        { "name" => :net_write_timeout }
+      ]
 
-          # make sure we set the encoding
-          variable_assignments << "NAMES '#{encoding}'" if encoding
+      def configure_connection
+        non_nil_connection.query_options.merge!(as: :array)
 
-          # increase timeout so mysql server doesn't disconnect us
-          wait_timeout = @config[:wait_timeout]
-          wait_timeout = 2147483 unless wait_timeout.is_a?(Integer)
-          variable_assignments << "@@wait_timeout = #{wait_timeout}"
-          if (net_read_timeout = @config[:net_read_timeout]).is_a?(Integer)
-            variable_assignments << "@@net_read_timeout = #{net_read_timeout}"
-          end
+        # By default, MySQL 'where id is null' selects the last inserted id.
+        # Turn this off. http://dev.rubyonrails.org/ticket/6778
+        variable_assignments = ['SQL_AUTO_IS_NULL=0']
+        encoding = @config[:encoding]
 
-          execute("SET #{variable_assignments.join(', ')}", :skip_logging)
+        # make sure we set the encoding
+        variable_assignments << "NAMES '#{encoding}'" if encoding
+
+        # increase timeout so mysql server doesn't disconnect us
+        variable_assignments += timeout_variable_assignments
+
+        execute("SET #{variable_assignments.join(', ')}", :skip_logging)
+      end
+
+      def timeout_variable_assignments
+        TIMEOUT_VARIALBES.map_compact do |timeout_variable_hash|
+          timeout_variable_assignment(name: timeout_variable_hash["name"], default_value: timeout_variable_hash["default_value"])
         end
+      end
 
-        def version
-          @version ||= non_nil_connection.info[:version].match(/^\d+\.\d+\.\d+/)[0]
+      def timeout_variable_assignment(name:, default_value: nil)
+        timeout_value = @config[name].is_a?(Integer) ? @config[name] : default_value
+        if timeout_value
+          "@@#{name} = #{timeout_value}"
         end
+      end
+
+      def version
+        @version ||= non_nil_connection.info[:version].match(/^\d+\.\d+\.\d+/)[0]
+      end
     end
   end
 end

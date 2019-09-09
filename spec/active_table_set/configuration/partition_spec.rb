@@ -107,13 +107,14 @@ describe ActiveTableSet::Configuration::Partition do
 
     it "passes through request timeout and wait_tiemout to the connection attributes" do
       part = large_table_set.table_sets.first.partitions.first
-      request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :leader, timeout: 100, net_read_timeout: 300)
+      request = ActiveTableSet::Configuration::Request.new(table_set: :foo, access: :leader, timeout: 100, net_read_timeout: 300, net_write_timeout: 60)
 
       con_attributes = part.connection_attributes(request, [], "foo", "access_policy")
 
       expect(con_attributes.pool_key.read_timeout).to eq(100)
       expect(con_attributes.pool_key.write_timeout).to eq(100)
       expect(con_attributes.pool_key.net_read_timeout).to eq(300)
+      expect(con_attributes.pool_key.net_write_timeout).to eq(60)
     end
 
     it "provides a follower connection key for read access" do

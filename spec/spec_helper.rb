@@ -93,12 +93,13 @@ module SpecHelper
       conf.adapter             "stub_client"
 
       conf.timeout name: :web, timeout: 110.seconds
-      conf.timeout name: :batch, timeout: 30.minutes, net_read_timeout: 30.minutes
+      conf.timeout name: :batch, timeout: 30.minutes, net_read_timeout: 30.minutes, net_write_timeout: 1.minute
 
       conf.table_set do |ts|
         ts.name = :common
         ts.wait_timeout = 28800
         ts.net_read_timeout = 600
+        ts.net_write_timeout = 120
         ts.checkout_timeout = 2
 
         ts.access_policy do |ap|

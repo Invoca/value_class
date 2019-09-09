@@ -15,6 +15,7 @@ module ActiveTableSet
       value_attr :connect_timeout
       value_attr :wait_timeout
       value_attr :net_read_timeout
+      value_attr :net_write_timeout
       value_attr :pool_size
       value_attr :adapter
       value_attr :collation
@@ -33,22 +34,23 @@ module ActiveTableSet
         reconnect:       true
       )
 
-      def pool_key(alternates:, timeout:, access: :leader, context: "", net_read_timeout: nil)
+      def pool_key(alternates:, timeout:, access: :leader, context: "", net_read_timeout: nil, net_write_timeout: nil)
         PoolKey.new(
-          host:             find_value(:host, alternates, context),
-          database:         find_value(:database, alternates, context),
-          username:         find_value(access == :leader ? :read_write_username : :read_only_username, alternates, context),
-          password:         find_value(access == :leader ? :read_write_password : :read_only_password, alternates, context),
-          connect_timeout:  find_value(:connect_timeout, alternates, context),
-          wait_timeout:     find_value(:wait_timeout, alternates, context),
-          read_timeout:     timeout,
-          write_timeout:    timeout,
-          net_read_timeout: net_read_timeout || find_value(:net_read_timeout, alternates, context, allow_nil: true),
-          encoding:         find_value(:encoding, alternates, context),
-          collation:        find_value(:collation, alternates, context),
-          adapter:          find_value(:adapter, alternates, context),
-          pool:             find_value(:pool_size, alternates, context),
-          reconnect:        find_value(:reconnect, alternates, context),
+          host:              find_value(:host, alternates, context),
+          database:          find_value(:database, alternates, context),
+          username:          find_value(access == :leader ? :read_write_username : :read_only_username, alternates, context),
+          password:          find_value(access == :leader ? :read_write_password : :read_only_password, alternates, context),
+          connect_timeout:   find_value(:connect_timeout, alternates, context),
+          wait_timeout:      find_value(:wait_timeout, alternates, context),
+          read_timeout:      timeout,
+          write_timeout:     timeout,
+          net_read_timeout:  net_read_timeout || find_value(:net_read_timeout, alternates, context, allow_nil: true),
+          net_write_timeout: net_write_timeout || find_value(:net_write_timeout, alternates, context, allow_nil: true),
+          encoding:          find_value(:encoding, alternates, context),
+          collation:         find_value(:collation, alternates, context),
+          adapter:           find_value(:adapter, alternates, context),
+          pool:              find_value(:pool_size, alternates, context),
+          reconnect:         find_value(:reconnect, alternates, context),
           checkout_timeout: find_value(:checkout_timeout, alternates, context, allow_nil: true)
         )
       end

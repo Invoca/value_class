@@ -65,6 +65,30 @@ describe ActiveTableSet::Extensions::Mysql2AdapterOverride do
       end
     end
 
+    describe "net_write_timeout variable" do
+      context "is not defined in config" do
+        it "is not set in MySQL" do
+          commands = @connection.instance_variable_get(:@connection).called_commands
+          expect(commands.count).to eq(1)
+          _command, command_args, _ = commands.first
+          arg = command_args.first
+          expect(arg).not_to match(/@@net_write_timeout =/)
+        end
+      end
+
+      context "is defined in config" do
+        let(:config) { { net_write_timeout: 300 } }
+
+        it "is set in MySQL" do
+          commands = @connection.instance_variable_get(:@connection).called_commands
+          expect(commands.count).to eq(1)
+          _command, command_args, _ = commands.first
+          arg = command_args.first
+          expect(arg).to match(/@@net_write_timeout = 300/)
+        end
+      end
+    end
+
     # all other methods for Mysql2AdapterOverride are implemented for 'non_nil_connection' and this is tested within abstract_adapter_override_spec.rb
   end
 end
