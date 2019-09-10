@@ -25,7 +25,7 @@ module ActiveTableSet
 
       private
 
-      TIMEOUT_VARIALBES = [
+      TIMEOUT_VARIABLES = [
         { "name" => :wait_timeout, "default_value" => 2147483 },
         { "name" => :net_read_timeout },
         { "name" => :net_write_timeout }
@@ -49,7 +49,7 @@ module ActiveTableSet
       end
 
       def timeout_variable_assignments
-        TIMEOUT_VARIALBES.map_compact do |timeout_variable_hash|
+        TIMEOUT_VARIABLES.map_compact do |timeout_variable_hash|
           timeout_variable_assignment(name: timeout_variable_hash["name"], default_value: timeout_variable_hash["default_value"])
         end
       end

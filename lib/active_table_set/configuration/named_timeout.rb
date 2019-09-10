@@ -11,7 +11,11 @@ module ActiveTableSet
       value_attr :net_write_timeout
 
       def timeout_hash
-        to_hash.symbolize_keys.except(:name)
+        {
+          timeout:           timeout,
+          net_read_timeout:  net_read_timeout,
+          net_write_timeout: net_write_timeout
+        }
       end
     end
   end
