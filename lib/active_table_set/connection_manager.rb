@@ -133,7 +133,7 @@ module ActiveTableSet
     end
 
     def exception_should_retry_connection?(ex)
-      ex.message =~ /Can\'t connect/
+      ex.message =~ /Can't connect/
     end
 
     private
