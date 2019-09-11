@@ -111,10 +111,14 @@ module ActiveTableSet
         begin
           yield
         rescue => e
-          clear_cached_pools
-          reload_default_spec
+          if e.message =~ /Can\'t connect/
+            clear_cached_pools
+            reload_default_spec
 
-          yield
+            yield
+          else
+            raise e
+          end
         end
       end
 

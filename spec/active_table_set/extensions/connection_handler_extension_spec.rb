@@ -81,14 +81,70 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
     end
 
     context "retrying connections" do
-      it "should retry once and raise if the second try also fails" do
-        allow(connection_handler).to receive(:retrieve_connection_pool).and_raise(RuntimeError.new("Boom"), RuntimeError.new("BoomBoom"))
+      before do
+        small_table_set
+      end
+
+      it "should retry once on unable to connect errors" do
+        times_called = 0
+        allow(connection_handler).to receive(:retrieve_connection_pool) do
+          times_called += 1
+          if times_called <= 1
+            raise "Can't connect to mysql"
+          else
+            StubConnectionPool.new(alternate_spec.config)
+          end
+        end
 
         connection_handler.default_spec(default_spec)
 
+        expect(ActiveTableSet).to receive(:manager).twice {
+          OpenStruct.new(
+            reload_pool_key: nil,
+            current_specification: alternate_spec
+          )
+        }
+
+        new_connection = connection_handler.retrieve_connection(ActiveRecord::Base)
+        expect(new_connection.config).to eq(alternate_spec.config)
+      end
+
+      it "should raise if the second try also fails" do
+        allow(connection_handler).to receive(:retrieve_connection_pool).and_raise(RuntimeError, "Can't connect to mysql")
+
+        connection_handler.default_spec(default_spec)
+
+        expect(ActiveTableSet).to receive(:manager).twice {
+          OpenStruct.new(
+            reload_pool_key: nil,
+            current_specification: alternate_spec
+          )
+        }
+
         expect {
           connection_handler.retrieve_connection(ActiveRecord::Base)
-        }.to raise_error(RuntimeError, "BoomBoom")
+        }.to raise_error(RuntimeError, "Can't connect to mysql")
+      end
+
+      it "should not retry or reset connection on miscellaneous errors" do
+        times_called = 0
+        allow(connection_handler).to receive(:retrieve_connection_pool) do
+          times_called += 1
+          if times_called <= 1
+            raise "Boom"
+          else
+            StubConnectionPool.new(alternate_spec.config)
+          end
+        end
+
+        connection_handler.default_spec(default_spec)
+
+        # should not be trying to access manager to reset connection
+        expect(ActiveTableSet).not_to receive(:manager)
+
+        expect {
+          connection_handler.retrieve_connection(ActiveRecord::Base)
+        }.to raise_error(RuntimeError, "Boom")
       end
     end
 

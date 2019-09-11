@@ -137,20 +137,6 @@ class StubConnectionHandler
   end
 
   def retrieve_connection(klass)
-    StubClient.new(current_config)
-  end
-
-  # Because this stub is overwriting the actual method
-  # We have to retry in the stub
-  # So the test for this technically has no teeth outside of here :/
-
-  def retrieve_connection(klass)
-    _retrieve_connection(klass)
-  rescue => e
-    _retrieve_connection(klass)
-  end
-
-  def _retrieve_connection(klass) #:nodoc:
     pool = retrieve_connection_pool(klass) or raise ActiveRecord::ConnectionNotEstablished, "No connection pool for #{klass}"
     pool.connection or raise ActiveRecord::ConnectionNotEstablished, "No connection for #{klass} in connection pool"
   end
