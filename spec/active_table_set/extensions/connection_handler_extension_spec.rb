@@ -86,24 +86,15 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
       end
 
       it "should retry once on unable to connect errors" do
-        times_called = 0
-        allow(connection_handler).to receive(:retrieve_connection_pool) do
-          times_called += 1
-          if times_called <= 1
-            raise "Can't connect to mysql"
-          else
-            StubConnectionPool.new(alternate_spec.config)
-          end
-        end
-
+        stub_connection_handler_to_raise_error_once_when_retrieving_connection_pool(
+          RuntimeError,
+          "Can't connect to mysql"
+        )
         connection_handler.default_spec(default_spec)
 
-        expect(ActiveTableSet).to receive(:manager).twice {
-          OpenStruct.new(
-            reload_pool_key: nil,
-            current_specification: alternate_spec
-          )
-        }
+        expect(ActiveTableSet.manager).to receive(:reload_pool_key) { nil }
+        expect(ActiveTableSet.manager).to receive(:current_specification) { alternate_spec }
+        expect(connection_handler).to receive(:establish_connection).with(any_args)
 
         new_connection = connection_handler.retrieve_connection(ActiveRecord::Base)
         expect(new_connection.config).to eq(alternate_spec.config)
@@ -114,12 +105,8 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
 
         connection_handler.default_spec(default_spec)
 
-        expect(ActiveTableSet).to receive(:manager).twice {
-          OpenStruct.new(
-            reload_pool_key: nil,
-            current_specification: alternate_spec
-          )
-        }
+        expect(ActiveTableSet.manager).to receive(:reload_pool_key) { nil }
+        expect(ActiveTableSet.manager).to receive(:current_specification) { alternate_spec }
 
         expect {
           connection_handler.retrieve_connection(ActiveRecord::Base)
@@ -127,20 +114,15 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
       end
 
       it "should not retry or reset connection on miscellaneous errors" do
-        times_called = 0
-        allow(connection_handler).to receive(:retrieve_connection_pool) do
-          times_called += 1
-          if times_called <= 1
-            raise "Boom"
-          else
-            StubConnectionPool.new(alternate_spec.config)
-          end
-        end
+        stub_connection_handler_to_raise_error_once_when_retrieving_connection_pool(
+          RuntimeError,
+          "Boom"
+        )
 
         connection_handler.default_spec(default_spec)
 
         # should not be trying to access manager to reset connection
-        expect(ActiveTableSet).not_to receive(:manager)
+        expect(connection_handler).not_to receive(:establish_connection)
 
         expect {
           connection_handler.retrieve_connection(ActiveRecord::Base)
@@ -304,6 +286,18 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
         expect(stats).to eq(
                            "ringswitch-" => { allocated: 4, in_use: 4 }
                          )
+      end
+    end
+  end
+
+  def stub_connection_handler_to_raise_error_once_when_retrieving_connection_pool(exception_klass, message)
+    times_called = 0
+    allow(connection_handler).to receive(:retrieve_connection_pool) do
+      times_called += 1
+      if times_called <= 1
+        raise exception_klass, message
+      else
+        StubConnectionPool.new(alternate_spec.config)
       end
     end
   end

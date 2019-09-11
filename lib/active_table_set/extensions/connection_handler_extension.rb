@@ -108,17 +108,15 @@ module ActiveTableSet
       private
 
       def reset_connection_pools_on_retry
-        begin
-          yield
-        rescue => e
-          if e.message =~ /Can\'t connect/
-            clear_cached_pools
-            reload_default_spec
+        yield
+      rescue => e
+        if ActiveTableSet.manager.exception_should_retry_connection?(e)
+          clear_cached_pools
+          reload_default_spec
 
-            yield
-          else
-            raise e
-          end
+          yield
+        else
+          raise e
         end
       end
 
