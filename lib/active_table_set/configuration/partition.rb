@@ -33,11 +33,12 @@ module ActiveTableSet
 
       def pool_key(config, context, database_connections, request)
         config.pool_key(
-          alternates:       [self] + database_connections,
-          context:          context,
-          access:           request.access,
-          timeout:          request.timeout,
-          net_read_timeout: request.net_read_timeout
+          alternates:        [self] + database_connections,
+          context:           context,
+          access:            request.access,
+          timeout:           request.timeout,
+          net_read_timeout:  request.net_read_timeout,
+          net_write_timeout: request.net_write_timeout
         )
       end
 

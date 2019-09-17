@@ -31,6 +31,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
         "read_timeout"     => 30,
         "write_timeout"    => 30,
         "net_read_timeout" => nil,
+        "net_write_timeout" => nil,
         "encoding"         => "utf8",
         "collation"        => "utf8_general_ci",
         "adapter"          => "mysql2",

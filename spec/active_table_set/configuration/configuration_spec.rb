@@ -228,21 +228,23 @@ describe ActiveTableSet::Configuration::Config do
       expect { large_table_set.connection_attributes(request) }.to raise_error(ArgumentError, "Unknown test_scenario badname, available test scenarios: fixture, legacy" )
     end
 
-    it "allows net_read_timeout to be defined from request" do
+    it "allows net_read_timeout and net_write_timeout to be defined from request" do
       request = ActiveTableSet::Configuration::Request.new(
         table_set:        :common,
         access:           :leader,
         partition_key:    "alpha",
         timeout:          100,
-        net_read_timeout: 300
+        net_read_timeout: 300,
+        net_write_timeout: 400
       )
 
       con_attributes = large_table_set.connection_attributes(request)
 
       expect(con_attributes.pool_key.net_read_timeout).to eq(300)
+      expect(con_attributes.pool_key.net_write_timeout).to eq(400)
     end
 
-    it "allows net_read_timeout to be defined from named timeout" do
+    it "allows net_read_timeout and net_write_timeout to be defined from named timeout" do
       request = ActiveTableSet::Configuration::Request.new(
         table_set:        :common,
         access:           :leader,
@@ -253,9 +255,10 @@ describe ActiveTableSet::Configuration::Config do
       con_attributes = large_table_set.connection_attributes(request)
 
       expect(con_attributes.pool_key.net_read_timeout).to eq(1800)
+      expect(con_attributes.pool_key.net_write_timeout).to eq(60)
     end
 
-    it "uses table set defined net_read_timeout if named timeout does not define a net_read_timeout" do
+    it "uses table set defined net_read_timeout and net_write_timeout if named timeout does not define a net_read_timeout" do
       request = ActiveTableSet::Configuration::Request.new(
         table_set:        :common,
         access:           :leader,
@@ -266,6 +269,7 @@ describe ActiveTableSet::Configuration::Config do
       con_attributes = large_table_set.connection_attributes(request)
 
       expect(con_attributes.pool_key.net_read_timeout).to eq(600)
+      expect(con_attributes.pool_key.net_write_timeout).to eq(120)
     end
   end
 
@@ -274,19 +278,20 @@ describe ActiveTableSet::Configuration::Config do
       database_configurations = large_table_set.database_configuration
 
       expected = {
-          "test"                          => { "host"=>"10.0.0.1", "database"=>"main",         "username"=>"tester",                "password"=>"verysecure",          "connect_timeout"=>5, "wait_timeout"=>28800, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => 600, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "test_common_follower_0"        => { "host"=>"10.0.0.2", "database"=>"replication1", "username"=>"tester1",               "password"=>"verysecure1",         "connect_timeout"=>5, "wait_timeout"=>28800, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => 600, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "test_common_follower_1"        => { "host"=>"10.0.0.3", "database"=>"replication2", "username"=>"tester2",               "password"=>"verysecure2",         "connect_timeout"=>5, "wait_timeout"=>28800, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => 600, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "test_common_leader_ro"         => { "host"=>"10.0.0.1", "database"=>"main",         "username"=>"read_only_tester_part", "password"=>"verysecure_too_part", "connect_timeout"=>5, "wait_timeout"=>28800, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => 600, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "test_sharded_alpha_leader"     => { "host"=>"11.0.1.1", "database"=>"main",         "username"=>"tester",                "password"=>"verysecure",          "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "test_sharded_alpha_leader_ro"  => { "host"=>"11.0.1.1", "database"=>"main",         "username"=>"read_only_tester",      "password"=>"verysecure_too",      "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "test_sharded_alpha_follower_0" => { "host"=>"11.0.1.2", "database"=>"replication1", "username"=>"tester1",               "password"=>"verysecure1",         "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "test_sharded_alpha_follower_1" => { "host"=>"11.0.1.3", "database"=>"replication2", "username"=>"tester2",               "password"=>"verysecure2",         "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "test_sharded_beta_leader"      => { "host"=>"11.0.2.1", "database"=>"main",         "username"=>"tester",                "password"=>"verysecure",          "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "test_sharded_beta_leader_ro"   => { "host"=>"11.0.2.1", "database"=>"main",         "username"=>"read_only_tester",      "password"=>"verysecure_too",      "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
-          "fixture"                       => { "host"=>"12.0.0.2", "database"=>"replication1", "username"=>"tester1",               "password"=>"verysecure1",         "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => nil },
-          "legacy"                        => { "host"=>"12.0.0.1", "database"=>"replication1", "username"=>"tester1",               "password"=>"verysecure1",         "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => nil }
+          "test"                          => {"host"=>"10.0.0.1", "database"=>"main",         "username"=>"tester",                "password"=>"verysecure",          "connect_timeout"=>5, "wait_timeout"=>28800,   "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => 600, "net_write_timeout" => 120, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "test_common_follower_0"        => {"host"=>"10.0.0.2", "database"=>"replication1", "username"=>"tester1",               "password"=>"verysecure1",         "connect_timeout"=>5, "wait_timeout"=>28800,   "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => 600, "net_write_timeout" => 120, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "test_common_follower_1"        => {"host"=>"10.0.0.3", "database"=>"replication2", "username"=>"tester2",               "password"=>"verysecure2",         "connect_timeout"=>5, "wait_timeout"=>28800,   "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => 600, "net_write_timeout" => 120, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "test_common_leader_ro"         => {"host"=>"10.0.0.1", "database"=>"main",         "username"=>"read_only_tester_part", "password"=>"verysecure_too_part", "connect_timeout"=>5, "wait_timeout"=>28800,   "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => 600, "net_write_timeout" => 120, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "test_sharded_alpha_leader"     => {"host"=>"11.0.1.1", "database"=>"main",         "username"=>"tester",                "password"=>"verysecure",          "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "net_write_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "test_sharded_alpha_leader_ro"  => {"host"=>"11.0.1.1", "database"=>"main",         "username"=>"read_only_tester",      "password"=>"verysecure_too",      "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "net_write_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "test_sharded_alpha_follower_0" => {"host"=>"11.0.1.2", "database"=>"replication1", "username"=>"tester1",               "password"=>"verysecure1",         "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "net_write_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "test_sharded_alpha_follower_1" => {"host"=>"11.0.1.3", "database"=>"replication2", "username"=>"tester2",               "password"=>"verysecure2",         "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "net_write_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "test_sharded_beta_leader"      => {"host"=>"11.0.2.1", "database"=>"main",         "username"=>"tester",                "password"=>"verysecure",          "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "net_write_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "test_sharded_beta_leader_ro"   => {"host"=>"11.0.2.1", "database"=>"main",         "username"=>"read_only_tester",      "password"=>"verysecure_too",      "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "net_write_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => 2 },
+          "fixture"                       => {"host"=>"12.0.0.2", "database"=>"replication1", "username"=>"tester1",               "password"=>"verysecure1",         "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "net_write_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => nil },
+          "legacy"                        => {"host"=>"12.0.0.1", "database"=>"replication1", "username"=>"tester1",               "password"=>"verysecure1",         "connect_timeout"=>5, "wait_timeout"=>2147483, "read_timeout"=>110, "write_timeout"=>110, "net_read_timeout" => nil, "net_write_timeout" => nil, "encoding"=>"utf8", "collation"=>"utf8_general_ci", "adapter"=>"stub_client", "pool"=>5, "reconnect"=>true, "checkout_timeout" => nil }
       }
+
       expect(database_configurations).to eq(expected)
     end
   end

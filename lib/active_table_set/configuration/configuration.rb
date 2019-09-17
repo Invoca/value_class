@@ -143,7 +143,7 @@ module ActiveTableSet
 # TODO: When passing a symbol to a timeout, confirm it exists with a meaningful error.
       def convert_timeouts(initial_request)
         if (named_timeout = @timeouts_by_name[initial_request.timeout])
-          initial_request.merge({ timeout: named_timeout.timeout, net_read_timeout: named_timeout.net_read_timeout }.compact)
+          initial_request.merge(named_timeout.timeout_hash.compact)
         else
           initial_request
         end
