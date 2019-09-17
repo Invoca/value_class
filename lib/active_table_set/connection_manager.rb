@@ -132,6 +132,10 @@ module ActiveTableSet
       pool_key_for_settings(settings).connection_spec(settings.table_set)
     end
 
+    def exception_should_retry_connection?(ex)
+      ex.message =~ /Can't connect/
+    end
+
     private
 
     def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
@@ -221,7 +225,7 @@ module ActiveTableSet
     rescue => ex
       ExceptionHandling.log_error(ex, "Failure establishing database connection using spec: #{spec.inspect} because of #{ex.message}", database: spec&.config["database"])
 
-      if exception_should_retry(ex)
+      if exception_should_retry_connection?(ex)
         reload_pool_key
 
         if quarantine_failed
@@ -232,10 +236,6 @@ module ActiveTableSet
           establish_connection_using_spec(spec_when_error)
         end
       end
-    end
-
-    def exception_should_retry(ex)
-      ex.message =~ /Can\'t connect/
     end
 
     def establish_connection_using_spec(connection_specification)
