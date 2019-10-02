@@ -83,6 +83,7 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
     context "retrying connections" do
       before do
         small_table_set
+        ActiveTableSet.enable
       end
 
       it "should retry once on unable to connect errors" do
