@@ -58,6 +58,7 @@ module SpecHelper
   end
 
   def small_table_set
+    ActiveTableSet.clear_for_testing
     ActiveTableSet.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
@@ -83,6 +84,7 @@ module SpecHelper
   end
 
   def large_table_set
+    ActiveTableSet.clear_for_testing
     ActiveTableSet::Configuration::Config.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
@@ -200,6 +202,7 @@ module SpecHelper
   end
 
   def configure_ats_like_ringswitch
+    ActiveTableSet.clear_for_testing
     ActiveTableSet.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
