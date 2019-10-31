@@ -1,16 +1,67 @@
 version: v1.0
-name: First pipeline
+name: Invoca Build
+
 agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu1804
+
 blocks:
-  - name: Lint
+  - name: Cache dependencies
+    dependencies: []
     task:
+      secrets:
+        # Mount secret that is uploaded into semaphore 2.0 UI
+        - name: ssh-keys
+      jobs:
+        - name: 'Bundle install & yarn install'
+          commands:
+            # This job stores dependencies to cache
+
+            # Set Ruby version:
+            - sem-version ruby 2.6.1
+
+            # Correct permissions since they are too open by default:
+            - chmod 0600 ~/.ssh/github
+            # Add the key to the ssh agent:
+            - ssh-add ~/.ssh/github
+            - checkout
+
+            # Restore dependencies from cache.
+            # Read about caching: https://docs.semaphoreci.com/article/149-caching
+            - cache restore
+
+            - bundle install --deployment --path vendor/bundle
+
+            # Store the latest version of dependencies in cache
+            - cache store
+
+  - name: Tests
+    dependencies: ['Cache dependencies']
+    task:
+      secrets:
+        # Mount secret that is uploaded into semaphore 2.0 UI
+        - name: ssh-keys
       prologue:
         commands:
+          # Set Ruby version:
+          - sem-version ruby 2.6.1
+
+          # Correct permissions and add key to ssh agent
+          # When running a session from debug mode, also need to run:
+          # eval "$(ssh-agent -s)"
+          - chmod 0600 ~/.ssh/github
+          - ssh-add ~/.ssh/github
+
           - checkout
+
+          # Restore dependencies from cache.
+          - cache restore
+
+          # Bundle install
+          - bundle install --deployment --path vendor/bundle --quiet
+
       jobs:
-        - name: make lint
+        - name: Rake test
           commands:
-            - echo "lint your code"
+            - bundle exec rake test
