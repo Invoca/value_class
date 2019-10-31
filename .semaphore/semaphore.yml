@@ -62,6 +62,6 @@ blocks:
           - bundle install --deployment --path vendor/bundle --quiet
 
       jobs:
-        - name: Rake test
+        - name: Tests
           commands:
-            - bundle exec rake test
+            - bundle exec rake
