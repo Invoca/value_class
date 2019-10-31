@@ -16,11 +16,6 @@ blocks:
       jobs:
         - name: 'Bundle install & yarn install'
           commands:
-            # This job stores dependencies to cache
-
-            # Set Ruby version:
-            - sem-version ruby 2.6.1
-
             # Correct permissions since they are too open by default:
             - chmod 0600 ~/.ssh/github
             # Add the key to the ssh agent:
@@ -44,9 +39,6 @@ blocks:
         - name: ssh-keys
       prologue:
         commands:
-          # Set Ruby version:
-          - sem-version ruby 2.6.1
-
           # Correct permissions and add key to ssh agent
           # When running a session from debug mode, also need to run:
           # eval "$(ssh-agent -s)"
