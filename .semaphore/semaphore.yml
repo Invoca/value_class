@@ -1,5 +1,5 @@
 version: v1.0
-name: Invoca Build
+name: Unit Tests
 
 agent:
   machine:
