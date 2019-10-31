@@ -44,6 +44,7 @@ describe ActiveTableSet::Extensions::ConnectionHandlerExtension do
     end
 
     it "returns the test_scenario_connection_spec if that is set but the thread connection is not set" do
+      connection_handler.thread_connection_spec = nil
       connection_handler.test_scenario_connection_spec = default_spec
       expect(connection_handler.current_config).to eq(default_spec.config)
     end
