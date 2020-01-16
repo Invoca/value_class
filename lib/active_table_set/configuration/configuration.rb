@@ -133,8 +133,7 @@ module ActiveTableSet
       end
 
       def ts_config(db_config, key, alternates, access: :leader)
-        read_only = access == :follower
-        ConfigStruct.new(key, db_config.pool_key(alternates: alternates, access: access, timeout: default.timeout, read_only: read_only))
+        ConfigStruct.new(key, db_config.pool_key(alternates: alternates, access: access, timeout: default.timeout))
       end
 
       def test_scenario_database_config

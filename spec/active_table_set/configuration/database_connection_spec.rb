@@ -38,7 +38,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
         "pool"             => 5,
         "reconnect"        => true,
         "checkout_timeout" => 2,
-        "read_only"         => false
+        "access"           => :leader
       }
 
       expect(specification.to_hash).to eq(expected)
