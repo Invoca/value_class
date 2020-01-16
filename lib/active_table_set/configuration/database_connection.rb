@@ -34,7 +34,7 @@ module ActiveTableSet
         reconnect:       true
       )
 
-      def pool_key(alternates:, timeout:, access: :leader, context: "", net_read_timeout: nil, net_write_timeout: nil)
+      def pool_key(alternates:, timeout:, access: :leader, context: "", net_read_timeout: nil, net_write_timeout: nil, read_only: false)
         PoolKey.new(
           host:              find_value(:host, alternates, context),
           database:          find_value(:database, alternates, context),
@@ -51,7 +51,8 @@ module ActiveTableSet
           adapter:           find_value(:adapter, alternates, context),
           pool:              find_value(:pool_size, alternates, context),
           reconnect:         find_value(:reconnect, alternates, context),
-          checkout_timeout: find_value(:checkout_timeout, alternates, context, allow_nil: true)
+          checkout_timeout:  find_value(:checkout_timeout, alternates, context, allow_nil: true),
+          read_only:         read_only
         )
       end
 
