@@ -51,8 +51,7 @@ module ActiveTableSet
           adapter:           find_value(:adapter, alternates, context),
           pool:              find_value(:pool_size, alternates, context),
           reconnect:         find_value(:reconnect, alternates, context),
-          checkout_timeout:  find_value(:checkout_timeout, alternates, context, allow_nil: true),
-          access:            access
+          checkout_timeout:  find_value(:checkout_timeout, alternates, context, allow_nil: true)
         )
       end
 

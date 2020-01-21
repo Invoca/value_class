@@ -37,8 +37,7 @@ describe ActiveTableSet::Configuration::DatabaseConnection do
         "adapter"          => "mysql2",
         "pool"             => 5,
         "reconnect"        => true,
-        "checkout_timeout" => 2,
-        "access"           => :leader
+        "checkout_timeout" => 2
       }
 
       expect(specification.to_hash).to eq(expected)
