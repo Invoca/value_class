@@ -11,6 +11,7 @@ module ActiveTableSet
       value_attr :net_read_timeout
       value_attr :net_write_timeout
       value_attr :test_scenario
+      value_attr :read_only
 
       def merge(other_or_hash)
         other = other_or_hash.is_a?(Hash) ? self.class.new(other_or_hash) : other_or_hash
