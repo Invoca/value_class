@@ -127,13 +127,13 @@ module ActiveTableSet
             end
 
           # Need read only on leader.
-          [ts_config(part.leader, "#{prefix}_leader", [ts, part, self])] + [ts_config(part.leader, "#{prefix}_leader_ro", [ts, part, self], access: :follower)] +
+          [ts_config(part.leader, "#{prefix}_leader", [ts, part, self])] + [ts_config(part.leader, "#{prefix}_leader_ro", [ts, part, self], access: :follower, read_only: true)] +
             part.followers.each_with_index.map { |follower, index| ts_config(follower, "#{prefix}_follower_#{index}", [ts, part, self]) }
         end
       end
 
-      def ts_config(db_config, key, alternates, access: :leader)
-        ConfigStruct.new(key, db_config.pool_key(alternates: alternates, access: access, timeout: default.timeout))
+      def ts_config(db_config, key, alternates, access: :leader, read_only: nil)
+        ConfigStruct.new(key, db_config.pool_key(alternates: alternates, access: access, timeout: default.timeout, read_only: read_only))
       end
 
       def test_scenario_database_config
