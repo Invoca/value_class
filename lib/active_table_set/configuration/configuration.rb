@@ -42,7 +42,7 @@ module ActiveTableSet
         request = convert_timeouts(initial_request)
 
         ts = @table_sets_by_name[request.table_set] or raise ArgumentError, "Unknown table set #{request.table_set}, available_table_sets: #{@table_sets_by_name.keys.sort.join(', ')}"
-        spec = ts.connection_attributes(request, [self], environment)
+        spec = ts.connection_attributes(request.merge(read_only: ts.read_only), [self], environment)
 
         if request.test_scenario
           scenario = @test_scenarios_by_name[request.test_scenario] or raise ArgumentError, "Unknown test_scenario #{request.test_scenario}, available test scenarios: #{@test_scenarios_by_name.keys.sort.join(', ')}"

@@ -39,8 +39,8 @@ module ActiveTableSet
         PoolKey.new(
           host:              find_value(:host, alternates, context),
           database:          find_value(:database, alternates, context),
-          username:          find_value(access == :leader ? :read_write_username : :read_only_username, alternates, context),
-          password:          find_value(access == :leader ? :read_write_password : :read_only_password, alternates, context),
+          username:          find_value(access == :leader && !read_only ? :read_write_username : :read_only_username, alternates, context),
+          password:          find_value(access == :leader && !read_only ? :read_write_password : :read_only_password, alternates, context),
           connect_timeout:   find_value(:connect_timeout, alternates, context),
           wait_timeout:      find_value(:wait_timeout, alternates, context),
           read_timeout:      timeout,
