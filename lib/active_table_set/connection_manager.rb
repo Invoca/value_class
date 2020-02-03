@@ -141,7 +141,7 @@ module ActiveTableSet
     def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
       new_settings = settings.merge(
         table_set:     table_set,
-        access:        process_flag_access || _access_lock || access,
+        access:        access_override(table_set || settings.table_set, partition_key || settings.partition_key, access),
         partition_key: partition_key,
         timeout:       timeout
       )
@@ -159,6 +159,13 @@ module ActiveTableSet
           override_with_new_connection(new_settings)
         end
       end
+    end
+
+    def access_override(table_set, partition_key, access)
+      access_override_from_process_settings(table_set, partition_key) ||
+        process_flag_access ||
+        _access_lock ||
+        access
     end
 
     # Overrides the settings and makes a new connection with those.
@@ -276,6 +283,12 @@ module ActiveTableSet
 
     def release_connection
       @connection_handler.pool_for_spec(current_specification)&.release_connection
+    end
+
+    def access_override_from_process_settings(table_set, partition_key)
+      scoped_setting_key = partition_key ? "#{table_set}-#{partition_key}" : table_set.to_s
+      ProcessSettings['active_table_set', scoped_setting_key, 'access_override', required: false]&.to_sym ||
+        ProcessSettings['active_table_set', 'default', 'access_override', required: false]&.to_sym
     end
 
     def process_flag_access

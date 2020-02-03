@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails'
+require 'process_settings'
 require 'active_record'
 require 'active_record/connection_adapters/abstract_adapter'
 require 'active_record/connection_adapters/abstract_mysql_adapter'

@@ -340,6 +340,64 @@ describe ActiveTableSet::ConnectionManager do
       end
     end
 
+    context "using process settings to override access" do
+      after(:each) do
+        ProcessSettings::Monitor.file_path = File.expand_path("../fixtures/process_settings/combined_process_settings_empty.yml", __dir__)
+        ProcessSettings::Monitor.clear_instance
+      end
+
+      it "respects global override when specific override doesn't exist" do
+        ProcessSettings::Monitor.file_path = File.expand_path("../fixtures/process_settings/combined_process_settings_global.yml", __dir__)
+        ProcessSettings::Monitor.clear_instance
+        connection_manager
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+        connection_manager.lock_access(:follower) do
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+          connection_manager.using(access: :balanced) do
+            expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+            connection_manager.using(access: :follower) do
+              expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+            end
+          end
+        end
+
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        connection_manager.using(access: :balanced) do
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+          connection_manager.using(access: :follower) do
+            expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+          end
+        end
+      end
+
+      it "respects specific override when it exists" do
+        ProcessSettings::Monitor.file_path = File.expand_path("../fixtures/process_settings/combined_process_settings_specific.yml", __dir__)
+        ProcessSettings::Monitor.clear_instance
+        connection_manager
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+        connection_manager.lock_access(:follower) do
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+          connection_manager.using(access: :balanced) do
+            expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+            connection_manager.using(access: :follower) do
+              expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+            end
+          end
+        end
+
+        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+        connection_manager.using(access: :balanced) do
+          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+
+          connection_manager.using(access: :follower) do
+            expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
+          end
+        end
+      end
+    end
 
     it "supports different settings for different threads" do
       connection_manager

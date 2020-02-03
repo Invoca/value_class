@@ -249,3 +249,6 @@ RSpec.configure do |c|
   c.filter_run focus: true
   c.run_all_when_everything_filtered = true
 end
+
+ProcessSettings::Monitor.file_path = File.expand_path("./fixtures/process_settings/combined_process_settings_empty.yml", __dir__)
+ProcessSettings::Monitor.logger = Logger.new(STDOUT)
