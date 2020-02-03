@@ -37,7 +37,7 @@ GIT
 PATH
   remote: .
   specs:
-    active_table_set (0.4.6)
+    active_table_set (0.5.0)
       attr_comparable
       exception_handling
       process_settings
