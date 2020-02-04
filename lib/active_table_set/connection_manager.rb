@@ -8,7 +8,6 @@
 #        Should only release when count goes to zero...
 
 require 'exception_handling'
-require 'process_flags'
 
 module ActiveTableSet
   class ConnectionManager
@@ -142,7 +141,7 @@ module ActiveTableSet
       effective_table_set = table_set || settings.table_set
       effective_partition_key = partition_key || settings.partition_key
 
-      effective_access = access_override(effective_table_set, effective_partition_key) || access
+      effective_access = access_override_from_process_settings(effective_table_set, effective_partition_key) || _access_lock || access
 
       new_settings = settings.merge(
         table_set:     table_set,
@@ -167,9 +166,7 @@ module ActiveTableSet
     end
 
     def access_override(table_set, partition_key)
-      access_override_from_process_settings(table_set, partition_key) ||
-        process_flag_access ||
-        _access_lock
+      access_override_from_process_settings(table_set, partition_key) || _access_lock
     end
 
     # Overrides the settings and makes a new connection with those.
@@ -293,10 +290,6 @@ module ActiveTableSet
       scoped_setting_key = [table_set, partition_key].compact.join('-')
       ProcessSettings['active_table_set', scoped_setting_key, 'access_override', required: false]&.to_sym ||
         ProcessSettings['active_table_set', 'default', 'access_override', required: false]&.to_sym
-    end
-
-    def process_flag_access
-      ProcessFlags.is_set?(:disable_alternate_databases) ? :leader : nil
     end
 
     def connection_attributes(settings)

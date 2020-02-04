@@ -26,14 +26,6 @@ GIT
       hobo_support
       invoca-utils (~> 0.0)
 
-GIT
-  remote: git@github.com:Invoca/process_flags
-  revision: 401749fa9d03dab1858060a7913b6afb852d5b77
-  ref: 401749fa9d03dab1858060a7913b6afb852d5b77
-  specs:
-    process_flags (0.1.1)
-      rails (~> 4.0)
-
 PATH
   remote: .
   specs:
@@ -194,7 +186,6 @@ DEPENDENCIES
   eventmachine (= 1.0.9.1)!
   exception_handling (~> 2.2)!
   mysql2 (= 0.4.5)
-  process_flags!
   pry
   pry-byebug
   rake (~> 10.0)

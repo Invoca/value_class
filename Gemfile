@@ -7,7 +7,6 @@ gem 'attr_comparable',                  git: 'git@github.com:Invoca/attr_compara
 gem 'em-synchrony'
 gem 'eventmachine',       '1.0.9.1',    git: 'git@github.com:Invoca/eventmachine.git',   ref: '990ca03637038b2c3c8b2c0cd73e74e3f6ffa147'
 gem 'exception_handling', '~> 2.2',     git: 'git@github.com:Invoca/exception_handling', ref: '14145b930ef1cc059a46db14854f467b7bc0dc78'
-gem 'process_flags',                    git: 'git@github.com:Invoca/process_flags',      ref: '401749fa9d03dab1858060a7913b6afb852d5b77'
 
 group :development do
   gem 'bundler',     '~> 1.8'
