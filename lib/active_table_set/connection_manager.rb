@@ -139,9 +139,14 @@ module ActiveTableSet
     private
 
     def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
+      effective_table_set = table_set || settings.table_set
+      effective_partition_key = partition_key || settings.partition_key
+
+      effective_access = access_override(effective_table_set, effective_partition_key) || access
+
       new_settings = settings.merge(
         table_set:     table_set,
-        access:        access_override(table_set || settings.table_set, partition_key || settings.partition_key, access),
+        access:        effective_access,
         partition_key: partition_key,
         timeout:       timeout
       )
@@ -161,11 +166,10 @@ module ActiveTableSet
       end
     end
 
-    def access_override(table_set, partition_key, access)
+    def access_override(table_set, partition_key)
       access_override_from_process_settings(table_set, partition_key) ||
         process_flag_access ||
-        _access_lock ||
-        access
+        _access_lock
     end
 
     # Overrides the settings and makes a new connection with those.
@@ -286,7 +290,7 @@ module ActiveTableSet
     end
 
     def access_override_from_process_settings(table_set, partition_key)
-      scoped_setting_key = partition_key ? "#{table_set}-#{partition_key}" : table_set.to_s
+      scoped_setting_key = [table_set, partition_key].compact.join('-')
       ProcessSettings['active_table_set', scoped_setting_key, 'access_override', required: false]&.to_sym ||
         ProcessSettings['active_table_set', 'default', 'access_override', required: false]&.to_sym
     end
