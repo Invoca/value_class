@@ -15,7 +15,6 @@ module ActiveTableSet
   end
 end
 
-
 describe ActiveTableSet do
   before :each do
     ActiveTableSet.clear_for_testing

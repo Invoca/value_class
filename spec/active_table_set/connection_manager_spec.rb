@@ -367,6 +367,12 @@ describe ActiveTableSet::ConnectionManager do
           end
         end
       end
+
+      it "resets the connection pool" do
+        connection_manager
+        expect(connection_handler).to receive(:default_spec).with(any_args).exactly(2)
+        replace_process_settings_with_fixture(:combined_process_settings_specific)
+      end
     end
 
     it "supports different settings for different threads" do

@@ -16,8 +16,8 @@ def load_sample_query(name)
 end
 
 def replace_process_settings_with_fixture(new_content_fixture)
-  content_source = File.expand_path("./fixtures/process_settings/#{new_content_fixture}.yml", __dir__)
-  content_destination = File.expand_path(ProcessSettings::Monitor.file_path)
+  content_destination = ProcessSettings::Monitor.file_path
+  content_source = File.expand_path("../#{new_content_fixture}.yml", content_destination)
   `cat #{content_source} > #{content_destination}`
   sleep 1 # we need to allow time for the watcher thread to pick up the change
 end
@@ -256,5 +256,6 @@ RSpec.configure do |c|
   c.run_all_when_everything_filtered = true
 end
 
+logger_output = ENV['DEBUG_PROCESS_SETTINGS'] ? STDOUT : '/dev/null'
+ProcessSettings::Monitor.logger = Logger.new(logger_output)
 ProcessSettings::Monitor.file_path = File.expand_path("./fixtures/process_settings/combined_process_settings.yml", __dir__)
-ProcessSettings::Monitor.logger = Logger.new(STDOUT)
