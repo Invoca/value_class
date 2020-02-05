@@ -7,7 +7,24 @@ describe ActiveTableSet::Configuration::Request do
     it "can be constructed" do
       dc = ActiveTableSet::Configuration::Request.new(table_set: :common)
 
-      expect(dc.table_set).to   eq(:common)
+      expect(dc.table_set).to eq(:common)
+    end
+
+    context "access" do
+      subject { ActiveTableSet::Configuration::Request.new(table_set: :common, access: :balanced) }
+
+      it "respects an override when set through process settings" do
+        expect(subject.table_set).to eq(:common)
+        expect(subject.access).to eq(:balanced)
+
+        replace_process_settings_with_fixture(:combined_process_settings_global)
+
+        expect(subject.access).to eq(:leader)
+
+        replace_process_settings_with_fixture(:combined_process_settings_empty)
+
+        expect(subject.access).to eq(:balanced)
+      end
     end
 
     context "merge" do

@@ -12,6 +12,10 @@ module ActiveTableSet
       value_attr :net_write_timeout
       value_attr :test_scenario
 
+      def access
+        access_override_from_process_settings || @access
+      end
+
       def merge(other_or_hash)
         other = other_or_hash.is_a?(Hash) ? self.class.new(other_or_hash) : other_or_hash
 
@@ -37,6 +41,12 @@ module ActiveTableSet
         else
           partition_key
         end
+      end
+
+      def access_override_from_process_settings
+        scoped_setting_key = [table_set, partition_key].compact.join('-')
+        ProcessSettings['active_table_set', scoped_setting_key, 'access_override', required: false]&.to_sym ||
+          ProcessSettings['active_table_set', 'default', 'access_override', required: false]&.to_sym
       end
     end
   end

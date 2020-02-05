@@ -146,14 +146,9 @@ module ActiveTableSet
     private
 
     def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
-      effective_table_set = table_set || settings.table_set
-      effective_partition_key = partition_key || settings.partition_key
-
-      effective_access = access_override_from_process_settings(effective_table_set, effective_partition_key) || _access_lock || access
-
       new_settings = settings.merge(
         table_set:     table_set,
-        access:        effective_access,
+        access:        _access_lock || access,
         partition_key: partition_key,
         timeout:       timeout
       )
@@ -171,10 +166,6 @@ module ActiveTableSet
           override_with_new_connection(new_settings)
         end
       end
-    end
-
-    def access_override(table_set, partition_key)
-      access_override_from_process_settings(table_set, partition_key) || _access_lock
     end
 
     # Overrides the settings and makes a new connection with those.
@@ -209,10 +200,7 @@ module ActiveTableSet
     thread_local_instance_attr :_access_policy_disabled
 
     def settings
-      self._settings ||= @config.default.merge(
-        access: access_override(@config.default.table_set, @config.default.partition_key) || @config.default.access,
-        test_scenario: @test_scenario_name
-      )
+      self._settings ||= @config.default.merge(test_scenario: @test_scenario_name)
     end
 
     def establish_connection
