@@ -72,7 +72,8 @@ module ActiveTableSet
       # Establish the connection manager....
       @manager = ActiveTableSet::ConnectionManager.new(
         config:             configuration,
-        connection_handler: ActiveRecord::Base.connection_handler)
+        connection_handler: ActiveRecord::Base.connection_handler
+      )
     end
 
     def connection

@@ -14,7 +14,7 @@ describe ActiveTableSet::ConnectionManager do
     let(:connection_handler) { StubConnectionHandler.new }
     let(:connection_manager) do
       allow(ActiveTableSet::Configuration::Partition).to receive(:random_database_config_index).and_return(1)
-      ActiveTableSet::ConnectionManager.new(config: large_table_set, connection_handler: connection_handler )
+      ActiveTableSet::ConnectionManager.new(config: large_table_set, connection_handler: connection_handler)
     end
 
     it "provides a default spec" do
@@ -315,14 +315,12 @@ describe ActiveTableSet::ConnectionManager do
 
     context "using process settings to override access" do
       after(:each) do
-        ProcessSettings::Monitor.file_path = File.expand_path("../fixtures/process_settings/combined_process_settings_empty.yml", __dir__)
-        ProcessSettings::Monitor.clear_instance
+        replace_process_settings_with_fixture(:combined_process_settings_empty)
       end
 
       it "respects global override when specific override doesn't exist" do
-        ProcessSettings::Monitor.file_path = File.expand_path("../fixtures/process_settings/combined_process_settings_global.yml", __dir__)
-        ProcessSettings::Monitor.clear_instance
         connection_manager
+        replace_process_settings_with_fixture(:combined_process_settings_global)
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
 
         connection_manager.lock_access(:follower) do
@@ -346,9 +344,8 @@ describe ActiveTableSet::ConnectionManager do
       end
 
       it "respects specific override when it exists" do
-        ProcessSettings::Monitor.file_path = File.expand_path("../fixtures/process_settings/combined_process_settings_specific.yml", __dir__)
-        ProcessSettings::Monitor.clear_instance
         connection_manager
+        replace_process_settings_with_fixture(:combined_process_settings_specific)
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
 
         connection_manager.lock_access(:follower) do

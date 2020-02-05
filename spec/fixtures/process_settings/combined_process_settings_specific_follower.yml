@@ -2,7 +2,7 @@
 - settings:
     active_table_set:
       common:
-        access_override: leader
+        access_override: follower
 - meta:
-    version: 174
+    version: 175
     END: true

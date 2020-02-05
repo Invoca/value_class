@@ -201,7 +201,10 @@ module ActiveTableSet
     thread_local_instance_attr :_access_policy_disabled
 
     def settings
-      self._settings ||= @config.default.merge(test_scenario: @test_scenario_name)
+      self._settings ||= @config.default.merge(
+        access: access_override(@config.default.table_set, @config.default.partition_key) || @config.default.access,
+        test_scenario: @test_scenario_name
+      )
     end
 
     def establish_connection
