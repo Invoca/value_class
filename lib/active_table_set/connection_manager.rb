@@ -22,6 +22,8 @@ module ActiveTableSet
       @quarantine_until   = {}
 
       connection_handler.default_spec(current_specification)
+
+      ProcessSettings::Monitor.instance.on_change { reload_default_specification }
     end
 
     # This object remembers a reset block. When `reset` is called, it executes that block.
@@ -133,6 +135,12 @@ module ActiveTableSet
 
     def exception_should_retry_connection?(ex)
       ex.message =~ /Can't connect/
+    end
+
+    def reload_default_specification
+      self._settings = nil
+      reload_pool_key
+      @connection_handler.default_spec(current_specification)
     end
 
     private
