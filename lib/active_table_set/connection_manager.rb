@@ -139,7 +139,6 @@ module ActiveTableSet
 
     def reload_default_specification
       self._settings = nil
-      reload_pool_key
       @connection_handler.default_spec(current_specification)
     end
 
@@ -255,7 +254,7 @@ module ActiveTableSet
     end
 
     def pool_key_for_settings(settings)
-      @current_pool_keys[settings] ||= connection_attributes(settings).pool_key
+      @current_pool_keys[settings.cache_key] ||= connection_attributes(settings).pool_key
     end
 
     def failover_specification
@@ -285,7 +284,7 @@ module ActiveTableSet
     end
 
     def connection_attributes(settings)
-      @connection_specs[settings] ||= @config.connection_attributes(settings)
+      @connection_specs[settings.cache_key] ||= @config.connection_attributes(settings)
     end
   end
 end
