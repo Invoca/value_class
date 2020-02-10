@@ -18,7 +18,7 @@ end
 def replace_process_settings_with_fixture(new_content_fixture)
   content_destination = ProcessSettings::Monitor.file_path
   content_source = File.expand_path("../#{new_content_fixture}.yml", content_destination)
-  `cat #{content_source} > #{content_destination}`
+  FileUtils.cp(content_source, content_destination)
   sleep 1 # we need to allow time for the watcher thread to pick up the change
 end
 
