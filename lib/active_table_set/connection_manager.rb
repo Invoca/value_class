@@ -268,7 +268,6 @@ module ActiveTableSet
       @connection_handler.retrieve_connection_pool("ActiveRecord::Base").connection
     end
 
-
     def failover_available?
       connection_attributes(settings).failover_pool_key
     end
@@ -283,12 +282,6 @@ module ActiveTableSet
 
     def release_connection
       @connection_handler.pool_for_spec(current_specification)&.release_connection
-    end
-
-    def access_override_from_process_settings(table_set, partition_key)
-      scoped_setting_key = [table_set, partition_key].compact.join('-')
-      ProcessSettings['active_table_set', scoped_setting_key, 'access_override', required: false]&.to_sym ||
-        ProcessSettings['active_table_set', 'default', 'access_override', required: false]&.to_sym
     end
 
     def connection_attributes(settings)
