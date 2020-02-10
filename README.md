@@ -110,9 +110,9 @@ bundle exec rake
 If there is a subset of tests you would like to run, you can add the `focus: true` tag to the test or context to only run the subset of tests.
 
 #### Debugging Process Settings
-This gem relies on a third party gem called `ProcessSettings` in order to allow for dynamic configuration overrides to be ingested into the currently running process.
-The ingestion of changes to this settings file happens in a thread that is started up during the initialization of the `ConnectionHandler` and has it's own logger.
-To allow for tests to not have unnecessary noise, by default this logger is writing to `/dev/null`, but if you are trying to debug an issue with the dynamic
+This gem relies on a gem called `ProcessSettings` in order to allow for dynamic configuration overrides to be ingested into the currently running process.
+The ingestion of changes to this settings file happens in a thread that is started up during the initialization of the `ConnectionHandler` and has its own logger.
+To allow for testing to not have unnecessary noise, the `ProcessSettings` logger is configured to output to `/dev/null` in `spec_helper.rb`, but if you are trying to debug an issue with the dynamic
 processing of these overrides, start the test run with the `DEBUG_PROCESS_SETTINGS` environment variable set to have the `ProcessSetting` thread log to `STDOUT`.
 ```bash
 DEBUG_PROCESS_SETTINGS=true bundle exec rake
