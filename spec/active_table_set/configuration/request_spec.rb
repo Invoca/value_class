@@ -32,16 +32,16 @@ describe ActiveTableSet::Configuration::Request do
     context "cache_key" do
       subject { ActiveTableSet::Configuration::Request.new(table_set: :common, access: :balanced) }
 
-      it "is a md5 digest from the current settings stored within the request" do
-        expect(subject.cache_key).to eq("8a19db8c1fbf68a81b5e37717dc80b22c7fbe1cc")
+      it "is an immutable array from the current settings stored within the request" do
+        expect(subject.cache_key).to eq([:common, :balanced, nil, nil, nil, nil, nil])
       end
 
       it "changes its calculated value after a new access override has been applied" do
-        expect(subject.cache_key).to eq("8a19db8c1fbf68a81b5e37717dc80b22c7fbe1cc")
+        expect(subject.cache_key).to eq([:common, :balanced, nil, nil, nil, nil, nil])
         replace_process_settings_with_fixture(:combined_process_settings_global)
-        expect(subject.cache_key).to eq("4c5209535ecb2dc1f5c2077bddc0bfe59562c98d")
+        expect(subject.cache_key).to eq([:common, :leader, nil, nil, nil, nil, nil])
         replace_process_settings_with_fixture(:combined_process_settings_empty)
-        expect(subject.cache_key).to eq("8a19db8c1fbf68a81b5e37717dc80b22c7fbe1cc")
+        expect(subject.cache_key).to eq([:common, :balanced, nil, nil, nil, nil, nil])
       end
     end
 

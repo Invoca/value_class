@@ -30,7 +30,7 @@ module ActiveTableSet
       end
 
       def cache_key
-        cache_key_string = [
+        [
           table_set,
           access,
           partition_key,
@@ -38,9 +38,7 @@ module ActiveTableSet
           net_read_timeout,
           net_write_timeout,
           test_scenario
-        ].join("::")
-
-        Digest::SHA1.hexdigest(cache_key_string)
+        ].freeze
       end
 
       private
