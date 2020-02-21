@@ -290,4 +290,13 @@ describe ActiveTableSet do
 
     expect(ActiveTableSet.configured?).to eq(true)
   end
+
+  context "settings" do
+    it "delegates settings to the manager" do
+      mgr_dbl = double("stub_proxy")
+      ActiveTableSet.add_stub_manager(mgr_dbl)
+      expect(mgr_dbl).to receive(:settings)
+      ActiveTableSet.settings
+    end
+  end
 end

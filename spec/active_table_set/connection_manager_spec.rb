@@ -530,6 +530,13 @@ describe ActiveTableSet::ConnectionManager do
         ).to eq(nil)
       end
     end
+
+    it "allows access to the settings" do
+      connection_manager
+      connection_manager.using(table_set: :common) do
+        expect(connection_manager.settings.table_set).to eq(:common)
+      end
+    end
   end
 
   def dynamic_host_config

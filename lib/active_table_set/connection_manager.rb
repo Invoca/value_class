@@ -136,6 +136,10 @@ module ActiveTableSet
       ex.message =~ /Can't connect/
     end
 
+    def settings
+      self._settings ||= @config.default.merge(test_scenario: @test_scenario_name)
+    end
+
     private
 
     def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
@@ -191,10 +195,6 @@ module ActiveTableSet
     thread_local_instance_attr :_settings
     thread_local_instance_attr :_access_lock
     thread_local_instance_attr :_access_policy_disabled
-
-    def settings
-      self._settings ||= @config.default.merge(test_scenario: @test_scenario_name)
-    end
 
     def establish_connection
       if failover_available?

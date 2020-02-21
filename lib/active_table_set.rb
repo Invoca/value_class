@@ -106,6 +106,10 @@ module ActiveTableSet
       @manager or raise "You must call enable first"
     end
 
+    def settings
+      manager.settings
+    end
+
     def configuration
       @config or raise "You must specify a configuration"
     end
