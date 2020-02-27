@@ -1,7 +1,7 @@
 ---
 - settings:
     active_table_set:
-      default:
+      common:
         access_override: follower
 - meta:
     version: 175

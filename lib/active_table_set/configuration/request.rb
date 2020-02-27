@@ -57,8 +57,9 @@ module ActiveTableSet
 
       def access_override_from_process_settings
         scoped_setting_key = [table_set, partition_key].compact.join('-')
-        ProcessSettings['active_table_set', scoped_setting_key, 'access_override', required: false]&.to_sym ||
-          ProcessSettings['active_table_set', 'default', 'access_override', required: false]&.to_sym
+        ProcessSettings['active_table_set', scoped_setting_key, 'access_override', required: false]&.to_sym.tap do |current_override|
+          ExceptionHandling.log_debug("ActiveTableSetOverride Check", active_table_set: { table_set: table_set, partition_key: partition_key, override: current_override })
+        end
       end
     end
   end

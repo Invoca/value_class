@@ -19,7 +19,7 @@ describe ActiveTableSet::Configuration::Request do
         expect(subject.table_set).to eq(:common)
         expect(subject.access).to eq(:balanced)
 
-        replace_process_settings_with_fixture(:combined_process_settings_global)
+        replace_process_settings_with_fixture(:combined_process_settings_leader)
 
         expect(subject.access).to eq(:leader)
 
@@ -38,7 +38,7 @@ describe ActiveTableSet::Configuration::Request do
 
       it "changes its calculated value after a new access override has been applied" do
         expect(subject.cache_key).to eq([:common, :balanced, nil, nil, nil, nil, nil])
-        replace_process_settings_with_fixture(:combined_process_settings_global)
+        replace_process_settings_with_fixture(:combined_process_settings_leader)
         expect(subject.cache_key).to eq([:common, :leader, nil, nil, nil, nil, nil])
         replace_process_settings_with_fixture(:combined_process_settings_empty)
         expect(subject.cache_key).to eq([:common, :balanced, nil, nil, nil, nil, nil])

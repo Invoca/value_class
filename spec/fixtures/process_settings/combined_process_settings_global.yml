@@ -1,8 +1,0 @@
----
-- settings:
-    active_table_set:
-      default:
-        access_override: leader
-- meta:
-    version: 173
-    END: true

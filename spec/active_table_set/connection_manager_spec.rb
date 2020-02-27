@@ -318,34 +318,9 @@ describe ActiveTableSet::ConnectionManager do
         replace_process_settings_with_fixture(:combined_process_settings_empty)
       end
 
-      it "respects global override when specific override doesn't exist" do
-        connection_manager
-        replace_process_settings_with_fixture(:combined_process_settings_global)
-        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
-
-        connection_manager.lock_access(:follower) do
-          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
-          connection_manager.using(access: :balanced) do
-            expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
-            connection_manager.using(access: :follower) do
-              expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
-            end
-          end
-        end
-
-        expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
-        connection_manager.using(access: :balanced) do
-          expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
-
-          connection_manager.using(access: :follower) do
-            expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
-          end
-        end
-      end
-
       it "respects specific override when it exists" do
         connection_manager
-        replace_process_settings_with_fixture(:combined_process_settings_specific)
+        replace_process_settings_with_fixture(:combined_process_settings_leader)
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
 
         connection_manager.lock_access(:follower) do
@@ -371,7 +346,7 @@ describe ActiveTableSet::ConnectionManager do
       it "resets the connection pool" do
         connection_manager
         expect(connection_handler).to receive(:default_spec).with(any_args).exactly(2)
-        replace_process_settings_with_fixture(:combined_process_settings_specific)
+        replace_process_settings_with_fixture(:combined_process_settings_leader)
       end
     end
 
@@ -425,7 +400,7 @@ describe ActiveTableSet::ConnectionManager do
         # First connection fails, log an exception and revert to previous setting
         ActiveRecord::Base.set_next_client_exception(ArgumentError, "Can't connect cause boom boom")
         connection_manager.using(access: :balanced) do
-          expect(JSON.parse(TestLog.logged_lines.first)["message"]).to match(/Can\'t connect/)
+          expect(JSON.parse(TestLog.logged_lines.last)["message"]).to match(/Can\'t connect/)
           expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
         end
 
@@ -433,14 +408,14 @@ describe ActiveTableSet::ConnectionManager do
 
         # Connect again, should not try to connect - quarantined!
         connection_manager.using(access: :balanced) do
-          expect(TestLog.logged_lines.first).to eq(nil)
+          TestLog.logged_lines.each { |log| expect(log).to match(/ActiveTableSetOverride Check/) }
           expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
         end
 
         # Connect again, after the quarantine
         Time.now_override = Time.now + 120
         connection_manager.using(access: :balanced) do
-          expect(TestLog.logged_lines.first).to eq(nil)
+          TestLog.logged_lines.each { |log| expect(log).to match(/ActiveTableSetOverride Check/) }
           expect(connection_handler.current_config["host"]).to eq("10.0.0.2")
         end
       end
@@ -546,7 +521,7 @@ describe ActiveTableSet::ConnectionManager do
       ActiveRecord::Base.set_next_client_exception(ArgumentError, "boom-boom")
       @new_host = "192.168.1.1"
       connection_manager.using(access: :balanced) do
-        expect(JSON.parse(TestLog.logged_lines.first)["message"]).to match(/boom\-boom/)
+        expect(JSON.parse(TestLog.logged_lines.last)["message"]).to match(/boom\-boom/)
         expect(connection_handler.current_config["host"]).to eq(@new_host)
       end
     end
