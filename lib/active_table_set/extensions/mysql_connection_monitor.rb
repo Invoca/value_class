@@ -21,7 +21,8 @@ module ActiveTableSet
                                         parsed_query: qp.inspect,
                                         access_errors: access_errors,
                                         access_policy: access_policy.inspect,
-                                        current_specification: ActiveTableSet.manager.current_specification.inspect
+                                        current_specification: ActiveTableSet.manager.current_specification.inspect,
+                                        current_settings: ActiveTableSet.manager.settings
                                       })
 
           if access_errors.any?
