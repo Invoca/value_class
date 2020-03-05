@@ -8,7 +8,6 @@
 #        Should only release when count goes to zero...
 
 require 'exception_handling'
-require 'process_flags'
 
 module ActiveTableSet
   class ConnectionManager
@@ -23,6 +22,8 @@ module ActiveTableSet
       @quarantine_until   = {}
 
       connection_handler.default_spec(current_specification)
+
+      ProcessSettings::Monitor.instance.on_change { reload_default_specification }
     end
 
     # This object remembers a reset block. When `reset` is called, it executes that block.
@@ -136,12 +137,21 @@ module ActiveTableSet
       ex.message =~ /Can't connect/
     end
 
+    def reload_default_specification
+      self._settings = nil
+      @connection_handler.default_spec(current_specification)
+    end
+
+    def settings
+      self._settings ||= @config.default.merge(test_scenario: @test_scenario_name)
+    end
+
     private
 
     def override(table_set: nil, access: nil, partition_key: nil, timeout: nil)
       new_settings = settings.merge(
         table_set:     table_set,
-        access:        process_flag_access || _access_lock || access,
+        access:        _access_lock || access,
         partition_key: partition_key,
         timeout:       timeout
       )
@@ -191,10 +201,6 @@ module ActiveTableSet
     thread_local_instance_attr :_settings
     thread_local_instance_attr :_access_lock
     thread_local_instance_attr :_access_policy_disabled
-
-    def settings
-      self._settings ||= @config.default.merge(test_scenario: @test_scenario_name)
-    end
 
     def establish_connection
       if failover_available?
@@ -248,7 +254,7 @@ module ActiveTableSet
     end
 
     def pool_key_for_settings(settings)
-      @current_pool_keys[settings] ||= connection_attributes(settings).pool_key
+      @current_pool_keys[settings.cache_key] ||= connection_attributes(settings).pool_key
     end
 
     def failover_specification
@@ -260,7 +266,6 @@ module ActiveTableSet
     def test_connection
       @connection_handler.retrieve_connection_pool("ActiveRecord::Base").connection
     end
-
 
     def failover_available?
       connection_attributes(settings).failover_pool_key
@@ -278,12 +283,8 @@ module ActiveTableSet
       @connection_handler.pool_for_spec(current_specification)&.release_connection
     end
 
-    def process_flag_access
-      ProcessFlags.is_set?(:disable_alternate_databases) ? :leader : nil
-    end
-
     def connection_attributes(settings)
-      @connection_specs[settings] ||= @config.connection_attributes(settings)
+      @connection_specs[settings.cache_key] ||= @config.connection_attributes(settings)
     end
   end
 end

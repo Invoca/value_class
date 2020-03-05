@@ -4,10 +4,45 @@ require 'spec_helper'
 
 describe ActiveTableSet::Configuration::Request do
   context "default" do
+    after(:each) { replace_process_settings_with_fixture(:combined_process_settings_empty) }
+
     it "can be constructed" do
       dc = ActiveTableSet::Configuration::Request.new(table_set: :common)
 
-      expect(dc.table_set).to   eq(:common)
+      expect(dc.table_set).to eq(:common)
+    end
+
+    context "access" do
+      subject { ActiveTableSet::Configuration::Request.new(table_set: :common, access: :balanced) }
+
+      it "respects an override when set through process settings" do
+        expect(subject.table_set).to eq(:common)
+        expect(subject.access).to eq(:balanced)
+
+        replace_process_settings_with_fixture(:combined_process_settings_leader)
+
+        expect(subject.access).to eq(:leader)
+
+        replace_process_settings_with_fixture(:combined_process_settings_empty)
+
+        expect(subject.access).to eq(:balanced)
+      end
+    end
+
+    context "cache_key" do
+      subject { ActiveTableSet::Configuration::Request.new(table_set: :common, access: :balanced) }
+
+      it "is an immutable array from the current settings stored within the request" do
+        expect(subject.cache_key).to eq([:common, :balanced, nil, nil, nil, nil, nil])
+      end
+
+      it "changes its calculated value after a new access override has been applied" do
+        expect(subject.cache_key).to eq([:common, :balanced, nil, nil, nil, nil, nil])
+        replace_process_settings_with_fixture(:combined_process_settings_leader)
+        expect(subject.cache_key).to eq([:common, :leader, nil, nil, nil, nil, nil])
+        replace_process_settings_with_fixture(:combined_process_settings_empty)
+        expect(subject.cache_key).to eq([:common, :balanced, nil, nil, nil, nil, nil])
+      end
     end
 
     context "merge" do

@@ -100,6 +100,25 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release` to create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+### Running Tests
+
+Tests in this gem are written in Rspec and can be executed through the main rake task for the repo
+```bash
+bundle exec rake
+```
+
+If there is a subset of tests you would like to run, you can add the `focus: true` tag to the test or context to only run the subset of tests.
+
+#### Debugging Process Settings
+This gem relies on a gem called `ProcessSettings` in order to allow for dynamic configuration overrides to be ingested into the currently running process.
+The ingestion of changes to this settings file happens in a thread that is started up during the initialization of the `ConnectionHandler` and has its own logger.
+To allow for testing to not have unnecessary noise, the `ProcessSettings` logger is configured to output to `/dev/null` in `spec_helper.rb`, but if you are trying to debug an issue with the dynamic
+processing of these overrides, start the test run with the `DEBUG_PROCESS_SETTINGS` environment variable set to have the `ProcessSetting` thread log to `STDOUT`.
+```bash
+DEBUG_PROCESS_SETTINGS=true bundle exec rake
+```
+
+
 ## Contributing
 
 1. Fork it ( https://github.com/invoca/active_table_set/fork )

@@ -65,7 +65,7 @@ module ActiveTableSet
         establish_connection(ActiveRecord::Base, spec)
       end
 
-      def current_spec= (spec)
+      def current_spec=(spec)
         pool_for_spec(spec)
         self.thread_connection_spec = spec
       end

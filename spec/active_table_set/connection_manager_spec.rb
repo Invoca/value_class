@@ -14,7 +14,7 @@ describe ActiveTableSet::ConnectionManager do
     let(:connection_handler) { StubConnectionHandler.new }
     let(:connection_manager) do
       allow(ActiveTableSet::Configuration::Partition).to receive(:random_database_config_index).and_return(1)
-      ActiveTableSet::ConnectionManager.new(config: large_table_set, connection_handler: connection_handler )
+      ActiveTableSet::ConnectionManager.new(config: large_table_set, connection_handler: connection_handler)
     end
 
     it "provides a default spec" do
@@ -313,10 +313,14 @@ describe ActiveTableSet::ConnectionManager do
       end
     end
 
-    context "disable_alternate_databases process flag" do
-      it "forces all access to the leader" do
+    context "using process settings to override access" do
+      after(:each) do
+        replace_process_settings_with_fixture(:combined_process_settings_empty)
+      end
+
+      it "respects specific override when it exists" do
         connection_manager
-        allow(ProcessFlags).to receive(:is_set?).with(:disable_alternate_databases) { true }
+        replace_process_settings_with_fixture(:combined_process_settings_leader)
         expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
 
         connection_manager.lock_access(:follower) do
@@ -338,8 +342,13 @@ describe ActiveTableSet::ConnectionManager do
           end
         end
       end
-    end
 
+      it "resets the connection pool" do
+        connection_manager
+        expect(connection_handler).to receive(:default_spec).with(any_args).exactly(2)
+        replace_process_settings_with_fixture(:combined_process_settings_leader)
+      end
+    end
 
     it "supports different settings for different threads" do
       connection_manager
@@ -391,7 +400,7 @@ describe ActiveTableSet::ConnectionManager do
         # First connection fails, log an exception and revert to previous setting
         ActiveRecord::Base.set_next_client_exception(ArgumentError, "Can't connect cause boom boom")
         connection_manager.using(access: :balanced) do
-          expect(JSON.parse(TestLog.logged_lines.first)["message"]).to match(/Can\'t connect/)
+          expect(JSON.parse(TestLog.logged_lines.last)["message"]).to match(/Can\'t connect/)
           expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
         end
 
@@ -399,14 +408,14 @@ describe ActiveTableSet::ConnectionManager do
 
         # Connect again, should not try to connect - quarantined!
         connection_manager.using(access: :balanced) do
-          expect(TestLog.logged_lines.first).to eq(nil)
+          TestLog.logged_lines.each { |log| expect(log).to match(/ActiveTableSetOverride Check/) }
           expect(connection_handler.current_config["host"]).to eq("10.0.0.1")
         end
 
         # Connect again, after the quarantine
         Time.now_override = Time.now + 120
         connection_manager.using(access: :balanced) do
-          expect(TestLog.logged_lines.first).to eq(nil)
+          TestLog.logged_lines.each { |log| expect(log).to match(/ActiveTableSetOverride Check/) }
           expect(connection_handler.current_config["host"]).to eq("10.0.0.2")
         end
       end
@@ -512,7 +521,7 @@ describe ActiveTableSet::ConnectionManager do
       ActiveRecord::Base.set_next_client_exception(ArgumentError, "boom-boom")
       @new_host = "192.168.1.1"
       connection_manager.using(access: :balanced) do
-        expect(JSON.parse(TestLog.logged_lines.first)["message"]).to match(/boom\-boom/)
+        expect(JSON.parse(TestLog.logged_lines.last)["message"]).to match(/boom\-boom/)
         expect(connection_handler.current_config["host"]).to eq(@new_host)
       end
     end
