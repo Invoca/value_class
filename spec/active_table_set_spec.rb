@@ -15,7 +15,6 @@ module ActiveTableSet
   end
 end
 
-
 describe ActiveTableSet do
   before :each do
     ActiveTableSet.clear_for_testing
@@ -267,7 +266,7 @@ describe ActiveTableSet do
     ActiveTableSet.config do |conf|
       conf.enforce_access_policy true
       conf.environment           'test'
-      conf.default  =  { table_set: :common }
+      conf.default = { table_set: :common }
 
       conf.table_set do |ts|
         ts.name = :common

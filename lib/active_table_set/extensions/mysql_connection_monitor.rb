@@ -14,8 +14,8 @@ module ActiveTableSet
       def check_query(query)
         if access_policy = ActiveTableSet.access_policy
           qp = ActiveTableSet::QueryParser.new(query)
-
           access_errors = access_policy.errors(write_tables: qp.write_tables, read_tables: qp.read_tables)
+
           if access_errors.any?
             message = [
               "Query denied by Active Table Set access_policy: (are you using the correct table set?)",
