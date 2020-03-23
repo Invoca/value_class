@@ -19,6 +19,7 @@ module ActiveTableSet
           if access_errors.any?
             message = [
               "Query denied by Active Table Set access_policy: (are you using the correct table set?)",
+              "Current settings: #{ActiveTableSet.manager.settings.to_hash.inspect}",
               show_error_in_bars("Errors", access_errors),
               show_error_in_bars("Access Policy", access_policy.access_rules),
               show_error_in_bars("Query", query)
