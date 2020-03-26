@@ -11,6 +11,7 @@ module ActiveTableSet
       value_attr :net_read_timeout
       value_attr :net_write_timeout
       value_attr :test_scenario
+      value_attr :read_only
 
       def access
         access_override_from_process_settings || @access
