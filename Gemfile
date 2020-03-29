@@ -13,7 +13,7 @@ group :development do
   gem 'mysql2',      '0.4.5'
   gem 'pry'
   gem 'pry-byebug'
-  gem 'rake',        '~> 10.0'
+  gem 'rake',        '~> 13.0'
   gem 'rspec',       '~> 3.7'
   gem 'rspec-mocks', '~> 3.7'
 end
