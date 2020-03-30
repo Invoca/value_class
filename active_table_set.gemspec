@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["victor@invoca.com"]
 
   if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "http://invoca.net"
+    spec.metadata['allowed_push_host'] = "https://gem.fury.io/invoca"
   end
 
   spec.summary       = %q{ActiveTableSet provides multi-database support through table-set based pool management and access rights enforcement.}

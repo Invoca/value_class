@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+source 'https://gem.fury.io/invoca'
 
 # Specify your gem's dependencies in active_table_set.gemspec
 gemspec

@@ -37,6 +37,7 @@ PATH
 
 GEM
   remote: https://rubygems.org/
+  remote: https://gem.fury.io/invoca/
   specs:
     actionmailer (4.2.10)
       actionpack (= 4.2.10)
