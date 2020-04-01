@@ -17,4 +17,5 @@ group :development do
   gem 'rake',        '~> 13.0'
   gem 'rspec',       '~> 3.7'
   gem 'rspec-mocks', '~> 3.7'
+  gem 'rspec_junit_formatter'
 end
