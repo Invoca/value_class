@@ -38,7 +38,8 @@ module ActiveTableSet
           access:            request.access,
           timeout:           request.timeout,
           net_read_timeout:  request.net_read_timeout,
-          net_write_timeout: request.net_write_timeout
+          net_write_timeout: request.net_write_timeout,
+          read_only:         request.read_only
         )
       end
 

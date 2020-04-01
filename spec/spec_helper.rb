@@ -218,6 +218,7 @@ module SpecHelper
         ts.name :ringswitch
         ts.adapter 'fibered_mysql2'
         ts.checkout_timeout = 2
+        ts.read_only true
         ts.access_policy do |ap|
           ap.disallow_read 'cf_%'
           ap.disallow_write 'cf_%'
@@ -225,8 +226,8 @@ module SpecHelper
         ts.partition do |part|
           part.leader do |leader|
             leader.host "10.0.0.1"
-            leader.read_write_username "tester"
-            leader.read_write_password "verysecure"
+            leader.read_only_username "tester"
+            leader.read_only_password "verysecure"
             leader.database "main"
           end
         end

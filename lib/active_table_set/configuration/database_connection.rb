@@ -22,6 +22,7 @@ module ActiveTableSet
       value_attr :encoding
       value_attr :reconnect
       value_attr :checkout_timeout
+      value_attr :read_only
 
       DEFAULT = DatabaseConnection.new(
         host:            "localhost",
@@ -34,12 +35,12 @@ module ActiveTableSet
         reconnect:       true
       )
 
-      def pool_key(alternates:, timeout:, access: :leader, context: "", net_read_timeout: nil, net_write_timeout: nil)
+      def pool_key(alternates:, timeout:, access: :leader, context: "", net_read_timeout: nil, net_write_timeout: nil, read_only: nil)
         PoolKey.new(
           host:              find_value(:host, alternates, context),
           database:          find_value(:database, alternates, context),
-          username:          find_value(access == :leader ? :read_write_username : :read_only_username, alternates, context),
-          password:          find_value(access == :leader ? :read_write_password : :read_only_password, alternates, context),
+          username:          find_value(access == :leader && !read_only ? :read_write_username : :read_only_username, alternates, context),
+          password:          find_value(access == :leader && !read_only ? :read_write_password : :read_only_password, alternates, context),
           connect_timeout:   find_value(:connect_timeout, alternates, context),
           wait_timeout:      find_value(:wait_timeout, alternates, context),
           read_timeout:      timeout,
@@ -51,7 +52,8 @@ module ActiveTableSet
           adapter:           find_value(:adapter, alternates, context),
           pool:              find_value(:pool_size, alternates, context),
           reconnect:         find_value(:reconnect, alternates, context),
-          checkout_timeout: find_value(:checkout_timeout, alternates, context, allow_nil: true)
+          checkout_timeout:  find_value(:checkout_timeout, alternates, context, allow_nil: true),
+          read_only:         read_only || find_value(:read_only, alternates, context, allow_nil: true)
         )
       end
 
