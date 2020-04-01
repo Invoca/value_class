@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+  jenkins/active-table-set: 'true'
+  namespace: jenkins
+  name: active-table-set
+spec:
+  containers:
+  - name: ruby
+    image: ruby:2.6.1
+    tty: true
+    resources:
+    requests:
+      memory: "100Mi"
+    command:
+      - cat
+
