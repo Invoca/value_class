@@ -37,7 +37,7 @@ describe ActiveTableSet::Extensions::MysqlConnectionMonitor do
       <<-EOF.gsub(/^ {10}/, '')
           Query denied by Active Table Set access_policy: (are you using the correct table set?)
           
-          Current settings: {"table_set"=>:common, "access"=>:leader, "partition_key"=>nil, "timeout"=>110, "net_read_timeout"=>nil, "net_write_timeout"=>nil, "test_scenario"=>nil}
+          Current settings: {"table_set"=>:common, "access"=>:leader, "partition_key"=>nil, "timeout"=>110, "net_read_timeout"=>nil, "net_write_timeout"=>nil, "test_scenario"=>nil, "read_only"=>nil}
 
           Errors
               Cannot read affiliates
