@@ -28,7 +28,6 @@ pipeline {
     stage('Unit Test') {
       steps {
         script {
-          # get SSH setup inside the container
           eval `ssh-agent -s`
           echo "$GITHUB_KEY" | ssh-add -
           mkdir -p /root/.ssh
