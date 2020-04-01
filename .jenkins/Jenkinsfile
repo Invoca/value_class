@@ -20,14 +20,6 @@ pipeline {
     stage('Setup') {
       steps {
         script {
-          sh 'bundle install'
-        }
-      }
-    }
-
-    stage('Unit Test') {
-      steps {
-        script {
          sh '''
             # get SSH setup inside the container
             eval `ssh-agent -s`
@@ -37,6 +29,14 @@ pipeline {
             bundle install
           '''
         }
+      }
+    }
+
+    stage('Unit Test') {
+      steps {
+        script {
+         sh 'bundle exec rspec --format RspecJunitFormatter --out spec/reports/rspec.xml'
+        } 
       }
 
       post {
