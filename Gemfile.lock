@@ -29,7 +29,7 @@ GIT
 PATH
   remote: .
   specs:
-    active_table_set (0.5.1)
+    active_table_set (0.5.2)
       attr_comparable
       exception_handling
       process_settings
@@ -110,7 +110,7 @@ GEM
     mysql2 (0.4.5)
     nokogiri (1.10.9)
       mini_portile2 (~> 2.4.0)
-    process_settings (0.4.2)
+    process_settings (0.7.1)
       activesupport
       json
       listen (~> 3.0)
