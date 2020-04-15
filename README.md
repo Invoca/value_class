@@ -65,6 +65,21 @@ Given the above declarations, you can then configure a bicycle with the followin
   end
 ```
 
+You can also directly declare the class:
+
+```ruby 
+  bike = Bicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain }, { diameter: 50, tred: :slicks }])
+```
+
+If you have a simple class, ValueClass provides a replacement for ruby struct that allows for a quick class declaration.
+
+```ruby
+        
+  Gears = ValueClass.struct(:first_gear, :second_gear, :third_gear, default: 200)
+  gear = Gears.new(first_gear: 20) 
+```  
+
+Once an instance of a class is returned. It is immutable: it is frozen and all if its attributes are frozen.
 
 ## Development
 

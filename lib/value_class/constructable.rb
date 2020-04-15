@@ -43,31 +43,20 @@ module ValueClass
             # Define assignment operator
             @config_class.send(:attr_writer, attribute.name)
 
-            # Define accessor (which also allows assignment from blocks
-            if (class_name = attribute.options[:class_name])
-              config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
-                def #{attribute.name}(&blk)
-                  if blk
-                    @#{attribute.name} = #{class_name}.config { |config| yield config }
-                  end
-                  @#{attribute.name}
-                end
-              EORUBY
-            else
-              config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
-                def #{attribute.name}(value = nil)
-                  unless value.nil?
-                    @#{attribute.name} = value
-                  end
-                  @#{attribute.name}
-                end
-              EORUBY
-            end
-
-            # Define insert method
+            define_accessor(attribute)
             if (insert_method = attribute.options[:insert_method])
-              if (class_name = attribute.options[:list_of_class])
-                config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
+              define_insert(attribute, insert_method)
+            end
+          end
+        end
+        @config_class
+      end
+
+      private
+
+      def define_insert(attribute, insert_method)
+        if (class_name = attribute.options[:list_of_class])
+          config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
                   def #{insert_method}(value=nil, &blk)
                     if blk
                       @#{attribute.name} << #{class_name}.config { |config| yield config }
@@ -76,19 +65,37 @@ module ValueClass
                     end
                     @#{attribute.name}
                   end
-                EORUBY
-              else
-                config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
+          EORUBY
+        else
+          config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
                   def #{insert_method}(value)
                     @#{attribute.name} << value
                     @#{attribute.name}
                   end
-                EORUBY
-              end
-            end
-          end
+          EORUBY
         end
-        @config_class
+      end
+
+      def define_accessor(attribute)
+        if (class_name = attribute.options[:class_name])
+          config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
+                def #{attribute.name}(&blk)
+                  if blk
+                    @#{attribute.name} = #{class_name}.config { |config| yield config }
+                  end
+                  @#{attribute.name}
+                end
+          EORUBY
+        else
+          config_class.class_eval <<-EORUBY, __FILE__, __LINE__ + 1
+                def #{attribute.name}(value = nil)
+                  unless value.nil?
+                    @#{attribute.name} = value
+                  end
+                  @#{attribute.name}
+                end
+          EORUBY
+        end
       end
     end
   end

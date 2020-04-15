@@ -30,7 +30,7 @@ module ValueClass
   end
 
   def to_hash
-    self.class.value_attributes.inject(ActiveSupport::HashWithIndifferentAccess.new()) do |hash, attribute|
+    self.class.value_attributes.each_with_object(ActiveSupport::HashWithIndifferentAccess.new) do |attribute, hash|
       # Attributes are frozen, but hash with indifferent access mutates values (!!!), so we have to dup
       # in order to get a value we can use
       unsafe_version = attribute.hash_value(instance_variable_get("@#{attribute.name}"))
@@ -42,15 +42,22 @@ module ValueClass
         end
 
       hash[attribute.name] = safe_version
-      hash
+    end
+  end
+
+  def self.struct(*args)
+    Class.new do
+      include ValueClass::Constructable
+      value_attrs(*args)
     end
   end
 
   protected
+
   def check_constructor_params(config)
     if config.is_a?(Hash)
       extra_keys = config.keys - self.class.value_attributes.map(&:name)
-      extra_keys.empty? or raise ArgumentError, "unknown attribute #{extra_keys.join(", ")}"
+      extra_keys.empty? or raise ArgumentError, "unknown attribute #{extra_keys.join(', ')}"
     end
   end
 
@@ -62,11 +69,11 @@ module ValueClass
       @value_description
     end
 
-    def value_list_attr(attribute_name, options= {})
-      value_attr(attribute_name, options.merge(default:[], class_name: nil, list_of_class: options[:class_name]))
+    def value_list_attr(attribute_name, options = {})
+      value_attr(attribute_name, options.merge(default: [], class_name: nil, list_of_class: options[:class_name]))
     end
 
-    def value_attr(attribute_name, options= {})
+    def value_attr(attribute_name, options = {})
       attribute = Attribute.new(attribute_name, options)
       value_attributes << attribute
 
@@ -80,14 +87,14 @@ module ValueClass
 
     def config_help(prefix = "")
       [
-          "#{name}: #{value_description}",
-          "  attributes:",
-          value_attributes.map { |ca| ca.description(prefix + "    ") }
+        "#{name}: #{value_description}",
+        "  attributes:",
+        value_attributes.map { |ca| ca.description(prefix + "    ") }
       ].flatten.join("\n") + "\n"
     end
 
     def value_attributes
-      @value_attrs ||= []
+      @value_attributes ||= []
     end
 
     def declare_comparison_operators
@@ -103,16 +110,7 @@ module ValueClass
       value_attributes.each { |attr| new_child_class.value_attributes << attr }
     end
   end
-
-  def self.struct(*args)
-    Class.new do
-      include ValueClass::Constructable
-      value_attrs *args
-    end
-  end
 end
 
 # These build off of the above, so they are required last
 require 'value_class/constructable'
-require 'value_class/thread_local_attribute'
-
