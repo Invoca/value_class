@@ -1,20 +1,20 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'active_table_set/version'
+require 'value_class/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "active_table_set"
-  spec.version       = ActiveTableSet::VERSION
-  spec.authors       = ["Victor Borda"]
-  spec.email         = ["victor@invoca.com"]
+  spec.name          = "value_class"
+  spec.version       = ValueClass::VERSION
+  spec.authors       = ["Bob Smith"]
+  spec.email         = ["bob@invoca.com"]
 
   if spec.respond_to?(:metadata)
     spec.metadata['allowed_push_host'] = "https://gem.fury.io/invoca"
   end
 
-  spec.summary       = %q{ActiveTableSet provides multi-database support through table-set based pool management and access rights enforcement.}
-  spec.description   = %q{ActiveTableSet provides multi-database support through table-set based pool management and access rights enforcement.}
-  spec.homepage      = "https://github.com/invoca/active-table-set"
+  spec.summary       = %q{ValueClass a lightweight way to define configuration DSLs.}
+  spec.description   = %q{ValueClass provides an interface to declare simple classes that can be progressively constructed but that are imutable afterwards.}
+  spec.homepage      = "https://github.com/invoca/value_class"
   spec.license       = ""
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }

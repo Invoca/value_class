@@ -5,31 +5,10 @@ GIT
   specs:
     attr_comparable (0.0.2)
 
-GIT
-  remote: git@github.com:Invoca/eventmachine.git
-  revision: 990ca03637038b2c3c8b2c0cd73e74e3f6ffa147
-  ref: 990ca03637038b2c3c8b2c0cd73e74e3f6ffa147
-  specs:
-    eventmachine (1.0.9.1)
-
-GIT
-  remote: git@github.com:Invoca/exception_handling
-  revision: 14145b930ef1cc059a46db14854f467b7bc0dc78
-  ref: 14145b930ef1cc059a46db14854f467b7bc0dc78
-  specs:
-    exception_handling (2.2.1)
-      actionmailer (~> 4.2)
-      actionpack (~> 4.2)
-      activesupport (~> 4.2)
-      contextual_logger
-      eventmachine (~> 1.0)
-      hobo_support
-      invoca-utils (~> 0.0)
-
 PATH
   remote: .
   specs:
-    active_table_set (0.5.2)
+    value_class (0.1.0)
       attr_comparable
       exception_handling
       process_settings
@@ -78,14 +57,21 @@ GEM
     byebug (10.0.2)
     coderay (1.1.2)
     concurrent-ruby (1.1.6)
-    contextual_logger (0.3.1)
+    contextual_logger (0.5.1)
       activesupport
       json
     crass (1.0.6)
     diff-lcs (1.3)
-    em-synchrony (1.0.6)
-      eventmachine (>= 1.0.0.beta.1)
     erubis (2.7.0)
+    eventmachine (1.2.7)
+    exception_handling (2.4.0)
+      actionmailer (~> 4.2)
+      actionpack (~> 4.2)
+      activesupport (~> 4.2)
+      contextual_logger
+      eventmachine (~> 1.0)
+      hobo_support
+      invoca-utils (~> 0.0)
     ffi (1.12.2)
     globalid (0.4.2)
       activesupport (>= 4.2.0)
@@ -93,7 +79,7 @@ GEM
       rails (~> 4.2.6)
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
-    invoca-utils (0.0.3)
+    invoca-utils (0.1.1)
     json (2.2.0)
     listen (3.2.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
@@ -107,10 +93,9 @@ GEM
     mini_mime (1.0.2)
     mini_portile2 (2.4.0)
     minitest (5.14.0)
-    mysql2 (0.4.5)
     nokogiri (1.10.9)
       mini_portile2 (~> 2.4.0)
-    process_settings (0.7.1)
+    process_settings (0.8.0)
       activesupport
       json
       listen (~> 3.0)
@@ -182,19 +167,15 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  active_table_set!
   attr_comparable!
   bundler (~> 1.8)
-  em-synchrony
-  eventmachine (= 1.0.9.1)!
-  exception_handling (~> 2.2)!
-  mysql2 (= 0.4.5)
   pry
   pry-byebug
   rake (~> 13.0)
   rspec (~> 3.7)
   rspec-mocks (~> 3.7)
   rspec_junit_formatter
+  value_class!
 
 BUNDLED WITH
    1.17.2
