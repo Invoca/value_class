@@ -71,7 +71,7 @@ You can also directly declare the class:
   bike = Bicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain }, { diameter: 50, tred: :slicks }])
 ```
 
-If you have a simple class, ValueClass provides a replacement for ruby struct that allows for a quick class declaration.
+If you have a simple class, ValueClass provides a replacement for ruby Struct that allows for a quick class declaration.
 
 ```ruby
         
@@ -79,7 +79,7 @@ If you have a simple class, ValueClass provides a replacement for ruby struct th
   gear = Gears.new(first_gear: 20) 
 ```  
 
-Once an instance of a class is returned. It is immutable: it is frozen and all if its attributes are frozen.
+Once an instance of a class is returned. It is immutable: it is frozen and all of its attributes are frozen.
 
 ### Running Tests
 
