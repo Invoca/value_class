@@ -8,10 +8,6 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Bob Smith"]
   spec.email         = ["bob@invoca.com"]
 
-  if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "https://gem.fury.io/invoca"
-  end
-
   spec.summary       = %q{ValueClass a lightweight way to define configuration DSLs.}
   spec.description   = %q{ValueClass provides an interface to declare simple classes that can be progressively constructed but that are imutable afterwards.}
   spec.homepage      = "https://github.com/invoca/value_class"
