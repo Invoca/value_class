@@ -2,9 +2,10 @@
 
 module ValueClass
   module Constructable
-    extend ActiveSupport::Concern
-
-    include ValueClass
+    def self.included(base)
+      base.extend ClassMethods
+      base.include(ValueClass)
+    end
 
     def clone_config
       config = self.class.config_class.new

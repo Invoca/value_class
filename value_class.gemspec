@@ -22,6 +22,4 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency 'attr_comparable'
-  spec.add_dependency 'rails', '~> 4.2'
-  spec.add_development_dependency 'rubocop', '0.74.0'
 end

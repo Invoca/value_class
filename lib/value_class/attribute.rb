@@ -76,9 +76,9 @@ module ValueClass
     def cast_value(raw_value)
       if options[:list_of_class] && raw_value.is_a?(Array)
         inner_class = options[:list_of_class]
-        raw_value.map { |v| inner_class.constantize.new(v).freeze }
+        raw_value.map { |v| Object.const_get(inner_class).new(v).freeze }
       elsif options[:class_name] && raw_value
-        options[:class_name].constantize.new(raw_value).freeze
+        Object.const_get(options[:class_name]).new(raw_value).freeze
       else
         raw_value
       end

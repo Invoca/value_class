@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-require 'active_record'
 require 'attr_comparable'
-require 'active_support/core_ext'
-
 require 'value_class/attribute'
 
 module ValueClass
-  extend ActiveSupport::Concern
+  def self.included(base)
+    base.extend(ClassMethods)
+  end
 
   # Default constructor
   def initialize(config = {})
@@ -30,7 +29,7 @@ module ValueClass
   end
 
   def to_hash
-    self.class.value_attributes.each_with_object(ActiveSupport::HashWithIndifferentAccess.new) do |attribute, hash|
+    self.class.value_attributes.each_with_object({}) do |attribute, hash|
       # Attributes are frozen, but hash with indifferent access mutates values (!!!), so we have to dup
       # in order to get a value we can use
       unsafe_version = attribute.hash_value(instance_variable_get("@#{attribute.name}"))
@@ -41,7 +40,7 @@ module ValueClass
           unsafe_version
         end
 
-      hash[attribute.name] = safe_version
+      hash[attribute.name.to_sym] = safe_version
     end
   end
 
@@ -81,7 +80,7 @@ module ValueClass
     end
 
     def value_attrs(*args)
-      options = args.extract_options!
+      options = args.last.is_a?(::Hash) ? args.pop : {}
       args.each { |arg| value_attr(arg, options) }
     end
 
