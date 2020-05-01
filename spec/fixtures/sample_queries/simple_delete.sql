@@ -1,1 +1,0 @@
-DELETE FROM `pending_warehouse_imports` WHERE `pending_warehouse_imports`.`id` = 43

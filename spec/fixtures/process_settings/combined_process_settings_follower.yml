@@ -1,8 +1,0 @@
----
-- settings:
-    active_table_set:
-      common:
-        access_override: follower
-- meta:
-    version: 175
-    END: true

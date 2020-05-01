@@ -1,1 +1,0 @@
-drop table if exists cf_rep_advertiser_campaigns_update_recent_call_counts_2s

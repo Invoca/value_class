@@ -50,7 +50,7 @@ pipeline {
 
 void updateGitHubStatus(String context, String status, String description) {
   gitHubStatus([
-    repoSlug:    'Invoca/active-table-set',
+    repoSlug:    'Invoca/value_class',
     sha:         env.GIT_COMMIT,
     description: description,
     context:     context,

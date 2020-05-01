@@ -1,4 +1,0 @@
-UPDATE cf_virtual_line_dimensions
- SET id = LAST_INSERT_ID(id),
- network_name = 'Invoca', advertiser_name = 'Scott Herriman Ad Pro', advertiser_bundled = 0, advertiser_campaign_id_from_network = '', advertiser_campaign_name = 'Staging 8668990903 Tests', advertiser_campaign_full_name = 'Scott Herriman Ad Pro: Staging 8668990903 Tests', advertiser_campaign_network_localized_name = 'Scott Herriman Ad Pro: Staging 8668990903 Tests', advertiser_campaign_bundled = 0, affiliate_name = '', affiliate_bundled = 0, affiliate_campaign_id_from_network = '', date_hour_first = case when date_hour_first < 58938235 then date_hour_first else 58938235 end, date_hour_last = case when date_hour_last > 58938235 then date_hour_last else 58938235 end,
- updated_at = '2011-07-16 19:00:00'

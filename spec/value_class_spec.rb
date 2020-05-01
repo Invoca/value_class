@@ -146,15 +146,15 @@ describe ValueClass do
       it "allows creation of a hash from the instance" do
         bike = ValueClassTest::MountainBicycle.new(speeds: 10, color: :gold, tires: [{ diameter: 40, tred: :mountain }, { diameter: 50, tred: :slicks }], shocks: true)
         expected = {
-          "speeds" => 10,
-          "color"  => :gold,
-          "riders" => [],
-          "seat"   => nil,
-          "tires"  => [
-            { "diameter" => 40, "tred" => :mountain },
-            { "diameter" => 50, "tred" => :slicks }
+          speeds: 10,
+          color:  :gold,
+          riders: [],
+          seat: nil,
+          tires: [
+            { diameter: 40, tred: :mountain },
+            { diameter: 50, tred: :slicks }
           ],
-          "shocks" => true
+          shocks: true
         }
 
         expect(bike.to_hash).to eq(expected)
