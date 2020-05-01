@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     value_class (0.1.0.pre.prerelease2)
-      attr_comparable
+      attr_comparable (~> 0.2)
 
 GEM
   remote: https://rubygems.org/
